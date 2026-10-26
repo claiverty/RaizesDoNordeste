@@ -1,0 +1,34 @@
+
+> raizes-do-nordeste-qa@1.0.0 test
+> node --test test/api.test.mjs test/domain.test.mjs
+
+✔ health, catálogo e cabeçalhos básicos são servidos (78.8654ms)
+✔ prévia e pedido aprovado usam preço calculado no servidor (28.0961ms)
+✔ rejeita carrinho vazio, unidade indisponível e cupom inválido sem pagamento (15.8315ms)
+✔ recusa, timeout e falha de fidelidade não confirmam pedido (13.0157ms)
+✔ indisponibilidade de pagamento e exceção interna não vazam detalhes nem criam pedido (11.2441ms)
+✔ repetição com mesma chave reusa resposta; payload alterado dá conflito (9.455ms)
+✔ preços permanecem consistentes nos canais suportados (11.5765ms)
+✔ reiniciar a aplicação perde pedidos, conforme limite do store em memória (10.8432ms)
+✔ consulta exige token e não devolve o token na resposta de leitura (11.2326ms)
+✔ valida JSON, tipo de conteúdo, chave e tamanho máximo do corpo (9.9072ms)
+✔ rate limit padrão retorna 429 após 60 requests e logs não guardam o corpo (44.4002ms)
+✔ calcula subtotal em centavos com preço do catálogo (2.4627ms)
+✔ aplica cupom de 10% e fidelidade sem ultrapassar subtotal (0.613ms)
+✔ rejeita unidade indisponível (0.6982ms)
+✔ rejeita produto indisponível e produto de outro cardápio (1.5272ms)
+✔ distingue cupom expirado e inválido (0.4676ms)
+✔ falha de fidelidade não retorna desconto (0.229ms)
+✔ valida carrinho, quantidade, duplicidade e campos proibidos (1.451ms)
+✔ valida dados de pagamento e não aceita cartão real (0.4597ms)
+✔ idempotência não cria duplicidade e rejeita chave reutilizada com payload diferente (48.7518ms)
+✔ recusa e timeout são idempotentes e não criam pedido (1.0302ms)
+✔ store remove registros expirados e devolve cópia defensiva (0.3631ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 403.7204

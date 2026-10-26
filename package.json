@@ -1,0 +1,37 @@
+{
+  "name": "raizes-do-nordeste-qa",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Protótipo verificável de realização de pedidos e qualidade de software",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "npm run build && node server.mjs",
+    "dev": "node scripts/dev.mjs",
+    "build": "npm run check:types && vite build",
+    "check:types": "tsc --noEmit -p frontend/tsconfig.json",
+    "test": "node --test test/api.test.mjs test/domain.test.mjs",
+    "test:coverage": "node --experimental-test-coverage \"--test-coverage-include=src/domain/*.mjs\" --test-coverage-lines=80 --test-coverage-branches=75 --test test/api.test.mjs test/domain.test.mjs",
+    "lint": "eslint .",
+    "test:e2e": "npm run build && playwright test",
+    "load": "node scripts/load-test.mjs",
+    "load:local": "node scripts/run-load-test.mjs",
+    "check": "npm run check:types && node --check server.mjs && node --check src/api/http-server.mjs && node --check src/application/order-service.mjs && node --check src/domain/errors.mjs && node --check src/domain/order-rules.mjs && node --check src/infrastructure/catalog.mjs && node --check src/infrastructure/memory-store.mjs && node --check src/infrastructure/mock-services.mjs && node --check scripts/dev.mjs && node --check scripts/load-test.mjs && node --check scripts/run-load-test.mjs && node --check playwright.config.mjs && node --check vite.config.mjs"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.55.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^10.12.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.2",
+    "vite": "^8.3.4"
+  },
+  "dependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  }
+}

@@ -1,0 +1,3 @@
+
+> raizes-do-nordeste-qa@1.0.0 lint
+> eslint .

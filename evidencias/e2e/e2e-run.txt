@@ -1,0 +1,61 @@
+
+> raizes-do-nordeste-qa@1.0.0 test:e2e
+> npm run build && playwright test
+
+
+> raizes-do-nordeste-qa@1.0.0 build
+> npm run check:types && vite build
+
+
+> raizes-do-nordeste-qa@1.0.0 check:types
+> tsc --noEmit -p frontend/tsconfig.json
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 42 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/index.html                                  0.57 kB │ gzip:  0.35 kB
+dist/client/assets/suco-caju-DGLIslv8.webp             54.30 kB
+dist/client/assets/suco-graviola-BzCw14ps.webp         56.69 kB
+dist/client/assets/suco-caja-DimZzdjz.webp             57.07 kB
+dist/client/assets/suco-acerola-FMIFxkPz.webp          58.09 kB
+dist/client/assets/agua-coco-CXJ9X219.webp             67.28 kB
+dist/client/assets/agua-mineral-DTgfz9by.webp          67.51 kB
+dist/client/assets/cola-zero-B0CD3rgp.webp             67.83 kB
+dist/client/assets/tapioca-coco-JVx7sS-7.webp          69.42 kB
+dist/client/assets/cola-tradicional-BtA2v7CJ.webp      72.72 kB
+dist/client/assets/macaxeira-frita-BXoY7kKT.webp       75.69 kB
+dist/client/assets/vinagrete-DSrUKxeK.webp             77.93 kB
+dist/client/assets/tapioca-frango-BaIwOroH.webp        78.89 kB
+dist/client/assets/guarana-CU9tSWun.webp               84.30 kB
+dist/client/assets/bolo-rolo-COQvFtSd.webp             84.44 kB
+dist/client/assets/farofa-banana-ArgHI8Bj.webp         87.37 kB
+dist/client/assets/tapioca-carne-sol-By5R2b-R.webp     89.32 kB
+dist/client/assets/cartola-TyiynZSP.webp               89.74 kB
+dist/client/assets/carne-sol-macaxeira-DWmTkoM5.webp   91.64 kB
+dist/client/assets/baiao-dois-BEkn41rg.webp            95.94 kB
+dist/client/assets/bolo-milho-CJgwrg0l.webp           183.47 kB
+dist/client/assets/tapioca-queijo-Dngrr-r3.webp       217.74 kB
+dist/client/assets/queijo-coalho-QwPjCQzY.webp        230.70 kB
+dist/client/assets/cuscuz-sertao-CgbFUFUT.webp        233.78 kB
+dist/client/assets/hero-mesa-DTP9rEZb.webp            239.59 kB
+dist/client/assets/carne-sol-hNpR767f.webp            295.44 kB
+dist/client/assets/index-DCXQq8Mi.css                  21.36 kB │ gzip:  5.29 kB
+dist/client/assets/index-uamlz1qF.js                  246.81 kB │ gzip: 76.23 kB
+
+✓ built in 247ms
+[WebServer] (node:11204) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 1 worker
+
+(node:32540) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium-mobile] › e2e\order-flow.spec.mjs:4:1 › pedido aprovado percorre a jornada em viewport mobile (2.7s)
+  ok 2 [chromium-mobile] › e2e\order-flow.spec.mjs:52:1 › falha de pagamento mantém o carrinho e não mostra confirmação (2.2s)
+  ok 3 [chromium-mobile] › e2e\order-flow.spec.mjs:65:1 › voltar do checkout preserva os itens do carrinho (2.4s)
+  ok 4 [chromium-mobile] › e2e\order-flow.spec.mjs:83:1 › rotas de etapa abrem a aplicação e protegem checkout sem pedido (896ms)
+  ok 5 [chromium-mobile] › e2e\order-flow.spec.mjs:89:1 › campos e controles básicos de acessibilidade passam na análise axe (1.3s)
+
+  5 passed (12.4s)

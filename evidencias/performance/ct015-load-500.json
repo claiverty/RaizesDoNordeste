@@ -1,0 +1,79 @@
+{
+  "generatedAt": "2026-10-26T17:46:16.296Z",
+  "baseUrl": "http://127.0.0.1:55183",
+  "config": {
+    "vus": 500,
+    "rampUpSeconds": 5,
+    "holdSeconds": 30,
+    "rampDownSeconds": 5,
+    "errorThreshold": 0.01
+  },
+  "warmupRequests": 16745,
+  "measuredRequests": 146101,
+  "successfulRequests": 146101,
+  "errors": 0,
+  "errorRate": 0,
+  "throughputRps": 4175.49,
+  "wallDurationMs": 34990,
+  "overallLatencyMs": {
+    "p50": 114.8,
+    "p95": 147.4,
+    "p99": 181.79
+  },
+  "configuredVus": 500,
+  "requestedDurationSeconds": 30,
+  "operationMetrics": {
+    "menu": {
+      "requests": 133221,
+      "successful": 133221,
+      "errors": 0,
+      "p50Ms": 114.86,
+      "p95Ms": 147.4,
+      "p99Ms": 181.79
+    },
+    "order": {
+      "requests": 12880,
+      "successful": 12880,
+      "errors": 0,
+      "p50Ms": 114.21,
+      "p95Ms": 147.37,
+      "p99Ms": 180.8
+    }
+  },
+  "holdMetrics": {
+    "menu": {
+      "requests": 114264,
+      "successful": 114264,
+      "errors": 0,
+      "p50Ms": 118.39,
+      "p95Ms": 149.16,
+      "p99Ms": 184.94
+    },
+    "order": {
+      "requests": 10753,
+      "successful": 10753,
+      "errors": 0,
+      "p50Ms": 118.38,
+      "p95Ms": 149.67,
+      "p99Ms": 185.55
+    }
+  },
+  "stageMetrics": {
+    "hold": {
+      "requests": 125017,
+      "errors": 0,
+      "p50Ms": 118.39,
+      "p95Ms": 149.17,
+      "p99Ms": 184.97
+    },
+    "ramp_down": {
+      "requests": 21084,
+      "errors": 0,
+      "p50Ms": 58.86,
+      "p95Ms": 105.87,
+      "p99Ms": 125.23
+    }
+  },
+  "thresholdFailures": [],
+  "errorThreshold": 0.01
+}

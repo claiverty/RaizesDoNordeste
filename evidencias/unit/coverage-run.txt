@@ -1,0 +1,46 @@
+
+> raizes-do-nordeste-qa@1.0.0 test:coverage
+> node --experimental-test-coverage "--test-coverage-include=src/domain/*.mjs" --test-coverage-lines=80 --test-coverage-branches=75 --test test/api.test.mjs test/domain.test.mjs
+
+✔ health, catálogo e cabeçalhos básicos são servidos (75.8334ms)
+✔ prévia e pedido aprovado usam preço calculado no servidor (26.3658ms)
+✔ rejeita carrinho vazio, unidade indisponível e cupom inválido sem pagamento (14.1399ms)
+✔ recusa, timeout e falha de fidelidade não confirmam pedido (12.0068ms)
+✔ indisponibilidade de pagamento e exceção interna não vazam detalhes nem criam pedido (10.8559ms)
+✔ repetição com mesma chave reusa resposta; payload alterado dá conflito (10.326ms)
+✔ preços permanecem consistentes nos canais suportados (12.9601ms)
+✔ reiniciar a aplicação perde pedidos, conforme limite do store em memória (10.4524ms)
+✔ consulta exige token e não devolve o token na resposta de leitura (10.7384ms)
+✔ valida JSON, tipo de conteúdo, chave e tamanho máximo do corpo (9.7658ms)
+✔ rate limit padrão retorna 429 após 60 requests e logs não guardam o corpo (54.4679ms)
+✔ calcula subtotal em centavos com preço do catálogo (3.5404ms)
+✔ aplica cupom de 10% e fidelidade sem ultrapassar subtotal (0.4187ms)
+✔ rejeita unidade indisponível (0.87ms)
+✔ rejeita produto indisponível e produto de outro cardápio (0.5101ms)
+✔ distingue cupom expirado e inválido (0.3637ms)
+✔ falha de fidelidade não retorna desconto (0.2347ms)
+✔ valida carrinho, quantidade, duplicidade e campos proibidos (1.8621ms)
+✔ valida dados de pagamento e não aceita cartão real (0.4384ms)
+✔ idempotência não cria duplicidade e rejeita chave reutilizada com payload diferente (33.4656ms)
+✔ recusa e timeout são idempotentes e não criam pedido (0.5052ms)
+✔ store remove registros expirados e devolve cópia defensiva (0.276ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 433.5842
+ℹ start of coverage report
+ℹ --------------------------------------------------------------------------------------------------
+ℹ file              | line % | branch % | funcs % | uncovered lines
+ℹ --------------------------------------------------------------------------------------------------
+ℹ src               |        |          |         |
+ℹ  domain           |        |          |         |
+ℹ   errors.mjs      |  80.00 |   100.00 |   50.00 | 15-16 19-20
+ℹ   order-rules.mjs |  90.67 |    83.72 |   81.25 | 10-11 39-40 62-63 79-80 116-117 145-146 149-150
+ℹ --------------------------------------------------------------------------------------------------
+ℹ all files         |  89.41 |    84.27 |   75.00 |
+ℹ --------------------------------------------------------------------------------------------------
+ℹ end of coverage report

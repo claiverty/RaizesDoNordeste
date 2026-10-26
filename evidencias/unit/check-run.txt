@@ -1,0 +1,7 @@
+
+> raizes-do-nordeste-qa@1.0.0 check
+> npm run check:types && node --check server.mjs && node --check src/api/http-server.mjs && node --check src/application/order-service.mjs && node --check src/domain/errors.mjs && node --check src/domain/order-rules.mjs && node --check src/infrastructure/catalog.mjs && node --check src/infrastructure/memory-store.mjs && node --check src/infrastructure/mock-services.mjs && node --check scripts/dev.mjs && node --check scripts/load-test.mjs && node --check scripts/run-load-test.mjs && node --check playwright.config.mjs && node --check vite.config.mjs
+
+
+> raizes-do-nordeste-qa@1.0.0 check:types
+> tsc --noEmit -p frontend/tsconfig.json
