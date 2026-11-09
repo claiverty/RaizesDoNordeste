@@ -188,7 +188,7 @@ function AdminApp() {
           <strong>RAÍZES</strong><span>DO NORDESTE</span>
         </a>
         <div className="admin-header-actions">
-          <span className="admin-private-label"><span aria-hidden="true">●</span> Área administrativa</span>
+          <span className="admin-private-label">Área administrativa</span>
           <a className="admin-back-link" href="/">Voltar à loja <span aria-hidden="true">↗</span></a>
           {authorized && <>
             <button className="admin-icon-button" type="button" onClick={refreshOrders} disabled={refreshing}>
@@ -239,7 +239,7 @@ function AdminApp() {
               <h1>Visão dos pedidos</h1>
               <p>Acompanhe vendas confirmadas, unidades e itens mais pedidos.</p>
             </div>
-            <span className="admin-live-badge"><span aria-hidden="true" /> Dados atualizados {dateTime.format(new Date())}</span>
+            <span className="admin-live-badge">Atualizado {dateTime.format(new Date())}</span>
           </section>
 
           {errorMessage && <p className="admin-error admin-dashboard-error" role="alert">{errorMessage}</p>}
@@ -276,25 +276,21 @@ function AdminApp() {
 
           <section className="admin-metrics" aria-label="Indicadores do período">
             <article className="admin-metric-card">
-              <span className="admin-metric-icon" aria-hidden="true">#</span>
               <p>Pedidos confirmados</p>
               <strong>{filteredOrders.length}</strong>
               <small>no período selecionado</small>
             </article>
             <article className="admin-metric-card">
-              <span className="admin-metric-icon" aria-hidden="true">R$</span>
               <p>Vendas confirmadas</p>
               <strong>{currency.format(summary.totalCents / 100)}</strong>
               <small>pagamentos aprovados</small>
             </article>
             <article className="admin-metric-card">
-              <span className="admin-metric-icon" aria-hidden="true">↗</span>
               <p>Ticket médio</p>
               <strong>{currency.format(summary.averageCents / 100)}</strong>
               <small>por pedido confirmado</small>
             </article>
             <article className="admin-metric-card admin-metric-highlight">
-              <span className="admin-metric-icon" aria-hidden="true">★</span>
               <p>Mais pedido</p>
               <strong>{summary.products[0]?.name ?? '—'}</strong>
               <small>{summary.products[0] ? `${summary.products[0].quantity} unidades no período` : 'sem pedidos no período'}</small>
@@ -307,14 +303,16 @@ function AdminApp() {
                 <div><p className="admin-eyebrow">Volume diário</p><h2>Pedidos por dia</h2></div>
                 <span className="admin-chart-note">Últimos 7 dias</span>
               </div>
-              <div className="admin-bar-chart" role="img" aria-label={`Pedidos confirmados nos últimos sete dias: ${dailyOrders.map((entry) => `${entry.label} ${entry.count}`).join(', ')}`}>
-                {dailyOrders.map((entry) => <div className="admin-bar-column" key={entry.day.toISOString()}>
-                  <strong>{entry.count}</strong>
-                  <div className="admin-bar-track"><span style={{ height: `${entry.count ? Math.max(8, entry.count / maxDailyCount * 100) : 0}%` }} /></div>
-                  <small>{entry.label}</small>
-                </div>)}
-              </div>
-              <p className="admin-chart-footnote">O gráfico usa os pedidos recentes que correspondem aos filtros selecionados.</p>
+              {dailyOrders.some((entry) => entry.count > 0) ? <>
+                <div className="admin-bar-chart" role="img" aria-label={`Pedidos confirmados nos últimos sete dias: ${dailyOrders.map((entry) => `${entry.label} ${entry.count}`).join(', ')}`}>
+                  {dailyOrders.map((entry) => <div className="admin-bar-column" key={entry.day.toISOString()}>
+                    <strong>{entry.count}</strong>
+                    <div className="admin-bar-track"><span style={{ height: `${entry.count ? Math.max(8, entry.count / maxDailyCount * 100) : 0}%` }} /></div>
+                    <small>{entry.label}</small>
+                  </div>)}
+                </div>
+                <p className="admin-chart-footnote">Pedidos confirmados por dia, conforme os filtros selecionados.</p>
+              </> : <div className="admin-chart-empty"><p>Sem pedidos nos últimos sete dias</p><small>Os pedidos confirmados aparecerão aqui</small></div>}
             </article>
 
             <article className="admin-panel-card admin-breakdown-card">
@@ -343,7 +341,7 @@ function AdminApp() {
               <div><p className="admin-eyebrow">Registro da operação</p><h2 id="admin-orders-title">Pedidos recentes</h2></div>
               <span className="admin-results-count">{filteredOrders.length} {filteredOrders.length === 1 ? 'pedido' : 'pedidos'}</span>
             </div>
-            {filteredOrders.length ? <div className="admin-table-wrap" role="region" aria-label="Tabela rolável de pedidos" tabIndex={0}>
+              {filteredOrders.length ? <div className="admin-table-wrap" role="region" aria-label="Tabela rolável de pedidos" tabIndex={0}>
               <table className="admin-orders-table">
                 <thead><tr><th>Pedido</th><th>Data e hora</th><th>Unidade</th><th>Canal</th><th>Modalidade</th><th>Itens</th><th>Pagamento</th><th className="admin-total-cell">Total</th></tr></thead>
                 <tbody>{filteredOrders.map((order) => <tr key={order.orderNumber}>
@@ -357,7 +355,7 @@ function AdminApp() {
                   <td className="admin-total-cell"><strong>{currency.format(order.totalCents / 100)}</strong></td>
                 </tr>)}</tbody>
               </table>
-            </div> : <div className="admin-empty-state"><span aria-hidden="true">↗</span><h3>Nenhum pedido encontrado</h3><p>Ajuste os filtros ou aguarde a confirmação de novos pedidos.</p></div>}
+              </div> : <div className="admin-empty-state"><h3>Nenhum pedido encontrado</h3><p>Ajuste os filtros ou aguarde a confirmação de novos pedidos.</p></div>}
           </section>
 
           <p className="admin-data-note">Os dados são demonstrativos, ficam em memória e expiram em até 24 horas. O painel omite nome e token de consulta do cliente.</p>

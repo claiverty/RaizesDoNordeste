@@ -358,17 +358,17 @@ function App() {
       <a className="skip-link" href="#pedido">Ir para o conteúdo</a>
       <header className="site-header">
         <nav className="site-nav" aria-label="Navegação principal">
-          {currentStep === 1 ? <><a href="#unit-selection">UNIDADES</a><a href="#nossa-cozinha">NOSSA COZINHA</a></> : <a href="/" onClick={(event) => { event.preventDefault(); navigateToStep(1); }}>INÍCIO</a>}
+          {currentStep === 1 ? <><a href="#unit-selection">Unidades</a><a href="#nossa-cozinha">Nossa cozinha</a></> : <a href="/" onClick={(event) => { event.preventDefault(); navigateToStep(1); }}>Início</a>}
         </nav>
         <a className="wordmark" href="/" aria-label="Raízes do Nordeste — início" onClick={(event) => { event.preventDefault(); navigateToStep(1); }}>
           <strong>RAÍZES</strong><span>DO NORDESTE</span>
         </a>
         <div className="header-actions">
-          <span className="demo-badge">PEDIDO SIMULADO</span>
-          {currentStep === 1 && <a className="header-order" href="#unit-selection">FAZER PEDIDO <span aria-hidden="true">↗</span></a>}
-          {currentStep === 2 && <button className="header-order" type="button" disabled={!canReview} onClick={() => navigateToStep(3)}>CARRINHO · {itemCount}</button>}
+          <span className="demo-badge">Pedido simulado</span>
+          {currentStep === 1 && <a className="header-order" href="#unit-selection">Fazer pedido <span aria-hidden="true">↗</span></a>}
+          {currentStep === 2 && <button className="header-order" type="button" disabled={!canReview} onClick={() => navigateToStep(3)}>Carrinho · {itemCount}</button>}
           {currentStep === 3 && <a className="header-order" href="#summary-title">Ver resumo</a>}
-          {currentStep === 4 && <button className="header-order" type="button" onClick={startNewOrder}>OUTRO PEDIDO</button>}
+          {currentStep === 4 && <button className="header-order" type="button" onClick={startNewOrder}>Outro pedido</button>}
         </div>
       </header>
 
@@ -381,7 +381,7 @@ function App() {
               <p className="eyebrow">Comida com história</p>
               <h1 id="page-title" tabIndex={-1} ref={stepHeadingRef}>O Nordeste servido à mesa.</h1>
               <p>Receitas cheias de identidade, feitas para compartilhar bons momentos.</p>
-              <a className="button button-lime" href="#unit-selection">ESCOLHA SUA UNIDADE <span aria-hidden="true">→</span></a>
+              <a className="button button-lime" href="#unit-selection">Escolha sua unidade <span aria-hidden="true">→</span></a>
             </div>
             <span className="hero-caption">Sabores que trazem a gente pra perto.</span>
           </section>

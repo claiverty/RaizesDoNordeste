@@ -185,3 +185,121 @@
 @media (prefers-reduced-motion: reduce) {
   .admin-bar-track span { transition: none; }
 }
+
+/* Quiet editorial treatment for the operation dashboard */
+.admin-shell {
+  --paper: #f7f6f2;
+  --card: #fff;
+  --ink: #202823;
+  --muted: #606a62;
+  --line: #e3e1da;
+  background: var(--paper);
+}
+
+.admin-header { min-height: 64px; background: var(--card); }
+.admin-brand strong { font-weight: 650; letter-spacing: -.05em; }
+.admin-brand span { font-size: .52rem; font-weight: 500; letter-spacing: .13em; }
+.admin-header-actions { gap: 1.25rem; }
+.admin-private-label { font-size: .8rem; }
+.admin-back-link { font-weight: 500; }
+.admin-icon-button, .admin-logout { min-height: 36px; border-radius: .5rem; font-size: .82rem; font-weight: 500; }
+.admin-main { width: min(100% - 3rem, 1320px); padding: 2.5rem 0 3.5rem; }
+.admin-intro { align-items: center; margin-bottom: 1.5rem; }
+.admin-eyebrow { margin-bottom: .4rem; color: var(--muted); font-size: .8rem; font-weight: 500; letter-spacing: 0; text-transform: none; }
+.admin-intro h1, .admin-access-card h1 { font-size: clamp(2.25rem, 4vw, 3rem); font-weight: 400; letter-spacing: -.04em; line-height: 1.08; }
+.admin-intro > div > p:last-child { margin-top: .6rem; font-size: .95rem; }
+.admin-live-badge { display: block; padding: 0; border: 0; border-radius: 0; color: var(--muted); background: transparent; font-size: .8rem; }
+.admin-live-badge > span { display: none; }
+
+.admin-filters { gap: 1rem; margin-bottom: 1rem; padding: 1rem; border-radius: .875rem; }
+.admin-filters label, .admin-login-form label { gap: .45rem; color: var(--ink); font-size: .8rem; font-weight: 500; }
+.admin-filters input, .admin-filters select, .admin-login-form input { min-height: 44px; padding: .6rem .75rem; border-color: var(--line); border-radius: .5rem; background: #fff; font-size: .86rem; }
+.admin-filters input:focus, .admin-filters select:focus, .admin-login-form input:focus { border-color: var(--forest); box-shadow: 0 0 0 3px rgb(23 61 50 / 12%); }
+
+.admin-metrics { gap: 1rem; margin-bottom: 1rem; }
+.admin-metric-card { min-height: 124px; padding: 1.15rem 1.25rem; border-radius: .875rem; }
+.admin-metric-highlight { padding-left: 1.25rem; border-left-color: var(--line); background: var(--card); }
+.admin-metric-card p { margin: 0 0 .75rem; color: var(--muted); font-size: .85rem; font-weight: 400; }
+.admin-metric-card > strong { color: var(--ink); font-size: clamp(1.55rem, 2.2vw, 1.9rem); font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: -.035em; }
+.admin-metric-highlight > strong { font-size: clamp(1.15rem, 1.6vw, 1.4rem); font-weight: 500; letter-spacing: -.02em; }
+.admin-metric-card small { margin-top: .5rem; color: var(--muted); font-size: .76rem; }
+
+.admin-analysis-grid { grid-template-columns: minmax(0, 1.35fr) minmax(0, .65fr); gap: 1rem; margin-bottom: 1rem; }
+.admin-panel-card { border-radius: .875rem; }
+.admin-chart-card, .admin-breakdown-card { padding: 1.25rem; }
+.admin-card-heading h2 { color: var(--ink); font-size: 1.1rem; font-weight: 500; letter-spacing: -.01em; }
+.admin-chart-note, .admin-results-count { padding: 0; border-radius: 0; color: var(--muted); background: transparent; font-size: .78rem; font-variant-numeric: tabular-nums; }
+.admin-bar-chart { height: 230px; gap: .8rem; margin: 1.25rem 0 .4rem; padding: .6rem .5rem 0; background: linear-gradient(to top, var(--line) 1px, transparent 1px) 0 0 / 100% 25%; }
+.admin-bar-column { width: min(11%, 48px); grid-template-rows: 1.2rem 1fr 1.4rem; gap: .4rem; }
+.admin-bar-column > strong { color: var(--ink); font-size: .78rem; font-weight: 400; font-variant-numeric: tabular-nums; }
+.admin-bar-track span { width: min(100%, 28px); border-radius: .25rem .25rem 0 0; background: #899b8c; transition: height .16s ease; }
+.admin-bar-column:nth-child(7) .admin-bar-track span { background: var(--forest); }
+.admin-bar-column > small { font-size: .74rem; text-transform: capitalize; }
+.admin-chart-footnote { margin-top: .75rem; color: var(--muted); font-size: .76rem; }
+.admin-chart-empty { display: grid; min-height: 230px; align-content: center; gap: .35rem; color: var(--muted); }
+.admin-chart-empty p { margin: 0; color: var(--ink); font-size: .9rem; font-weight: 500; }
+.admin-chart-empty small { font-size: .8rem; }
+
+.admin-product-ranking { margin: .75rem 0 1rem; }
+.admin-product-ranking li { min-height: 48px; grid-template-columns: 1.75rem minmax(0, 1fr) auto; gap: .75rem; border-color: var(--line); }
+.admin-ranking-position { color: var(--muted); font-size: .78rem; font-weight: 400; font-variant-numeric: tabular-nums; }
+.admin-ranking-name { font-size: .84rem; font-weight: 500; }
+.admin-ranking-name small { font-size: .74rem; }
+.admin-product-ranking li > strong { color: var(--ink); font-size: .84rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.admin-product-ranking li > strong small { font-size: .72rem; }
+.admin-empty-inline { margin: 1rem 0; font-size: .84rem; }
+.admin-channel-summary { gap: .55rem; padding-top: .85rem; border-top: 1px solid var(--line); }
+.admin-channel-summary > .admin-eyebrow { font-size: .8rem; }
+.admin-channel-summary > small { font-size: .8rem; }
+.admin-channel-row { grid-template-columns: minmax(4rem, .5fr) minmax(0, 1fr) 1.5rem; gap: .65rem; font-size: .78rem; }
+.admin-channel-row > span:first-child { font-weight: 400; }
+.admin-channel-row > strong { color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+.admin-channel-track { height: 4px; border-radius: 2px; background: #ecebe6; }
+.admin-channel-track i { border-radius: inherit; background: #899b8c; }
+
+.admin-orders-heading { padding: 1.25rem; }
+.admin-orders-table th { padding: .8rem .75rem; color: var(--muted); background: #fafaf8; font-size: .78rem; font-weight: 500; letter-spacing: 0; text-transform: none; }
+.admin-orders-table td { padding: .9rem .75rem; border-color: var(--line); color: var(--ink); font-size: .8rem; }
+.admin-orders-table td:first-child strong { font-size: .84rem; font-weight: 500; }
+.admin-order-status { font-size: .72rem; }
+.admin-channel-pill { padding: 0; border-radius: 0; color: var(--ink); background: transparent; font-size: .8rem; font-weight: 400; }
+.admin-payment-approved { color: var(--success); font-size: .78rem; }
+.admin-empty-state { min-height: 180px; align-content: center; padding: 2rem 1rem; }
+.admin-empty-state h3 { margin: 0 0 .35rem; color: var(--ink); font-size: 1rem; font-weight: 500; }
+.admin-empty-state p { color: var(--muted); font-size: .85rem; }
+.admin-data-note { margin-top: 1rem; color: var(--muted); font-size: .76rem; text-align: left; }
+
+.admin-access-card { border-radius: .875rem; box-shadow: 0 1px 2px rgb(0 0 0 / 4%); }
+.admin-access-mark { width: 2.5rem; height: 2.5rem; margin-bottom: 1.25rem; border-radius: .5rem; background: #f0f2e9; font-weight: 500; }
+.admin-access-card > p:not(.admin-eyebrow) { font-size: .9rem; }
+.admin-login-form { gap: .8rem; }
+.admin-primary-button, .admin-back-button { border-radius: .5rem; font-size: .86rem; font-weight: 500; }
+.admin-back-button { border-color: var(--line); }
+
+.admin-shell :focus-visible { outline: 3px solid #557968; outline-offset: 2px; }
+
+@media (max-width: 600px) {
+  .admin-main { width: min(100% - 1.5rem, 1320px); padding: 1.5rem 0 2rem; }
+  .admin-intro h1 { font-size: 2.25rem; }
+  .admin-intro > div > p:last-child { font-size: .86rem; }
+  .admin-filters { gap: .65rem; padding: .75rem; }
+  .admin-filters label, .admin-login-form label { font-size: .74rem; }
+  .admin-filters input, .admin-filters select { min-height: 42px; padding-inline: .55rem; font-size: .78rem; }
+  .admin-metrics { gap: .65rem; }
+  .admin-metric-card { min-height: 116px; padding: .85rem; }
+  .admin-metric-highlight { padding-left: .85rem; }
+  .admin-metric-card p { margin-bottom: .65rem; font-size: .76rem; }
+  .admin-metric-card > strong { font-size: 1.35rem; }
+  .admin-metric-highlight > strong { font-size: 1rem; }
+  .admin-metric-card small { font-size: .7rem; }
+  .admin-chart-card, .admin-breakdown-card { padding: 1rem; }
+  .admin-chart-note { font-size: .72rem; }
+  .admin-bar-chart, .admin-chart-empty { min-height: 190px; height: 190px; }
+  .admin-orders-heading { padding: 1rem; }
+  .admin-orders-table { min-width: 900px; }
+  .admin-data-note { text-align: left; line-height: 1.5; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-bar-track span { transition: none; }
+}
