@@ -1,4 +1,4 @@
-import type { ApiError, CreatedOrder, OrderBody, Product, Quote, Unit } from './types';
+import type { AdminOrder, ApiError, CreatedOrder, OrderBody, Product, Quote, Unit } from './types';
 
 async function responseBody<T>(response: Response): Promise<T> {
   return response.json() as Promise<T>;
@@ -42,4 +42,18 @@ export async function createOrder(order: OrderBody, idempotencyKey: string): Pro
     throw error;
   }
   return data;
+}
+
+export async function getAdminOrders(accessKey: string): Promise<AdminOrder[]> {
+  const response = await fetch('/api/v1/admin/orders', {
+    headers: accessKey ? { Authorization: `Bearer ${accessKey}` } : {},
+  });
+  const data = await responseBody<{ orders: AdminOrder[] } & ApiError>(response);
+  if (!response.ok) {
+    const error = new Error(data.error?.message ?? 'Não foi possível carregar os pedidos.') as Error & { code?: string; status?: number };
+    error.code = data.error?.code;
+    error.status = response.status;
+    throw error;
+  }
+  return data.orders;
 }

@@ -620,7 +620,7 @@ function App() {
           </div>
           <button className="button button-primary action-button" type="button" onClick={startNewOrder}>Fazer outro pedido</button>
         </section>}
-        <footer><p>Projeto de Qualidade de Software · Raízes do Nordeste</p><p>Protótipo local · catálogo e integrações simulados</p></footer>
+        <footer><p>Projeto de Qualidade de Software · Raízes do Nordeste</p><p><a href="/admin">Acesso da operação</a> · Protótipo · catálogo e integrações simulados</p></footer>
       </main>
     </>
   );

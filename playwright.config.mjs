@@ -18,6 +18,11 @@ export default defineConfig({
     url: 'http://127.0.0.1:4173/api/v1/health',
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,
-    env: { HOST: '127.0.0.1', PORT: '4173', NODE_ENV: 'test' },
+    env: {
+      HOST: '127.0.0.1',
+      PORT: '4173',
+      NODE_ENV: 'test',
+      ADMIN_API_KEY: 'admin-e2e-key-000000000000000000000000',
+    },
   },
 });

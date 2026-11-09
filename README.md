@@ -24,6 +24,7 @@ A aplicação demonstra a jornada de pedido, da escolha da unidade ao comprovant
 | `/cardapio` | Produtos, categorias e carrinho |
 | `/checkout` | Resumo, modalidade e pagamento simulado |
 | `/comprovante` | Confirmação, itens, total e retirada |
+| `/admin` | Painel protegido para analisar pedidos confirmados |
 
 ## Tecnologias
 
@@ -47,6 +48,8 @@ npm run dev
 
 Abra `http://127.0.0.1:5173`. A unidade Recife Centro aceita pedidos; Natal Norte fica indisponível para testar o tratamento de falhas.
 
+Para habilitar o painel local, copie `.env.example` para `.env` e gere uma chave de 64 caracteres hexadecimais com `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`. Guarde esse valor apenas no `.env`, que é ignorado pelo Git. A produção usa outra chave, configurada como segredo na Vercel; nunca reutilize ou publique a chave local.
+
 Para compilar e servir a versão local de produção:
 
 ```powershell
@@ -65,7 +68,7 @@ npm run test:e2e
 npm audit --audit-level=high
 ```
 
-Última validação local, em 09/11/2026: 22/22 testes unitários e de integração, 6/6 testes E2E, cobertura de 89,41% das linhas e 84,27% dos branches. A auditoria encontrou zero vulnerabilidades após a atualização da dependência transitiva `minimatch`. Veja o [relatório final](docs/relatorio-final-conformidade.md).
+Última validação local, em 09/11/2026: 24/24 testes unitários e de integração, 7/7 testes E2E, cobertura de 89,41% das linhas e 84,27% dos branches. A auditoria anterior encontrou zero vulnerabilidades após a atualização da dependência transitiva `minimatch`. Veja o [relatório final](docs/relatorio-final-conformidade.md).
 
 ### Carga local
 
@@ -89,6 +92,8 @@ Rodada de estresse local com 1.000 usuários virtuais: 197.279 respostas, sem er
 A documentação começa pelo [plano de execução](docs/00-plano-de-execucao.md) e pelo [resumo do projeto](docs/01-projeto.md). Os resultados estão no [relatório final](docs/relatorio-final-conformidade.md).
 
 ## Limites conhecidos
+
+O painel administrativo é somente de leitura e utiliza a mesma memória volátil da API. Ele serve para demonstrar análise dos pedidos; a Vercel pode reiniciar ou criar instâncias independentes, então não há histórico operacional garantido. Para ativá-lo na hospedagem, configure uma chave de produção exclusiva em `ADMIN_API_KEY`.
 
 O armazenamento é volátil: reiniciar o servidor remove os pedidos. Não há integração real com pagamento, estoque, fidelidade ou sistemas de franquia. O protótipo está pronto para demonstração e avaliação; não para operação comercial.
 

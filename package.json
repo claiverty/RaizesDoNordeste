@@ -8,8 +8,8 @@
     "node": ">=24"
   },
   "scripts": {
-    "start": "npm run build && node server.mjs",
-    "dev": "node scripts/dev.mjs",
+    "start": "npm run build && node --env-file-if-exists=.env server.mjs",
+    "dev": "node --env-file-if-exists=.env scripts/dev.mjs",
     "build": "npm run check:types && vite build",
     "check:types": "tsc --noEmit -p frontend/tsconfig.json",
     "test": "node --test test/api.test.mjs test/domain.test.mjs",

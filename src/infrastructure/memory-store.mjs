@@ -76,4 +76,11 @@ export class MemoryStore {
     this.#purgeExpired();
     return this.#orders.size;
   }
+
+  listOrders() {
+    this.#purgeExpired();
+    return [...this.#orders.values()]
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt) || right.orderNumber.localeCompare(left.orderNumber))
+      .map((order) => structuredClone(order));
+  }
 }

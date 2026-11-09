@@ -71,6 +71,26 @@ export interface CreatedOrder {
   createdAt: string;
 }
 
+export interface AdminOrder {
+  orderNumber: string;
+  unitId: string;
+  channel: Channel;
+  fulfillment: Fulfillment;
+  items: Array<{
+    productId: string;
+    name: string;
+    quantity: number;
+    unitPriceCents: number;
+    lineTotalCents: number;
+  }>;
+  subtotalCents: number;
+  discountCents: number;
+  totalCents: number;
+  status: 'CONFIRMED';
+  payment: { status: 'APPROVED'; method: PaymentMethod };
+  createdAt: string;
+}
+
 export interface ApiError {
   error?: { code?: string; message?: string };
 }

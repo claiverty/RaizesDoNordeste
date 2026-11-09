@@ -7,21 +7,21 @@
 - **Ambiente:** Windows; Node.js 24.13.0; dados sintéticos; HTTP local; store em memória
 - **Escopo da decisão:** apresentação acadêmica/profissional do protótipo. Esta decisão não aprova operação comercial.
 
-As verificações automatizadas deste relatório foram repetidas na versão atual do projeto em 09/11/2026. A carga foi executada em ambiente local isolado.
+As verificações automatizadas deste relatório foram repetidas na versão atual do projeto em 09/11/2026. A carga foi executada em ambiente local isolado. A validação inclui a extensão `/admin` para análise de pedidos, com acesso por chave e resposta minimizada.
 
 ## O que foi avaliado
 
-Seleção de unidade e cardápio; carrinho e quantidades; preview de preço; cupom e fidelidade simulada; modalidade/canal; pagamento mock aprovado/recusado/timeout/indisponível; confirmação e consulta protegida; idempotência; validação e rate limit; logs e headers; interface móvel; acessibilidade automatizável; carga local; lint, sintaxe e vulnerabilidades das dependências.
+Seleção de unidade e cardápio; carrinho e quantidades; preview de preço; cupom e fidelidade simulada; modalidade/canal; pagamento mock aprovado/recusado/timeout/indisponível; confirmação e consulta protegida; painel `/admin` com chave, filtros e métricas; minimização da resposta administrativa; idempotência; validação e rate limit; logs e headers; interface móvel; acessibilidade automatizável; carga local; lint, sintaxe e vulnerabilidades das dependências.
 
 ## O que foi executado
 
 - `npm run lint`: PASS, zero erros.
 - `npm run check`: PASS, verificação estrita TypeScript e sintaxe Node.
 - `npm run build`: PASS, SPA React compilada pelo Vite.
-- `npm start`: PASS; o build servido respondeu `200` na rota `/` e `/api/v1/health` retornou `status: ok`.
-- `npm test`: PASS, 22/22 testes unitários e de integração HTTP.
-- `npm run test:coverage`: PASS, 22/22; gate de domínio ≥80% linhas e ≥75% branches alcançado (agregado incluído: 89,41%/84,27%).
-- `npm run test:e2e`: PASS, 6/6; o novo caso de teclado foi repetido separadamente 3 vezes, com 3/3 aprovações.
+- `npm start`: PASS; build servido respondeu `200` em `/` e `/admin`; `/api/v1/health` retornou `status: ok` e a lista administrativa sem chave retornou `401`.
+- `npm test`: PASS, 24/24 testes unitários e de integração HTTP.
+- `npm run test:coverage`: PASS, 24/24; gate de domínio ≥80% linhas e ≥75% branches alcançado (agregado incluído: 89,41%/84,27%).
+- `npm run test:e2e`: PASS, 7/7; inclui autenticação, filtros, minimização de dados e saída do painel em viewport móvel.
 - Carga isolada com 500 VUs; rampa 5 s, sustentação 30 s e redução 5 s: PASS, 202.779 respostas bem-sucedidas, 0 erros, menu p95 104,15 ms e pedido p95 103,98 ms na sustentação.
 - Estresse local com 1.000 VUs: PASS, 197.279 respostas bem-sucedidas, 0 erros, menu p95 189,42 ms e pedido p95 189,44 ms na sustentação.
 - `npm ci` e `npm audit`: PASS em 09/11/2026, instalação reproduzível e zero vulnerabilidades. O override de `minimatch` corrige a árvore transitiva sem rebaixar o ESLint.
@@ -32,10 +32,10 @@ Os logs e o JSON estão em `evidencias/`. Durante o desenvolvimento foram corrig
 
 | Área | Situação observada | Limite da conclusão |
 |---|---|---|
-| RF01–RF16 da demonstração | PASS nos casos automatizados mapeados na matriz de rastreabilidade | Catálogo e integrações são fixos/simulados; não representam franquias reais. |
+| RF01–RF18 da demonstração | PASS nos casos automatizados mapeados na matriz de rastreabilidade | Catálogo e integrações são fixos/simulados; painel é somente de leitura e os dados permanecem voláteis. |
 | Regras de pedido/preço/promoção | PASS nos fixtures: cálculo em centavos, revalidação no servidor, erros de cupom e ausência de pedido quando pagamento não aprova | Não houve concorrência de estoque real nem reconciliação de gateway. |
 | Idempotência | PASS: 100 chamadas concorrentes da mesma chave produziram um pedido no processo de teste | Garantia apenas em uma instância volátil; R12 permanece aberto para produção. |
-| Segurança técnica automatizada | PASS nos checks de autorização, entrada, rate limit, erros, headers e logs; auditoria de dependências sem vulnerabilidades | Não é pentest, análise de infraestrutura nem declaração de segurança total. |
+| Segurança técnica automatizada | PASS nos checks de autorização do pedido e do painel, minimização, entrada, rate limit, erros, headers e logs; auditoria anterior de dependências sem vulnerabilidades | Não é pentest, análise de infraestrutura nem declaração de segurança total. A chave da Vercel não está configurada nesta alteração. |
 | Experiência móvel/acessibilidade | PASS no teste automatizado em 360×800; sem overflow, botões ≥44 px e axe sem violações nos critérios WCAG 2.0/2.1 A/AA consultados | Sem validação manual com leitor de tela ou usuário. |
 | UAT | Roteiro de cinco tarefas preparado no plano de testes | Ainda não executado com participantes; não há resultados de satisfação para reportar. |
 | RNFs medidos | RQF01/02, parte de RQF04–12 aprovados no ambiente local | RQF03 disponibilidade mensal não foi medida; SUS/CSAT e MTTR não foram observados. |
@@ -49,14 +49,14 @@ Os logs e o JSON estão em `evidencias/`. Durante o desenvolvimento foram corrig
 - 202.779 requisições medidas, nenhuma falha, throughput 5.795,32 req/s no intervalo medido com redução incluída.
 - Estresse (1.000 VUs): 197.279 requisições medidas, nenhuma falha; p95 em sustentação de 189,42 ms no menu e 189,44 ms no pedido.
 - Auditoria de dependências: zero vulnerabilidades após `npm ci` com override de `minimatch`.
-- Nenhum defeito de aplicação confirmado nos 22 testes unitários/de integração e 6 testes E2E executados. Este resultado não estima defeitos fora do escopo.
+- Nenhum defeito de aplicação confirmado nos 24 testes unitários/de integração e 7 testes E2E executados. Este resultado não estima defeitos fora do escopo.
 - Disponibilidade mensal, CSAT, SUS, abandono e MTTR: NOT_EXECUTED.
 
 ## Defeitos e riscos remanescentes
 
 **Defeitos confirmados:** nenhum nas verificações executadas. As correções dos seletores e assertivas E2E foram concluídas antes da execução final.
 
-**Risco principal:** pedidos e chaves de idempotência são voláteis; reiniciar apaga os dados e múltiplas instâncias não compartilham estado (R12). Outros limites são ausência de autenticação corporativa, provedor real, TLS de produção, reconciliação, monitoramento de operação, integração com POS/estoque e validação jurídica.
+**Risco principal:** pedidos e chaves de idempotência são voláteis; reiniciar apaga os dados e múltiplas instâncias não compartilham estado (R12). O painel depende da mesma memória e não representa um histórico confiável; a chave administrativa de produção ainda precisa ser configurada. Outros limites são ausência de autenticação corporativa, provedor real, TLS de produção, reconciliação, monitoramento de operação, integração com POS/estoque e validação jurídica.
 
 ## Limitações e recomendações
 

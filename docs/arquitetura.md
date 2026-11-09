@@ -4,7 +4,7 @@
 
 Protótipo de monólito modular com API em Node.js 24 e JavaScript ESM, e SPA em React + TypeScript estrito compilada por Vite. O build da interface fica em `dist/client`; o servidor HTTP nativo entrega a SPA e a API na mesma origem. No desenvolvimento, Vite roda separado com HMR e encaminha `/api` para o servidor Node. O repositório em memória e os mocks permitem testes rápidos e determinísticos; reinício apaga pedidos, chaves e estado de limite. Persistência em memória é um trade-off didático e bloqueia uso comercial.
 
-A SPA apresenta uma etapa por vez em rotas próprias: LP `/` para escolher unidade, `/cardapio`, `/checkout` e `/comprovante`. O progresso fica visível durante a jornada, e voltar/avançar pelo navegador mantém o estado do pedido na sessão atual.
+A SPA apresenta uma etapa por vez em rotas próprias: LP `/` para escolher unidade, `/cardapio`, `/checkout` e `/comprovante`. A extensão administrativa fica em `/admin`, separada da jornada e protegida por `ADMIN_API_KEY`; ela consulta pedidos sem devolver dados pessoais do cliente. O progresso fica visível durante a jornada, e voltar/avançar pelo navegador mantém o estado do pedido na sessão atual.
 
 ```mermaid
 flowchart LR
@@ -12,6 +12,8 @@ flowchart LR
   S --> UI[SPA React + TypeScript]
   V[Vite: build e servidor de desenvolvimento] -. compila .-> UI
   UI -->|JSON /api/v1| API[API HTTP]
+  ADM[SPA /admin] -->|Bearer ADMIN_API_KEY| ADMIN[GET /api/v1/admin/orders]
+  ADMIN --> STORE
   API --> DOM[Aplicação e domínio de pedidos]
   DOM --> CAT[Catálogo por unidade]
   DOM --> LOY[Mock de fidelidade]
@@ -130,6 +132,7 @@ flowchart LR
 - O corpo JSON tem limite, validações de enumeração/quantidade/tamanho, rate limit por origem e cabeçalhos de segurança.
 - Pedido recuperável exige token aleatório próprio; o token não é incluído em logs. O exemplo retorna o token ao cliente uma vez para permitir consulta anônima controlada.
 - Idempotência valida fingerprint do payload e armazena resposta por 24 horas em memória. Em multi-instância precisa de persistência atômica compartilhada e estados de processamento duráveis.
+- O painel exige uma chave de 32 a 80 caracteres no servidor, compara a credencial em tempo constante e responde `Cache-Control: no-store`. O segredo de demonstração em `.env.example` é apenas local e não deve ser usado na Vercel. Como os pedidos ficam em memória, a análise é temporária e pode variar entre instâncias ou após reinícios.
 
 ## Escalabilidade e trade-offs
 

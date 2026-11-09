@@ -114,3 +114,53 @@ test('link de salto, seleção de unidade e avanço funcionam com teclado', asyn
   await expect(page).toHaveURL(/\/cardapio$/);
   await expect(page.locator('#page-title')).toBeFocused();
 });
+
+test('painel administrativo exige chave e lista pedidos sem dados pessoais', async ({ page }) => {
+  const orderResponse = await page.request.post('http://127.0.0.1:4173/api/v1/orders', {
+    headers: { 'Content-Type': 'application/json', 'Idempotency-Key': 'admin-e2e-order-0001' },
+    data: {
+      unitId: 'recife-centro',
+      channel: 'WEB',
+      fulfillment: 'PICKUP',
+      customerName: 'Nome sintético de teste',
+      items: [{ productId: 'bolo-milho', quantity: 1 }],
+      payment: { method: 'PIX', outcome: 'APPROVED' },
+    },
+  });
+  expect(orderResponse.status()).toBe(201);
+  const createdOrder = await orderResponse.json();
+  const unauthorizedResponse = await page.request.get('http://127.0.0.1:4173/api/v1/admin/orders');
+  expect(unauthorizedResponse.status()).toBe(401);
+
+  await page.goto('/admin');
+  await page.getByLabel('Chave de acesso').fill('admin-e2e-key-000000000000000000000000');
+  await page.getByRole('button', { name: /Acessar painel/ }).click();
+  await expect(page.getByRole('heading', { name: 'Visão dos pedidos' })).toBeVisible();
+  const adminAccessibility = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+  expect(adminAccessibility.violations).toEqual([]);
+  const orderRow = page.getByRole('row').filter({ hasText: createdOrder.orderNumber });
+  await expect(orderRow).toContainText('Bolo de milho');
+  await expect(orderRow).not.toContainText('Nome sintético de teste');
+  await expect(orderRow).not.toContainText(createdOrder.accessToken);
+
+  const unitFilter = page.getByLabel('Unidade');
+  await unitFilter.selectOption('natal-norte');
+  await expect(page.getByRole('heading', { name: 'Nenhum pedido encontrado' })).toBeVisible();
+  await unitFilter.selectOption('recife-centro');
+  await page.getByLabel('Canal').selectOption('APP');
+  await expect(page.getByRole('heading', { name: 'Nenhum pedido encontrado' })).toBeVisible();
+  await page.getByLabel('Canal').selectOption('WEB');
+  await page.locator('#admin-period-filter').selectOption('all');
+  await page.getByLabel('Buscar pedido').fill(createdOrder.orderNumber);
+  await expect(page.getByRole('row').filter({ hasText: createdOrder.orderNumber })).toBeVisible();
+  await page.getByLabel('Buscar pedido').fill('RN-INEXISTENTE');
+  await expect(page.getByRole('heading', { name: 'Nenhum pedido encontrado' })).toBeVisible();
+
+  await page.getByLabel('Buscar pedido').fill('');
+  const dimensions = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, document: document.documentElement.scrollWidth }));
+  expect(dimensions.document).toBeLessThanOrEqual(dimensions.viewport);
+  await page.screenshot({ path: 'evidencias/e2e/admin-mobile.png', fullPage: true });
+  await page.getByRole('button', { name: 'Sair' }).click();
+  await expect(page.getByRole('heading', { name: 'Painel administrativo' })).toBeVisible();
+  expect(await page.evaluate(() => globalThis.sessionStorage.getItem('raizes-admin-access-key'))).toBeNull();
+});

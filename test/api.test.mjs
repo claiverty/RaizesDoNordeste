@@ -58,6 +58,39 @@ test('health, catálogo e cabeçalhos básicos são servidos', async (t) => {
   assert.equal((await fetch(`${app.baseUrl}/api/v1/units/natal-norte/menu`)).status, 409);
 });
 
+test('painel lista pedidos confirmados somente com chave e omite dados do cliente', async (t) => {
+  const adminApiKey = 'admin-api-test-key-000000000000000000000000';
+  const app = await startServer({ adminApiKey });
+  t.after(() => app.close());
+  const created = await postOrder(app, validBody({ customerName: 'Nome sintético' }));
+  assert.equal(created.status, 201);
+
+  const url = `${app.baseUrl}/api/v1/admin/orders`;
+  assert.equal((await fetch(url)).status, 401);
+  assert.equal((await fetch(url, { headers: { Authorization: 'Bearer chave-incorreta-000000000000000' } })).status, 401);
+
+  const response = await fetch(url, { headers: { Authorization: `Bearer ${adminApiKey}` } });
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  const { orders } = await response.json();
+  assert.equal(orders.length, 1);
+  assert.equal(orders[0].orderNumber, 'RN-000001');
+  assert.equal(orders[0].items[0].name, 'Bolo de milho');
+  assert.equal('customerName' in orders[0], false);
+  assert.equal('accessToken' in orders[0], false);
+  assert.equal('id' in orders[0], false);
+  assert.equal('expiresAt' in orders[0], false);
+  assert.equal((await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${adminApiKey}` } })).status, 405);
+});
+
+test('painel não atende sem chave de administração configurada', async (t) => {
+  const app = await startServer({ adminApiKey: '' });
+  t.after(() => app.close());
+  const response = await fetch(`${app.baseUrl}/api/v1/admin/orders`);
+  assert.equal(response.status, 503);
+  assert.equal((await response.json()).error.code, 'ADMIN_NOT_CONFIGURED');
+});
+
 test('prévia e pedido aprovado usam preço calculado no servidor', async (t) => {
   const paymentService = createPaymentMock();
   const store = new MemoryStore();

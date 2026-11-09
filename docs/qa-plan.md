@@ -2,17 +2,17 @@
 
 ## Objetivo e escopo
 
-Validar que a jornada de realização do pedido recalcula preço no servidor, aplica regras de desconto, não confirma cobrança recusada/indeterminada, evita duplicidade por chave, protege consulta do pedido e permanece utilizável em viewport móvel. O plano cobre API e interface demonstrativa, mocks, dados em memória, documentação e CI local.
+Validar que a jornada de realização do pedido recalcula preço no servidor, aplica regras de desconto, não confirma cobrança recusada/indeterminada, evita duplicidade por chave, protege consulta do pedido e permanece utilizável em viewport móvel. A extensão `/admin` também deve exigir chave, minimizar dados retornados e permitir consultar pedidos sem editar a operação. O plano cobre API e interface demonstrativa, mocks, dados em memória, documentação e CI local.
 
-- **Dentro do escopo:** regras de domínio; API HTTP; unidade/cardápio/carrinho/cupom/fidelidade/pagamento; idempotência; autorização por token do pedido; validação e rate limit; interface responsiva; testes e evidências sintéticas; métricas de latência local.
-- **Fora do escopo:** gateway real, segurança ofensiva, pentest, auditoria LGPD formal, persistência/alta disponibilidade de produção, integração com POS/ERP, validação com consumidores reais e garantia de SLO mensal.
+- **Dentro do escopo:** regras de domínio; API HTTP; unidade/cardápio/carrinho/cupom/fidelidade/pagamento; idempotência; autorização por token do pedido e chave administrativa; minimização dos dados no painel; filtros e indicadores somente de leitura; validação e rate limit; interface responsiva; testes e evidências sintéticas; métricas de latência local.
+- **Fora do escopo:** edição de pedidos e catálogo, gateway real, segurança ofensiva, pentest, auditoria LGPD formal, persistência/alta disponibilidade de produção, integração com POS/ERP, validação com consumidores reais e garantia de SLO mensal.
 
 ## Estratégia e gates
 
 1. **Gate de código:** sintaxe válida; testes unitários e de integração passam; cobertura de domínio ≥80% como meta.
 2. **Gate de fluxo crítico:** CT001/CT007 e CT010 não falham; recusa/timeout nunca criam pedido confirmado; nenhum preço é aceito do cliente.
-3. **Gate de segurança/privacidade:** acesso sem token é negado; corpo excedente e entrada inválida são bloqueados; logs de teste sem dados pessoais/tokens.
-4. **Gate de interface:** fluxo básico navegável por teclado e em viewport 360×800 sem overflow horizontal; labels presentes e controles principais com alvo de toque de 44 px.
+3. **Gate de segurança/privacidade:** consulta sem token e painel sem chave válida são negados; corpo excedente e entrada inválida são bloqueados; logs de teste sem dados pessoais/tokens; listagem administrativa omite nome, ID interno e token do cliente.
+4. **Gate de interface:** fluxo básico navegável por teclado e em viewport 360×800 sem overflow horizontal; labels presentes, painel administrativo protegido e controles principais com alvo de toque de 44 px; axe sem violações A/AA nas telas exercitadas.
 5. **Gate de performance:** executar carga e comparar com RQF01/RQF02; discrepância vira bloqueio de release ou restrição explicitamente aprovada. Não inferir capacidade de produção a partir de localhost.
 6. **Gate de conformidade:** requisitos críticos rastreados a testes e evidências; limitações, falhas e estados não executados listados no relatório.
 

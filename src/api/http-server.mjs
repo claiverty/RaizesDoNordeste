@@ -13,7 +13,7 @@ import { createLoyaltyMock, createPaymentMock } from '../infrastructure/mock-ser
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WEB_DIR = resolve(HERE, '..', '..', 'dist', 'client');
 const MAX_BODY_BYTES = 32 * 1024;
-const APP_ROUTES = new Set(['/', '/cardapio', '/checkout', '/comprovante']);
+const APP_ROUTES = new Set(['/', '/cardapio', '/checkout', '/comprovante', '/admin']);
 
 export function createRateLimiter({ limit = 60, windowMs = 60_000, maxClients = 10_000, now = Date.now } = {}) {
   const entries = new Map();
@@ -52,6 +52,7 @@ export function createApiServer({
   store = new MemoryStore(),
   loyaltyService = createLoyaltyMock(),
   paymentService = createPaymentMock(),
+  adminApiKey = process.env.ADMIN_API_KEY ?? '',
   rateLimiter = createRateLimiter({
     limit: Number.parseInt(process.env.RATE_LIMIT_MAX ?? '60', 10),
     windowMs: Number.parseInt(process.env.RATE_LIMIT_WINDOW_MS ?? '60000', 10),
@@ -97,6 +98,24 @@ export function createApiServer({
         } else if (method === 'GET' && pathname === '/api/v1/units') {
           status = 200;
           writeJson(response, status, { units: catalog.listUnits() });
+        } else if (pathname === '/api/v1/admin/orders') {
+          if (method !== 'GET') {
+            status = 405;
+            errorCode = 'METHOD_NOT_ALLOWED';
+            response.setHeader('Allow', 'GET');
+            writeJson(response, status, { error: { code: errorCode, message: 'Método não permitido.', requestId } });
+          } else if (!isAdminKeyConfigured(adminApiKey)) {
+            status = 503;
+            errorCode = 'ADMIN_NOT_CONFIGURED';
+            writeJson(response, status, { error: { code: errorCode, message: 'O acesso administrativo ainda não foi configurado.', requestId } });
+          } else if (!hasValidAdminKey(request.headers.authorization, adminApiKey)) {
+            status = 401;
+            errorCode = 'ADMIN_UNAUTHORIZED';
+            writeJson(response, status, { error: { code: errorCode, message: 'Acesso administrativo não autorizado.', requestId } });
+          } else {
+            status = 200;
+            writeJson(response, status, { orders: store.listOrders().map(toAdminOrder) });
+          }
         } else if (method === 'GET' && /^\/api\/v1\/units\/[^/]+\/menu$/.test(pathname)) {
           const unitId = decodeSegment(pathname.split('/')[4]);
           const unit = catalog.getUnit(unitId);
@@ -246,6 +265,37 @@ function constantTimeEqual(left, right) {
   const b = Buffer.from(right);
   if (a.length !== b.length || a.length === 0) return false;
   return timingSafeEqual(a, b);
+}
+
+function isAdminKeyConfigured(value) {
+  return typeof value === 'string' && /^[A-Za-z0-9-]{32,80}$/.test(value);
+}
+
+function hasValidAdminKey(authorization, configuredKey) {
+  const token = readBearerToken(authorization);
+  return constantTimeEqual(token, configuredKey);
+}
+
+function toAdminOrder(order) {
+  return {
+    orderNumber: order.orderNumber,
+    unitId: order.unitId,
+    channel: order.channel,
+    fulfillment: order.fulfillment,
+    items: order.items.map(({ productId, name, quantity, unitPriceCents, lineTotalCents }) => ({
+      productId,
+      name,
+      quantity,
+      unitPriceCents,
+      lineTotalCents,
+    })),
+    subtotalCents: order.subtotalCents,
+    discountCents: order.discountCents,
+    totalCents: order.totalCents,
+    status: order.status,
+    payment: { status: order.payment.status, method: order.payment.method },
+    createdAt: order.createdAt,
+  };
 }
 
 function normalizeRoute(pathname) {

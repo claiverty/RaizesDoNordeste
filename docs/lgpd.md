@@ -21,6 +21,7 @@ Esta análise descreve os dados usados pelo protótipo, as finalidades e os cont
 - API rejeita campos fora do contrato, reduzindo coleta por mass assignment. Os testes usam valores sintéticos.
 - O total e as regras do pedido não dependem de cadastro. Fidelidade é mock e não recebe identificador de pessoa.
 - Consulta do pedido exige token de acesso aleatório. Logs omitem body, Authorization, token e IP.
+- A listagem `/admin` exige uma chave mantida no servidor, usa `Cache-Control: no-store` e entrega somente campos de operação; não retorna nome, ID interno, token de consulta ou prazo de expiração. O navegador mantém a chave somente na sessão da aba e a remove ao sair. A credencial local de `.env.example` é demonstrativa e não deve ser reutilizada em produção.
 - Cabeçalhos limitam framing, conteúdo e capabilities desnecessárias; localmente o serviço escuta em loopback. Em produção deve usar TLS, controle de acesso operacional, gestão de segredos, backups protegidos e política de incidentes.
 - A interface não apresenta consentimento genérico para o processamento estritamente necessário ao pedido. Marketing futuro deve ter finalidade e base próprias, separadas e revogáveis quando o consentimento for a base adequada.
 
@@ -34,6 +35,7 @@ No protótipo, não há portal de direitos; reiniciar o processo remove os dados
 |---|---|---|
 | Minimização | Sem CPF, telefone, endereço, e-mail obrigatório ou dado de cartão | CT016 |
 | Acesso | Token ausente/incorreto não devolve pedido | CT013 |
+| Acesso administrativo | Chave ausente/incorreta é negada; listagem minimizada omite nome, ID interno, token e retenção | CT024, CT025 |
 | Log | Nenhum nome, token, corpo ou Authorization em log sintético | CT016 |
 | Retenção demonstrativa | Expiração de 24h e limpeza no processo | CT020 |
 | Transparência | Microcopy explica dado opcional e simulação antes da ação | CT014, CT016 |
