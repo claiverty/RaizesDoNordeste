@@ -7,13 +7,13 @@ Os comandos usam Node.js 24. A execução atual e os resultados estão resumidos
 | Unitário | Cálculo, descontos, validações, status e limite de itens | `node:test`; local/CI | Fixtures sintéticas, dependências injetadas | Casos críticos verdes; cobertura domínio ≥80% meta | `evidencias/unit/` log + cobertura |
 | Integração | Use case, store, pagamento e fidelidade mock | `node:test`; processo em memória | Mocks determinísticos | Aprovação grava um pedido; falhas não gravam; idempotência respeitada | `evidencias/integration/` |
 | Sistema/API | Contratos, HTTP status, headers, validação, auth e rate limit | `node:test` + `fetch`; servidor local | JSON malformado/limite, chaves e tokens sintéticos | Contratos RF01–RF15 corretos | `evidencias/integration/` |
-| E2E | LP `/` → `/cardapio` → `/checkout` → `/comprovante`; falha de pagamento e retorno com carrinho preservado | Playwright; navegador local | Browser instalado, servidor de teste | Pedido confirmado; falha mantém carrinho; acesso sem estado é redirecionado; console sem erro; fluxo responsivo | `evidencias/e2e/` screenshots/log |
+| E2E | LP `/` → `/cardapio` → `/checkout` → `/comprovante`; falha de pagamento, retorno com carrinho e navegação por teclado | Playwright; navegador local | Browser instalado, servidor de teste | Pedido confirmado; falha mantém carrinho; acesso sem estado é redirecionado; skip link e transição de etapa acessíveis por teclado | `evidencias/e2e/` screenshots/log |
 | Regressão | Reexecutar casos críticos após mudança | `npm test` e `npm run test:e2e` | Build atual | Nenhum crítico regressivo | Logs de cada execução |
-| UAT | Verificar se cliente/operação entendem preço, canal, modalidade e estado | Roteiro manual local | Participantes internos; sem dados reais | Tarefas completadas sem ajuda crítica; observações registradas | Roteiro assinado/observações, se realizado |
-| Usabilidade | Fricção, clareza de erro, confirmação e taxa de conclusão | Observação manual; futuro SUS/CSAT | Usuários representativos após protótipo | Meta SUS ≥75 em rodada exploratória; separar amostra pequena como evidência qualitativa | `evidencias/mobile/` roteiro e respostas anonimizadas |
-| Responsividade/mobile | Viewport 360×800, overflow, foco e alvos de toque | Playwright + inspeção manual | Chromium viewport mobile | Sem scroll horizontal; controles ≥44×44 CSS px; labels/foco | Screenshot e resultado DOM |
+| UAT | Verificar se clientes entendem unidade, quantidades, total, pagamento simulado e retirada | Roteiro manual em navegador local | 3–5 participantes voluntários; catálogo e pagamentos simulados | Tarefas críticas concluídas sem ajuda; confusões/erros registrados sem PII | Roteiro na seção abaixo; folha de resultados anonimizada |
+| Usabilidade | Fricção, clareza de erro, confirmação e taxa de conclusão | Observação manual; questionários SUS/CSAT opcionais | Usuários representativos após protótipo | Rodada exploratória; amostra pequena não deve ser tratada como estimativa estatística | `docs/metricas.md`; respostas sem identificação |
+| Responsividade/mobile | Viewport 360×800, overflow, foco e alvos de toque | Playwright + inspeção manual/teclado | Chromium viewport mobile | Sem scroll horizontal; controles ≥44×44 CSS px; foco visível e fluxo por teclado | Screenshot, teste E2E e folha manual abaixo |
 | Desempenho/carga | Latência p50/p95/p99, taxa de erro, duração e throughput; mix menu/pedido | `scripts/run-load-test.mjs` + `scripts/load-test.mjs`; localhost | Rampa até 500 VUs, aquecimento, sustentação e redução gradual; dados sintéticos | Metas RQF01/RQF02; reportar se não atingir | JSON + resumo em `evidencias/performance/` |
-| Estresse | Observar degradação acima do alvo até erro/limite | Script de carga com VUs configuráveis | Ambiente isolado; não executar contra produção | Falhas controladas; serviço recupera após carga | JSON; recomendado manual antes de release |
+| Estresse | Observar degradação acima da carga de referência | Script local com VUs configuráveis | Ambiente isolado; nunca contra produção | Em 1.000 VUs, erro zero e p95 abaixo dos limites locais; não representa capacidade de produção | `evidencias/performance/stress-local-1000-2026-11-09.json` |
 | Segurança | Entrada, autorização por token, preço, rate limit, headers, logs e erros | Testes de contrato locais | Payloads sintéticos malformados | Sem acesso não autorizado, preço adulterado aceito ou segredo em log | `lgpd.md` e `evidencias/security/` |
 | LGPD | Necessidade, finalidade, minimização, acesso, retenção, logs e exclusão | Revisão documental + testes | Apenas dados sintéticos | Nenhum campo desnecessário é exigido; pedido consultado só com token; retenção demonstrativa documentada | `lgpd.md` |
 
@@ -32,9 +32,32 @@ npm run load:local -- --vus 500 --warmup 5 --duration 30 --ramp-down 5
 - Em CI, unitários, integração e build/sintaxe são gates rápidos. E2E pode rodar em job separado após instalar o browser. Carga/stress não roda em cada commit.
 - Nenhum resultado será inferido a partir de documentação ou script existente. A execução é datada e salva quando ocorrer.
 
+## Roteiro de UAT e acessibilidade manual
+
+**Status:** roteiro preparado; ainda precisa ser executado com participantes. Convide de 3 a 5 pessoas voluntárias que representem clientes do cardápio. Explique que é um protótipo local com pagamento simulado, não peça dados pessoais e não grave áudio/vídeo sem consentimento. A amostra é exploratória, não representa satisfação de toda a clientela.
+
+Entregue as tarefas sem ensinar a interface:
+
+1. Escolha a unidade Recife Centro e encontre uma tapioca e uma bebida.
+2. Adicione duas unidades, reduza para uma e explique o que significa a água como cortesia.
+3. Vá ao checkout, escolha retirada e confira se os itens e o total estão claros.
+4. Simule pagamento recusado; observe se entende o erro e se o carrinho continua disponível.
+5. Tente novamente com pagamento aprovado; encontre no comprovante os itens, total, forma de pagamento e senha de retirada.
+
+Para cada pessoa, registre somente código anônimo, tarefa concluída, tempo aproximado, pedido de ajuda, erro observado e comentário. Considere a rodada aprovada quando todas as tarefas críticas forem concluídas sem ajuda, o valor e o estado do pagamento forem compreendidos e a retirada for localizada. Registre qualquer falha sem suavizar o resultado; abra defeito para problema reproduzível. Se aplicar SUS/CSAT, use as fórmulas de `docs/metricas.md` e reporte tamanho da amostra.
+
+Na mesma sessão, faça inspeção manual por teclado e com Narrador do Windows (ou leitor de tela escolhido pelo participante):
+
+- confirme que o primeiro `Tab` mostra o link “Ir para o conteúdo” e `Enter` leva o foco ao conteúdo principal;
+- percorra etapas e controles usando `Tab`, `Shift+Tab`, setas, `Espaço` e `Enter`, verificando ordem e indicador de foco;
+- confirme que unidade selecionada, categoria ativa, quantidades, erros de pagamento e atualização de etapa são anunciados de forma compreensível;
+- leia o comprovante do início ao fim e confirme que itens, valores, forma de pagamento e senha de retirada são anunciados na ordem esperada.
+
+Registre navegador, sistema, leitor de tela e versão, sem incluir nome ou dado de contato. Até essa execução, UAT e validação manual com leitor de tela permanecem **não executados**.
+
 ## Casos de teste
 
-Os estados abaixo refletem a execução local até 26/10/2026, incluindo a carga de CT015. Os dados são sintéticos e as evidências estão em `evidencias/` e `docs/relatorio-final-conformidade.md`.
+Os estados abaixo refletem a execução local até 09/11/2026, incluindo a carga de CT015. Os dados são sintéticos e as evidências estão em `evidencias/` e `docs/relatorio-final-conformidade.md`.
 
 ### CT001 — Pedido básico aprovado
 

@@ -2,7 +2,7 @@
 
 - **Projeto:** Raízes do Nordeste — Projeto de Qualidade de Software
 - **Data do levantamento inicial:** 13/10/2026
-- **Status:** implementação e validação local concluídas; CI remoto depende de conectar o projeto a um repositório remoto.
+- **Status:** implementação e validação local concluídas; o último CI remoto passou no commit `7e216c9` em 26/10/2026. O workflow foi atualizado localmente e aguarda novo push para validar as versões atuais das actions.
 
 ## Situação no levantamento inicial
 

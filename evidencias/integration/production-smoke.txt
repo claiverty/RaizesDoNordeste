@@ -1,0 +1,5 @@
+Execution date: 2026-11-09
+Command: npm start
+GET / -> HTTP 200; app shell present.
+GET /api/v1/health -> HTTP 200; {"status":"ok","service":"raizes-do-nordeste-api"}
+Result: PASS.

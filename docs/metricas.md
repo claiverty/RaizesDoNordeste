@@ -23,15 +23,17 @@ No protótipo, não há pesquisa nem amostra de usuários; portanto CSAT e SUS e
 
 | Métrica | Resultado observado | Interpretação |
 |---|---|---|
-| Defeitos confirmados em automação | 0 encontrados em 22 testes de domínio/API e 5 testes E2E executados | Não equivale a taxa de defeitos de produção; cobertura limitada ao escopo automatizado. |
+| Defeitos confirmados em automação | 0 encontrados em 22 testes de domínio/API e 6 testes E2E executados | Não equivale a taxa de defeitos de produção; cobertura limitada ao escopo automatizado. |
 | Cobertura do domínio incluído | 89,41% linhas / 84,27% branches agregadas; `order-rules.mjs` 90,67% linhas / 83,72% branches | Acima dos gates de 80% linhas e 75% branches. |
-| Latência sob carga local (500 VUs) | Sustentação: menu p50/p95/p99 = 118,39/149,16/184,94 ms; pedido = 118,38/149,67/185,55 ms | Os dois p95 passaram os alvos de 250 ms e 750 ms na máquina local. |
-| Erros/throughput da carga | 0/146.101 = 0%; 4.175,49 req/s na janela medida | Carga sintética local; não extrapolar para produção. |
+| Latência sob carga local (500 VUs, 09/11/2026) | Sustentação: menu p50/p95/p99 = 82,07/104,15/116,96 ms; pedido = 82,05/103,98/116,88 ms | Os dois p95 passaram os alvos locais de 250 ms e 750 ms. |
+| Erros/throughput da carga (09/11/2026) | 0/202.779 = 0%; 5.795,32 req/s no intervalo medido, incluindo redução de carga | Carga sintética local; não extrapolar para produção. |
+| Estresse local (1.000 VUs, 09/11/2026) | 0/197.279 erros; sustentação p95 de 189,42 ms no menu e 189,44 ms no pedido; sem falha de threshold | Passou os limites locais; não representa capacidade de produção nem disponibilidade mensal. |
+| Auditoria de dependências (09/11/2026) | Zero vulnerabilidades após override de `minimatch` e instalação limpa com `npm ci` | Dependências de desenvolvimento; revalidar a cada atualização. |
 | Disponibilidade mensal | NOT_EXECUTED | Não houve coleta contínua por um mês. |
 | CSAT/SUS | NOT_EXECUTED | Sem usuários participantes; E2E não mede satisfação. |
 | MTTR | NOT_EXECUTED | Nenhum incidente de operação real foi acompanhado. |
 
-Evidências: [carga](../evidencias/performance/ct015-load-500.json) e [cobertura](../evidencias/unit/coverage-run.txt).
+Evidências: [carga de referência](../evidencias/performance/ct015-load-500-2026-11-09.json), [estresse 1.000 VUs](../evidencias/performance/stress-local-1000-2026-11-09.json), [carga anterior](../evidencias/performance/ct015-load-500.json) e [cobertura](../evidencias/unit/coverage-run.txt).
 
 ## SLOs versus protótipo
 

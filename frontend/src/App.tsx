@@ -372,7 +372,7 @@ function App() {
         </div>
       </header>
 
-      <main id="pedido" className={`layout${currentStep === 1 ? ' landing-layout' : ''}`}>
+      <main id="pedido" tabIndex={-1} className={`layout${currentStep === 1 ? ' landing-layout' : ''}`}>
         {currentStep === 1 ? <>
           <section className="home-hero" aria-labelledby="page-title">
             <img className="home-hero-image" src={heroImage} alt="Mesa posta com pratos nordestinos, cuscuz, tapioca, carne de sol e queijo coalho" fetchPriority="high" />

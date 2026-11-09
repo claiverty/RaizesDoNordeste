@@ -1,6 +1,6 @@
 # Matriz de rastreabilidade
 
-Resultados atualizados após execução local em 26/10/2026, incluindo carga de CT015. `PASS` é restrito às verificações e evidências listadas; não representa garantia de produção.
+Resultados atualizados após execução local em 09/11/2026, incluindo carga de CT015. `PASS` é restrito às verificações e evidências listadas; não representa garantia de produção.
 
 | Requisito / critério de aceitação | Risco | Caso(s) | Automação / arquivo | Resultado | Evidência |
 |---|---|---|---|---|---|
@@ -24,7 +24,7 @@ Resultados atualizados após execução local em 26/10/2026, incluindo carga de 
 | RQF05 — total e detalhamento diferem R$ 0,00 | R03, R06 | CT004–CT006, CT017 | `test/domain.test.mjs`; `test/api.test.mjs` | PASS nos fixtures executados | [unitários](../evidencias/unit/coverage-run.txt), [integração](../evidencias/integration/integration-run.txt) |
 | RQF06/RQF07 — sem PII sintética nos logs e sem leitura sem token | R05 | CT013, CT016 | `test/api.test.mjs` | PASS nos checks técnicos; revisão jurídica não executada | [privacidade e segurança](lgpd.md) |
 | RQF08 — limite nominal por IP | R09 | CT018 | `test/api.test.mjs` | PASS | [integração](../evidencias/integration/integration-run.txt) |
-| RQF09/RQF10 — LP e telas em rotas próprias, carrinho preservado ao voltar, sem cadastro; mobile sem overflow e botões ≥44 px | R11 | CT014, CT022, CT023 | `e2e/order-flow.spec.mjs` | PASS — 5/5 em 360×800, incluindo catálogo de 24 itens, bebidas e água cortesia | [execução E2E](../evidencias/e2e/e2e-run.txt), [LP mobile](../evidencias/e2e/ct000-landing-mobile.png), [checkout](../evidencias/e2e/ct0003-checkout-desktop.png), [comprovante mobile](../evidencias/e2e/ct001-confirmacao-mobile.png) |
+| RQF09/RQF10 — LP e telas em rotas próprias, carrinho preservado ao voltar, sem cadastro; mobile sem overflow e botões ≥44 px | R11 | CT014, CT022, CT023 | `e2e/order-flow.spec.mjs` | PASS — 6/6 em 360×800, incluindo catálogo, bebidas, água cortesia e navegação por teclado | [execução E2E](../evidencias/e2e/e2e-run.txt), [LP mobile](../evidencias/e2e/ct000-landing-mobile.png), [checkout](../evidencias/e2e/ct0003-checkout-desktop.png), [comprovante mobile](../evidencias/e2e/ct001-confirmacao-mobile.png) |
 | RQF11/RQF12 — request ID/log estruturado e cobertura de domínio | R01, R05 | CT016–CT018 | `test/api.test.mjs`; `npm run test:coverage` | PASS; cobertura agregada do escopo incluído 89,41% linhas / 84,27% branches | [cobertura](../evidencias/unit/coverage-run.txt), [privacidade e segurança](lgpd.md) |
 
 ## Ligações e limites antes de uso real

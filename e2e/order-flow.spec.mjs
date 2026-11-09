@@ -91,3 +91,26 @@ test('campos e controles básicos de acessibilidade passam na análise axe', asy
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   expect(results.violations).toEqual([]);
 });
+
+test('link de salto, seleção de unidade e avanço funcionam com teclado', async ({ page }) => {
+  await page.goto('/');
+  await page.keyboard.press('Tab');
+  const skipLink = page.getByRole('link', { name: 'Ir para o conteúdo' });
+  await expect(skipLink).toBeFocused();
+  await expect(skipLink).toBeVisible();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/#pedido$/);
+  await expect(page.locator('#pedido')).toBeFocused();
+
+  const recife = page.getByRole('radio', { name: /Recife Centro/ });
+  await recife.focus();
+  await page.keyboard.press('Space');
+  await expect(recife).toBeChecked();
+  const menuButton = page.getByRole('button', { name: 'Ver cardápio' });
+  await expect(menuButton).toBeEnabled();
+  await page.keyboard.press('Tab');
+  await expect(menuButton).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/cardapio$/);
+  await expect(page.locator('#page-title')).toBeFocused();
+});

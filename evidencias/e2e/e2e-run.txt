@@ -1,3 +1,4 @@
+Execution date: 2026-11-09
 
 > raizes-do-nordeste-qa@1.0.0 test:e2e
 > npm run build && playwright test
@@ -41,21 +42,25 @@ dist/client/assets/queijo-coalho-QwPjCQzY.webp        230.70 kB
 dist/client/assets/cuscuz-sertao-CgbFUFUT.webp        233.78 kB
 dist/client/assets/hero-mesa-DTP9rEZb.webp            239.59 kB
 dist/client/assets/carne-sol-hNpR767f.webp            295.44 kB
-dist/client/assets/index-DCXQq8Mi.css                  21.36 kB │ gzip:  5.29 kB
-dist/client/assets/index-uamlz1qF.js                  246.81 kB │ gzip: 76.23 kB
+dist/client/assets/index-DOqy5ryy.css                  21.44 kB │ gzip:  5.31 kB
+dist/client/assets/index-C5siZy8k.js                  246.82 kB │ gzip: 76.23 kB
 
-✓ built in 247ms
-[WebServer] (node:11204) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+✓ built in 131ms
+[WebServer] (node:33060) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 [WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
 
-Running 5 tests using 1 worker
+Running 6 tests using 1 worker
 
-(node:32540) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(node:3676) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)
-  ok 1 [chromium-mobile] › e2e\order-flow.spec.mjs:4:1 › pedido aprovado percorre a jornada em viewport mobile (2.7s)
-  ok 2 [chromium-mobile] › e2e\order-flow.spec.mjs:52:1 › falha de pagamento mantém o carrinho e não mostra confirmação (2.2s)
-  ok 3 [chromium-mobile] › e2e\order-flow.spec.mjs:65:1 › voltar do checkout preserva os itens do carrinho (2.4s)
-  ok 4 [chromium-mobile] › e2e\order-flow.spec.mjs:83:1 › rotas de etapa abrem a aplicação e protegem checkout sem pedido (896ms)
-  ok 5 [chromium-mobile] › e2e\order-flow.spec.mjs:89:1 › campos e controles básicos de acessibilidade passam na análise axe (1.3s)
+  ok 1 [chromium-mobile] › e2e\order-flow.spec.mjs:4:1 › pedido aprovado percorre a jornada em viewport mobile (2.2s)
+  ok 2 [chromium-mobile] › e2e\order-flow.spec.mjs:52:1 › falha de pagamento mantém o carrinho e não mostra confirmação (1.8s)
+  ok 3 [chromium-mobile] › e2e\order-flow.spec.mjs:65:1 › voltar do checkout preserva os itens do carrinho (2.1s)
+  ok 4 [chromium-mobile] › e2e\order-flow.spec.mjs:83:1 › rotas de etapa abrem a aplicação e protegem checkout sem pedido (622ms)
+  ok 5 [chromium-mobile] › e2e\order-flow.spec.mjs:89:1 › campos e controles básicos de acessibilidade passam na análise axe (913ms)
+  ok 6 [chromium-mobile] › e2e\order-flow.spec.mjs:95:1 › link de salto, seleção de unidade e avanço funcionam com teclado (439ms)
 
-  5 passed (12.4s)
+  6 passed (9.1s)
+
+Stability rerun: npx playwright test e2e/order-flow.spec.mjs -g "link de salto" --repeat-each=3 --workers=1
+Result: 3/3 passed.

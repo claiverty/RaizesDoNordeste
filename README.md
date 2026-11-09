@@ -65,7 +65,7 @@ npm run test:e2e
 npm audit --audit-level=high
 ```
 
-Última validação local, em 26/10/2026: 22/22 testes unitários e de integração, 5/5 testes E2E, cobertura de 89,41% das linhas e 84,27% dos branches, e auditoria sem vulnerabilidades.
+Última validação local, em 09/11/2026: 22/22 testes unitários e de integração, 6/6 testes E2E, cobertura de 89,41% das linhas e 84,27% dos branches. A auditoria encontrou zero vulnerabilidades após a atualização da dependência transitiva `minimatch`. Veja o [relatório final](docs/relatorio-final-conformidade.md).
 
 ### Carga local
 
@@ -73,7 +73,9 @@ npm audit --audit-level=high
 npm run load:local -- --vus 500 --warmup 5 --duration 30 --ramp-down 5
 ```
 
-Na execução registrada: 146.101 requisições, sem erros; p95 de 149,67 ms para pedidos na fase estável. É uma medição local, não uma garantia de desempenho em produção.
+Na execução registrada de 09/11/2026, com 500 usuários virtuais: 202.779 requisições medidas, sem erros; durante a sustentação, p95 de 104,15 ms no cardápio e 103,98 ms em pedidos. É uma medição local, não uma garantia de desempenho em produção.
+
+Rodada de estresse local com 1.000 usuários virtuais: 197.279 respostas, sem erros; p95 de 189,42 ms no cardápio e 189,44 ms em pedidos. Consulte a [evidência de estresse](evidencias/performance/stress-local-1000-2026-11-09.json).
 
 ## Estrutura
 
