@@ -282,6 +282,8 @@
   .admin-main { width: min(100% - 1.5rem, 1320px); padding: 1.5rem 0 2rem; }
   .admin-intro h1 { font-size: 2.25rem; }
   .admin-intro > div > p:last-child { font-size: .86rem; }
+  .admin-card-heading:not(.admin-orders-heading) { flex-wrap: wrap; }
+  .admin-analysis-grid { grid-template-columns: minmax(0, 1fr); }
   .admin-filters { gap: .65rem; padding: .75rem; }
   .admin-filters label, .admin-login-form label { font-size: .74rem; }
   .admin-filters input, .admin-filters select { min-height: 42px; padding-inline: .55rem; font-size: .78rem; }
