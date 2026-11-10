@@ -1,0 +1,39 @@
+{
+  "date": "2026-11-10",
+  "environment": "Vercel Production",
+  "origin": "https://raizesdonordeste7.vercel.app",
+  "sourceCommit": "6db3e054c4c4a04bfd964dd2aa652b18613a00b1",
+  "adminKeyMetadata": "ADMIN_API_KEY listed as Secret for Production in Vercel; value not read",
+  "requests": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/cardapio",
+      "status": 200
+    },
+    {
+      "path": "/checkout",
+      "status": 200
+    },
+    {
+      "path": "/comprovante",
+      "status": 200
+    },
+    {
+      "path": "/admin",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/health",
+      "status": 200,
+      "healthStatus": "ok"
+    },
+    {
+      "path": "/api/v1/admin/orders",
+      "status": 401,
+      "errorCode": "ADMIN_UNAUTHORIZED"
+    }
+  ]
+}

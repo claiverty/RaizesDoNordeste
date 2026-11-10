@@ -2,7 +2,7 @@
 
 - **Projeto:** Raízes do Nordeste — Projeto de Qualidade de Software
 - **Data do levantamento inicial:** 13/10/2026
-- **Status:** implementação e validação local concluídas; o último CI remoto passou no commit `7e216c9` em 26/10/2026. O workflow foi atualizado localmente e aguarda novo push para validar as versões atuais das actions.
+- **Status em 10/11/2026:** implementação, revisão técnica por teclado e verificações automatizadas concluídas. Código `6db3e05` aprovado no [CI remoto](https://github.com/claiverty/RaizesDoNordeste/actions/runs/42835645597), com 24 testes unitários/de integração e 8 E2E. UAT e escuta com leitor de tela aguardam coleta humana conforme o plano de testes.
 
 ## Situação no levantamento inicial
 

@@ -1,12 +1,12 @@
 # Matriz de rastreabilidade
 
-Resultados atualizados após execução local em 09/11/2026, incluindo carga de CT015. `PASS` é restrito às verificações e evidências listadas; não representa garantia de produção.
+Resultados automatizados atualizados em 10/11/2026; a carga de CT015 foi executada em 09/11/2026. `PASS` é restrito às verificações e evidências listadas; não representa garantia de produção.
 
 | Requisito / critério de aceitação | Risco | Caso(s) | Automação / arquivo | Resultado | Evidência |
 |---|---|---|---|---|---|
 | RF01 — unidade ativa lista; unidade indisponível bloqueia | R04 | CT012, CT020 | `test/api.test.mjs`; `test/domain.test.mjs` | PASS | [integração](../evidencias/integration/integration-run.txt) |
 | RF02 — cardápio e preço correspondem à unidade | R03, R04 | CT017, CT019 | `test/api.test.mjs`; `e2e/order-flow.spec.mjs` | PASS | [integração](../evidencias/integration/integration-run.txt), [E2E](../evidencias/e2e/e2e-run.txt) |
-| RF03 — carrinho com quantidade 1–20; vazio e duplicado rejeitados | R01, R02 | CT003, CT018 | `test/domain.test.mjs`; `test/api.test.mjs` | PASS | [cobertura/unitários](../evidencias/unit/coverage-run.txt), [integração](../evidencias/integration/integration-run.txt) |
+| RF03 — carrinho com quantidade 1–20; vazio e duplicado rejeitados; foco preservado ao adicionar/remover | R01, R02, R11 | CT003, CT018, CT026 | `test/domain.test.mjs`; `test/api.test.mjs`; `e2e/order-flow.spec.mjs` | PASS | [cobertura/unitários](../evidencias/unit/coverage-run.txt), [integração](../evidencias/integration/integration-run.txt), [E2E](../evidencias/e2e/e2e-run.txt) |
 | RF04 — servidor revalida item, disponibilidade e preço antes de autorizar | R03, R04 | CT002, CT012, CT017 | `test/domain.test.mjs`; `test/api.test.mjs` | PASS | [integração](../evidencias/integration/integration-run.txt) |
 | RF05 — cupom válido desconta 10% em centavos | R06 | CT004 | `test/domain.test.mjs`; `test/api.test.mjs` | PASS | [cobertura/unitários](../evidencias/unit/coverage-run.txt) |
 | RF06 — cupom inválido/expirado bloqueia pagamento | R06 | CT005, CT006 | `test/domain.test.mjs`; `test/api.test.mjs` | PASS | [unitários](../evidencias/unit/coverage-run.txt), [integração](../evidencias/integration/integration-run.txt) |
@@ -26,8 +26,8 @@ Resultados atualizados após execução local em 09/11/2026, incluindo carga de 
 | RQF05 — total e detalhamento diferem R$ 0,00 | R03, R06 | CT004–CT006, CT017 | `test/domain.test.mjs`; `test/api.test.mjs` | PASS nos fixtures executados | [unitários](../evidencias/unit/coverage-run.txt), [integração](../evidencias/integration/integration-run.txt) |
 | RQF06/RQF07 — sem PII sintética nos logs e sem leitura sem token | R05 | CT013, CT016 | `test/api.test.mjs` | PASS nos checks técnicos; revisão jurídica não executada | [privacidade e segurança](lgpd.md) |
 | RQF08 — limite nominal por IP | R09 | CT018 | `test/api.test.mjs` | PASS | [integração](../evidencias/integration/integration-run.txt) |
-| RQF09/RQF10 — LP e telas em rotas próprias, carrinho preservado ao voltar, sem cadastro; mobile sem overflow e botões ≥44 px | R11 | CT014, CT022, CT023 | `e2e/order-flow.spec.mjs` | PASS — 7/7 E2E; inclui catálogo, bebidas, água cortesia, navegação por teclado e painel em viewport móvel | [execução E2E](../evidencias/e2e/e2e-run.txt), [LP mobile](../evidencias/e2e/ct000-landing-mobile.png), [checkout](../evidencias/e2e/ct0003-checkout-desktop.png), [comprovante mobile](../evidencias/e2e/ct001-confirmacao-mobile.png) |
-| RQF13 — painel nega acesso sem chave e não retorna nome, ID interno, token ou retenção | R05, R13 | CT024, CT025 | `test/api.test.mjs`; `e2e/order-flow.spec.mjs` | PASS — API e E2E; 24 testes e 7 E2E no total | [integração](../evidencias/integration/integration-run.txt), [E2E](../evidencias/e2e/e2e-run.txt) |
+| RQF09/RQF10 — rotas próprias, carrinho preservado, sem cadastro; overflow e alvos de toque nos cenários medidos; foco e nomes acessíveis | R11 | CT014, CT022, CT023, CT026 | `e2e/order-flow.spec.mjs`; revisão técnica por teclado | PASS no escopo — 8/8 E2E; alvos de quantidade cardápio/checkout e botões do comprovante ≥44×44 px; escuta do leitor de tela e UAT pendentes | [execução E2E](../evidencias/e2e/e2e-run.txt), [foco de quantidade](../evidencias/e2e/ct026-quantidade-teclado.png), [revisão manual](../evidencias/accessibility/revisao-manual-2026-11-10.txt) |
+| RQF13 — painel nega acesso sem chave e não retorna nome, ID interno, token ou retenção | R05, R13 | CT024, CT025 | `test/api.test.mjs`; `e2e/order-flow.spec.mjs` | PASS — API e E2E; 24 testes e 8 E2E no total | [integração](../evidencias/integration/integration-run.txt), [E2E](../evidencias/e2e/e2e-run.txt) |
 | RQF11/RQF12 — request ID/log estruturado e cobertura de domínio | R01, R05 | CT016–CT018 | `test/api.test.mjs`; `npm run test:coverage` | PASS; cobertura agregada do escopo incluído 89,41% linhas / 84,27% branches | [cobertura](../evidencias/unit/coverage-run.txt), [privacidade e segurança](lgpd.md) |
 
 ## Ligações e limites antes de uso real

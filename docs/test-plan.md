@@ -34,7 +34,7 @@ npm run load:local -- --vus 500 --warmup 5 --duration 30 --ramp-down 5
 
 ## Roteiro de UAT e acessibilidade manual
 
-**Status:** roteiro preparado; ainda precisa ser executado com participantes. Convide de 3 a 5 pessoas voluntárias que representem clientes do cardápio. Explique que é um protótipo local com pagamento simulado, não peça dados pessoais e não grave áudio/vídeo sem consentimento. A amostra é exploratória, não representa satisfação de toda a clientela.
+**Status em 10/11/2026:** revisão técnica por teclado executada; UAT e escuta com leitor de tela aguardam participantes. A [evidência da revisão](../evidencias/accessibility/revisao-manual-2026-11-10.txt) registra os passos observados e as correções de foco. Convide de 3 a 5 pessoas voluntárias que representem clientes do cardápio. Explique que é um protótipo local com pagamento simulado, não peça dados pessoais e não grave áudio/vídeo sem consentimento. A amostra é exploratória, não representa satisfação de toda a clientela.
 
 Entregue as tarefas sem ensinar a interface:
 
@@ -46,6 +46,10 @@ Entregue as tarefas sem ensinar a interface:
 
 Para cada pessoa, registre somente código anônimo, tarefa concluída, tempo aproximado, pedido de ajuda, erro observado e comentário. Considere a rodada aprovada quando todas as tarefas críticas forem concluídas sem ajuda, o valor e o estado do pagamento forem compreendidos e a retirada for localizada. Registre qualquer falha sem suavizar o resultado; abra defeito para problema reproduzível. Se aplicar SUS/CSAT, use as fórmulas de `docs/metricas.md` e reporte tamanho da amostra.
 
+Preencha a [ficha de UAT](../evidencias/uat/resultados.csv), que abre em uma planilha com separador ponto e vírgula. Ela contém cinco tarefas (T01–T05, na ordem acima) para P01–P05; três participantes são o mínimo desta rodada e P04/P05 são opcionais. Para cada tarefa, informe data, navegador/dispositivo em `ambiente`, tempo em segundos, `SIM`/`NAO` em ajuda, dificuldade e comentário. Use `PASS`, `FAIL` ou `NAO_EXECUTADO` em resultado. Tarefa concluída com orientação do facilitador deve ser marcada `FAIL` para o critério sem ajuda, com a orientação descrita. Mantenha as linhas não realizadas como `NAO_EXECUTADO`.
+
+Use a [demonstração online](https://raizesdonordeste7.vercel.app) ou `http://127.0.0.1:5173` com `npm run dev`. Comece uma sessão limpa em `/` para cada pessoa. Não ensine onde clicar; se a pessoa travar, anote a dificuldade antes de ajudar. Ao terminar, conte tarefas aprovadas e ajudas por participante, separe falhas reproduzíveis de opiniões e atualize o relatório final com o tamanho real da amostra. A execução do agente de desenvolvimento não conta como participante.
+
 Na mesma sessão, faça inspeção manual por teclado e com Narrador do Windows (ou leitor de tela escolhido pelo participante):
 
 - confirme que o primeiro `Tab` mostra o link “Ir para o conteúdo” e `Enter` leva o foco ao conteúdo principal;
@@ -53,11 +57,22 @@ Na mesma sessão, faça inspeção manual por teclado e com Narrador do Windows 
 - confirme que unidade selecionada, categoria ativa, quantidades, erros de pagamento e atualização de etapa são anunciados de forma compreensível;
 - leia o comprovante do início ao fim e confirme que itens, valores, forma de pagamento e senha de retirada são anunciados na ordem esperada.
 
-Registre navegador, sistema, leitor de tela e versão, sem incluir nome ou dado de contato. Até essa execução, UAT e validação manual com leitor de tela permanecem **não executados**.
+Registre navegador, sistema, leitor de tela e versão, sem incluir nome ou dado de contato. A revisão técnica confirmou a estrutura acessível e o foco, mas não observou áudio. A escuta do leitor de tela e o UAT permanecem **não executados** até a coleta humana.
+
+Para a escuta, abra o Narrador pelo menu Iniciar do Windows, escolha `/` em uma sessão limpa e execute os passos acima ouvindo a saída. Preencha os resultados abaixo; se o navegador integrado não for reconhecido pelo Narrador, use Edge ou Chrome e registre qual foi usado.
+
+| Verificação com leitor de tela | Resultado | Anúncio ouvido / dificuldade |
+|---|---|---|
+| Unidade selecionada, unidade indisponível e título ao mudar de etapa | NAO_EXECUTADO | A preencher |
+| Categoria ativa, adição, quantidade 1→2→1 e remoção | NAO_EXECUTADO | A preencher |
+| Recusa de pagamento, motivo do erro e recuperação até aprovação | NAO_EXECUTADO | A preencher |
+| Itens, valores, pagamento e senha de retirada no comprovante | NAO_EXECUTADO | A preencher |
+
+Ambiente da escuta: data, sistema, navegador/versão e leitor/versão **a preencher**. Considere `PASS` apenas quando o anúncio permitir entender e concluir a ação sem depender da tela; registre anúncio ausente, repetição que atrapalha ou ordem confusa como `FAIL`.
 
 ## Casos de teste
 
-Os estados abaixo refletem a execução local até 09/11/2026, incluindo a carga de CT015. Os dados são sintéticos e as evidências estão em `evidencias/` e `docs/relatorio-final-conformidade.md`.
+Os estados abaixo refletem a execução automatizada em 10/11/2026 e a carga de CT015 em 09/11/2026. Os dados são sintéticos e as evidências estão em `evidencias/` e `docs/relatorio-final-conformidade.md`.
 
 ### CT001 — Pedido básico aprovado
 
@@ -284,3 +299,12 @@ Os estados abaixo refletem a execução local até 09/11/2026, incluindo a carga
 - **Passos:** acessar `/admin`; tentar a listagem sem credencial; informar chave; filtrar por unidade e canal; localizar o pedido por número e buscar um número inexistente; verificar ausência de overflow horizontal; encerrar sessão.
 - **Esperado:** o painel exige chave, apresenta pedido e indicadores, não mostra dados pessoais, passa a análise axe, não tem rolagem horizontal e retorna à tela de acesso após remover a chave da sessão ao sair.
 - **Pós-condição:** chave removida da sessão do navegador. **Evidência:** [execução E2E](../evidencias/e2e/e2e-run.txt), [painel mobile](../evidencias/e2e/admin-mobile.png). **Status:** PASS — 1/1 cenário E2E com filtros por unidade, canal e número, saída e viewport móvel.
+
+### CT026 — Quantidades e recuperação de erro por teclado
+
+- **Requisito:** RF03, RF10, RQF09/RQF10. **Prioridade:** P1. **Tipo:** acessibilidade/E2E/regressão.
+- **Pré-condições:** unidade Recife Centro e categoria Tapiocas disponíveis; viewport 360×800.
+- **Dados:** Tapioca com queijo coalho; quantidades 0, 1, 2, 20 e 19; pagamento simulado recusado.
+- **Passos:** adicionar pelo Enter; aumentar; usar Shift+Tab para diminuir até zero; adicionar novamente e atingir 20; reduzir para 19. Em outro cenário, enviar pagamento recusado e verificar o foco na mensagem.
+- **Esperado:** foco passa ao controle de aumentar após adicionar, volta a Adicionar ao remover e passa a Diminuir no limite; quantidade/remoção são expostas em região de status; limite de 20 impede aumento adicional; recusa recebe foco e preserva o carrinho; controles de quantidade no cardápio e checkout têm área clicável ≥44×44 CSS px. Axe não encontra violações nas tags consultadas no cardápio com item selecionado.
+- **Pós-condição:** carrinho editável e tentativa recuperável. **Evidência:** [E2E](../evidencias/e2e/e2e-run.txt), [foco no controle](../evidencias/e2e/ct026-quantidade-teclado.png), [revisão técnica manual](../evidencias/accessibility/revisao-manual-2026-11-10.txt). **Status:** PASS. A fala do leitor de tela aguarda escuta humana.

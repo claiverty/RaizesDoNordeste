@@ -4,6 +4,8 @@
 
 **React · TypeScript · Node.js · Playwright**
 
+[Abrir demonstração online](https://raizesdonordeste7.vercel.app)
+
 ## O projeto
 
 A aplicação demonstra a jornada de pedido, da escolha da unidade ao comprovante. O foco é exercitar regras de negócio e qualidade com testes executáveis e resultados observáveis. Catálogo, fidelidade e pagamento são simulados; nenhum pagamento real é processado.
@@ -68,7 +70,9 @@ npm run test:e2e
 npm audit --audit-level=high
 ```
 
-Última validação local, em 09/11/2026: 24/24 testes unitários e de integração, 7/7 testes E2E, cobertura de 89,41% das linhas e 84,27% dos branches. A auditoria anterior encontrou zero vulnerabilidades após a atualização da dependência transitiva `minimatch`. Veja o [relatório final](docs/relatorio-final-conformidade.md).
+Última validação local, em 10/11/2026: 24/24 testes unitários e de integração, 8/8 testes E2E, cobertura de 89,41% das linhas e 84,27% dos branches; zero vulnerabilidades na auditoria. O código do commit `6db3e05` também passou no [GitHub Actions](https://github.com/claiverty/RaizesDoNordeste/actions/runs/42835645597). Veja o [relatório final](docs/relatorio-final-conformidade.md).
+
+A revisão técnica por teclado foi executada. Para concluir a validação com pessoas, siga o [roteiro de UAT e leitor de tela](docs/test-plan.md#roteiro-de-uat-e-acessibilidade-manual) e registre as tarefas dos 3–5 voluntários na [ficha de resultados](evidencias/uat/resultados.csv). Esses resultados ainda aguardam coleta.
 
 ### Carga local
 
@@ -93,7 +97,7 @@ A documentação começa pelo [plano de execução](docs/00-plano-de-execucao.md
 
 ## Limites conhecidos
 
-O painel administrativo é somente de leitura e utiliza a mesma memória volátil da API. Ele serve para demonstrar análise dos pedidos; a Vercel pode reiniciar ou criar instâncias independentes, então não há histórico operacional garantido. Para ativá-lo na hospedagem, configure uma chave de produção exclusiva em `ADMIN_API_KEY`.
+O painel administrativo é somente de leitura e utiliza a mesma memória volátil da API. Ele serve para demonstrar análise dos pedidos; a Vercel pode reiniciar ou criar instâncias independentes, então não há histórico operacional garantido. `ADMIN_API_KEY` foi confirmada como segredo de produção na Vercel em 10/11/2026; a API nega acesso sem chave. Ao criar outra implantação, configure uma chave exclusiva nesse ambiente.
 
 O armazenamento é volátil: reiniciar o servidor remove os pedidos. Não há integração real com pagamento, estoque, fidelidade ou sistemas de franquia. O protótipo está pronto para demonstração e avaliação; não para operação comercial.
 

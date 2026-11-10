@@ -1,0 +1,46 @@
+REVISÃO TÉCNICA DE ACESSIBILIDADE — 10/11/2026
+
+Versão de código consolidada após a revisão: 28bf6c6.
+Ambiente: Windows, navegador integrado do Codex, servidor local em 127.0.0.1:5173.
+Versão do navegador integrado: não exposta na interface utilizada.
+Método: interação de teclado, inspeção visual do foco e árvore de acessibilidade.
+Responsável pela execução: agente de desenvolvimento. Esta revisão não é UAT.
+
+A01 — PASS: primeiro Tab alcançou “Ir para o conteúdo”, com indicador de foco visível.
+Enter no link levou o foco ao conteúdo principal (#pedido).
+
+A02 — PASS: Space selecionou Recife Centro; Natal Norte foi exposta como desabilitada.
+Tab e Enter abriram o cardápio; foco passou ao título “Cardápio da unidade”.
+
+A03 — PASS: Tab e Space ativaram Tapiocas; a árvore acessível passou a indicar a categoria selecionada.
+
+A04 — CORRIGIDO / PASS: antes da correção, Enter em “Adicionar” removia o botão e o foco caía no documento.
+Após a correção, o foco permaneceu em “Aumentar”; Enter mudou 1 para 2;
+Shift+Tab e dois Enter reduziram a zero e devolveram o foco a “Adicionar”.
+Mensagens com nome do produto, quantidade e remoção ficaram expostas na árvore acessível.
+Isso valida a exposição do texto, não a fala de um leitor de tela.
+
+A05 — PASS: água mineral foi apresentada como Cortesia no cardápio e no checkout.
+Checkout com tapioca e água manteve total de R$ 16,00.
+Do título do checkout, 12 Tab alcançaram Resultado simulado, passando por controles de itens e campos rotulados.
+
+A06 — CORRIGIDO / PASS: antes da correção, a recusa de pagamento deixava o foco no documento.
+Após a correção, a mensagem de recusa recebeu foco e indicador visível; os dois itens continuaram no carrinho.
+Resultado simulado foi alterado de Recusado para Aprovado e a tentativa seguinte foi concluída.
+
+A07 — PASS: comprovante recebeu foco em #confirmation e expôs, nesta ordem,
+número do pedido, senha de retirada, itens, subtotal, total pago, unidade, modalidade, forma de pagamento e status.
+Pedido sintético RN-000001, retirada 1, PIX, total de R$ 16,00.
+
+A08 — CORRIGIDO / PASS AUTOMATIZADO: a análise axe do cardápio encontrou contraste 4,04:1
+nas categorias inativas; o texto foi escurecido e a rodada seguinte passou sem violações nas tags consultadas.
+CT026 também passou em 360×800, incluindo foco no limite de 20 unidades e retorno a 19.
+Evidência automatizada: evidencias/e2e/e2e-run.txt e ct026-quantidade-teclado.png.
+
+A09 — PASS AUTOMATIZADO (código 6db3e05): controles de quantidade no cardápio e checkout
+medidos com área clicável mínima de 44×44 CSS px. O contorno visível manteve 36 px
+no cardápio e 34 px no checkout. A regressão completa passou novamente com 8/8 E2E.
+
+LEITOR DE TELA — NOT_EXECUTED: não houve observação do áudio do Narrador ou NVDA.
+Validar com pessoa ouvindo os anúncios e registrar ferramenta, versão e resultado no plano de testes.
+UAT — NOT_EXECUTED: ficha preparada em evidencias/uat/resultados.csv; nenhum participante foi simulado.
