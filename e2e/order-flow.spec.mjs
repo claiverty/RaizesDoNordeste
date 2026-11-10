@@ -62,6 +62,12 @@ test('falha de pagamento mantém o carrinho e não mostra confirmação', async 
   await expect(paymentError).toBeFocused();
   await expect(page.getByRole('heading', { name: /Pedido RN-/ })).toHaveCount(0);
   await expect(page.locator('#cart-list').getByText('Tapioca com queijo coalho')).toBeVisible();
+  const checkoutTargets = await page.locator('.button-qty').evaluateAll((buttons) => buttons.map((button) => {
+    const { width, height } = button.getBoundingClientRect();
+    return { width, height };
+  }));
+  expect(checkoutTargets).toHaveLength(2);
+  expect(checkoutTargets.every(({ width, height }) => width >= 44 && height >= 44)).toBe(true);
 });
 
 test('voltar do checkout preserva os itens do carrinho', async ({ page }) => {
@@ -184,6 +190,12 @@ test('quantidades preservam o foco ao adicionar, limitar e remover pelo teclado'
   await page.keyboard.press('Enter');
   await expect(increase).toBeFocused();
   await expect(announcement).toHaveText('Tapioca com queijo coalho: 2 unidades no carrinho.');
+  const quantityTargets = await page.getByRole('group', { name: 'Quantidade de Tapioca com queijo coalho' }).getByRole('button').evaluateAll((buttons) => buttons.map((button) => {
+    const { width, height } = button.getBoundingClientRect();
+    return { width, height };
+  }));
+  expect(quantityTargets).toHaveLength(2);
+  expect(quantityTargets.every(({ width, height }) => width >= 44 && height >= 44)).toBe(true);
   const accessibility = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   expect(accessibility.violations).toEqual([]);
   await page.screenshot({ path: 'evidencias/e2e/ct026-quantidade-teclado.png' });

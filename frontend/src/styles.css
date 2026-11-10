@@ -67,8 +67,9 @@ h1:focus-visible { outline: 3px solid currentColor; outline-offset: .2rem; }
 .button-secondary, .button-add { color: var(--forest); border-color: #b8c2b7; background: transparent; }
 .button-secondary:hover:not(:disabled), .button-add:hover:not(:disabled) { border-color: var(--forest); background: #eff2e6; }
 .button-add { min-width: 112px; min-height: 42px; padding: .5rem .85rem; font-size: .78rem; }
-.button-qty { width: 36px; min-height: 36px; align-items: center; justify-content: center; padding: 0; border: 1px solid var(--line); border-radius: .5rem; color: var(--forest); background: var(--card); line-height: 1; }
-.button-qty:hover:not(:disabled) { border-color: #aab6a9; background: #f1f3ed; }
+.button-qty { position: relative; width: 44px; min-height: 44px; flex: 0 0 44px; align-items: center; justify-content: center; padding: 0; border: 0; border-radius: .75rem; color: var(--forest); background: transparent; line-height: 1; }
+.button-qty::before { position: absolute; inset: 4px; border: 1px solid var(--line); border-radius: .5rem; background: var(--card); content: ''; pointer-events: none; }
+.button-qty:hover:not(:disabled)::before { border-color: #aab6a9; background: #f1f3ed; }
 .quantity-control-symbol { position: relative; display: block; width: 12px; height: 12px; color: currentColor; font-size: 0; line-height: 0; }
 .quantity-control-symbol::before { position: absolute; top: 50%; left: 50%; width: 12px; height: 2px; transform: translate(-50%, -50%); border-radius: 999px; background: currentColor; content: ""; }
 .quantity-control-symbol.is-plus::after { position: absolute; top: 50%; left: 50%; width: 2px; height: 12px; transform: translate(-50%, -50%); border-radius: 999px; background: currentColor; content: ""; }
@@ -169,7 +170,7 @@ legend { margin-bottom: .4rem; }
 .checkout-cart-detail { min-width: 0; }
 .checkout-cart-controls { display: inline-flex; align-items: center; gap: .2rem; margin-top: .2rem; }
 .checkout-cart-controls > span { min-width: 1.25rem; font-size: .82rem; font-weight: 750; text-align: center; }
-.checkout-cart-controls .button-qty { width: 34px; min-height: 34px; }
+.checkout-cart-controls .button-qty::before { inset: 5px; }
 .checkout-cart-line-total { align-self: start; margin-top: .2rem; font-size: .88rem; white-space: nowrap; }
 .cart-line-name { font-weight: 650; }
 .cart-line-meta { color: var(--muted); font-size: .82rem; }
