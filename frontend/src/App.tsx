@@ -125,6 +125,7 @@ function App() {
   const previousStepRef = useRef(currentStep);
   const stepHeadingRef = useRef<HTMLHeadingElement>(null);
   const confirmationRef = useRef<HTMLDivElement>(null);
+  const messageRef = useRef<HTMLDivElement>(null);
 
   const cartItems = useMemo(
     () => Object.entries(cart).map(([productId, quantity]) => ({ productId, quantity })),
@@ -249,6 +250,10 @@ function App() {
   useEffect(() => {
     if (confirmedOrder) confirmationRef.current?.focus();
   }, [confirmedOrder]);
+
+  useEffect(() => {
+    if (message?.kind === 'error' && !isSubmitting) messageRef.current?.focus();
+  }, [message, isSubmitting]);
 
   useEffect(() => {
     if (currentStep !== previousStepRef.current && currentStep < 4) stepHeadingRef.current?.focus();
@@ -443,7 +448,7 @@ function App() {
 
         </>}
 
-        {message && <div className={`message${message.kind === 'error' ? ' error' : ''}`} role="status" aria-live="polite">{message.text}</div>}
+        {message && <div ref={messageRef} tabIndex={-1} className={`message${message.kind === 'error' ? ' error' : ''}`} role="status" aria-live="polite">{message.text}</div>}
 
         {currentStep > 1 && <div className={`order-grid${currentStep === 3 ? '' : ' single-column'}`}>
           <div className="main-column">
@@ -465,17 +470,7 @@ function App() {
                     </div>
                     <div className="product-copy"><p className="product-category">{productCategories[item.id] ?? 'Da casa'}</p><h3>{item.name}</h3><p>{item.description}</p>
                       <div className="product-footer"><strong>{item.priceCents === 0 ? 'Cortesia' : money.format(item.priceCents / 100)}</strong>
-                        {item.available && quantity > 0 ? (
-                          <div className="product-quantity-controls" role="group" aria-label={`Quantidade de ${item.name}`}>
-                            <QuantityButton label={`Diminuir ${item.name}`} onClick={() => updateQuantity(item.id, (current) => current - 1)}>−</QuantityButton>
-                            <span className="product-quantity-count" aria-label={`${quantity} unidades`}>{quantity}</span>
-                            <QuantityButton label={`Aumentar ${item.name}`} disabled={quantity >= 20} onClick={() => updateQuantity(item.id, (current) => current + 1)}>+</QuantityButton>
-                          </div>
-                        ) : (
-                          <button className="button button-add" type="button" disabled={!item.available} aria-label={`${item.available ? 'Adicionar' : 'Indisponível'} ${item.name}`} onClick={() => updateQuantity(item.id, 1)}>
-                            {item.available ? 'Adicionar' : 'Indisponível'}
-                          </button>
-                        )}
+                        <MenuItemControls product={item} quantity={quantity} onChange={(nextQuantity) => updateQuantity(item.id, nextQuantity)} />
                       </div>
                     </div>
                   </article>;
@@ -624,6 +619,42 @@ function App() {
       </main>
     </>
   );
+}
+
+function MenuItemControls({ product, quantity, onChange }: { product: Product; quantity: number; onChange: (quantity: number) => void }) {
+  const controlsRef = useRef<HTMLDivElement>(null);
+  const pendingFocusRef = useRef<'first' | 'last' | null>(null);
+  const [announcement, setAnnouncement] = useState('');
+
+  useEffect(() => {
+    const target = pendingFocusRef.current;
+    pendingFocusRef.current = null;
+    if (!target) return;
+    const buttons = controlsRef.current?.querySelectorAll<HTMLButtonElement>('button');
+    const button = target === 'last' ? buttons?.[buttons.length - 1] : buttons?.[0];
+    button?.focus();
+  }, [quantity]);
+
+  function changeQuantity(nextQuantity: number) {
+    if (controlsRef.current?.contains(document.activeElement) && (quantity === 0 || nextQuantity === 0 || nextQuantity === 20)) {
+      pendingFocusRef.current = nextQuantity > 0 && nextQuantity < 20 ? 'last' : 'first';
+    }
+    setAnnouncement(nextQuantity === 0
+      ? `${product.name} removido do carrinho.`
+      : `${product.name}: ${nextQuantity} ${nextQuantity === 1 ? 'unidade' : 'unidades'} no carrinho.`);
+    onChange(nextQuantity);
+  }
+
+  return <div ref={controlsRef}>
+    {product.available && quantity > 0 ? <div className="product-quantity-controls" role="group" aria-label={`Quantidade de ${product.name}`}>
+      <QuantityButton label={`Diminuir ${product.name}`} onClick={() => changeQuantity(quantity - 1)}>−</QuantityButton>
+      <span className="product-quantity-count" aria-label={`${quantity} ${quantity === 1 ? 'unidade' : 'unidades'}`}>{quantity}</span>
+      <QuantityButton label={`Aumentar ${product.name}`} disabled={quantity >= 20} onClick={() => changeQuantity(quantity + 1)}>+</QuantityButton>
+    </div> : <button className="button button-add" type="button" disabled={!product.available} aria-label={`${product.available ? 'Adicionar' : 'Indisponível'} ${product.name}`} onClick={() => changeQuantity(1)}>
+      {product.available ? 'Adicionar' : 'Indisponível'}
+    </button>}
+    <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</span>
+  </div>;
 }
 
 function QuantityButton({ label, onClick, children, disabled = false }: { label: string; onClick: () => void; children: string; disabled?: boolean }) {

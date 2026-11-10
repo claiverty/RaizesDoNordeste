@@ -57,7 +57,9 @@ test('falha de pagamento mantém o carrinho e não mostra confirmação', async 
   await page.getByRole('button', { name: 'Ir para checkout' }).click();
   await page.getByLabel('Resultado simulado').selectOption('DECLINED');
   await page.getByRole('button', { name: 'Confirmar pedido' }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Pagamento simulado recusado' })).toBeVisible();
+  const paymentError = page.getByRole('status').filter({ hasText: 'Pagamento simulado recusado' });
+  await expect(paymentError).toBeVisible();
+  await expect(paymentError).toBeFocused();
   await expect(page.getByRole('heading', { name: /Pedido RN-/ })).toHaveCount(0);
   await expect(page.locator('#cart-list').getByText('Tapioca com queijo coalho')).toBeVisible();
 });
@@ -163,4 +165,45 @@ test('painel administrativo exige chave e lista pedidos sem dados pessoais', asy
   await page.getByRole('button', { name: 'Sair' }).click();
   await expect(page.getByRole('heading', { name: 'Painel administrativo' })).toBeVisible();
   expect(await page.evaluate(() => globalThis.sessionStorage.getItem('raizes-admin-access-key'))).toBeNull();
+});
+
+test('quantidades preservam o foco ao adicionar, limitar e remover pelo teclado', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('radio', { name: /Recife Centro/ }).check();
+  await page.getByRole('button', { name: 'Ver cardápio' }).click();
+  await page.getByRole('button', { name: 'Tapiocas', exact: true }).click();
+  const add = page.getByRole('button', { name: 'Adicionar Tapioca com queijo coalho', exact: true });
+  const increase = page.getByRole('button', { name: 'Aumentar Tapioca com queijo coalho', exact: true });
+  const decrease = page.getByRole('button', { name: 'Diminuir Tapioca com queijo coalho', exact: true });
+  const announcement = page.getByRole('status').filter({ hasText: 'Tapioca com queijo coalho' });
+
+  await add.focus();
+  await page.keyboard.press('Enter');
+  await expect(increase).toBeFocused();
+  await expect(announcement).toHaveText('Tapioca com queijo coalho: 1 unidade no carrinho.');
+  await page.keyboard.press('Enter');
+  await expect(increase).toBeFocused();
+  await expect(announcement).toHaveText('Tapioca com queijo coalho: 2 unidades no carrinho.');
+  const accessibility = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+  expect(accessibility.violations).toEqual([]);
+  await page.screenshot({ path: 'evidencias/e2e/ct026-quantidade-teclado.png' });
+
+  await page.keyboard.press('Shift+Tab');
+  await expect(decrease).toBeFocused();
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Enter');
+  await expect(add).toBeFocused();
+  await expect(announcement).toHaveText('Tapioca com queijo coalho removido do carrinho.');
+  await expect(page.getByText('0 itens no carrinho', { exact: true })).toBeVisible();
+
+  await page.keyboard.press('Enter');
+  await expect(increase).toBeFocused();
+  for (let quantity = 1; quantity < 20; quantity += 1) await page.keyboard.press('Enter');
+  await expect(increase).toBeDisabled();
+  await expect(decrease).toBeFocused();
+  await expect(announcement).toHaveText('Tapioca com queijo coalho: 20 unidades no carrinho.');
+  await page.keyboard.press('Enter');
+  await expect(increase).toBeEnabled();
+  await expect(decrease).toBeFocused();
+  await expect(announcement).toHaveText('Tapioca com queijo coalho: 19 unidades no carrinho.');
 });

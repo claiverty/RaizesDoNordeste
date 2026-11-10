@@ -2,30 +2,30 @@
 > raizes-do-nordeste-qa@1.0.0 test:coverage
 > node --experimental-test-coverage "--test-coverage-include=src/domain/*.mjs" --test-coverage-lines=80 --test-coverage-branches=75 --test test/api.test.mjs test/domain.test.mjs
 
-✔ health, catálogo e cabeçalhos básicos são servidos (43.1031ms)
-✔ painel lista pedidos confirmados somente com chave e omite dados do cliente (18.4666ms)
-✔ painel não atende sem chave de administração configurada (3.4098ms)
-✔ prévia e pedido aprovado usam preço calculado no servidor (7.4179ms)
-✔ rejeita carrinho vazio, unidade indisponível e cupom inválido sem pagamento (7.1801ms)
-✔ recusa, timeout e falha de fidelidade não confirmam pedido (6.5475ms)
-✔ indisponibilidade de pagamento e exceção interna não vazam detalhes nem criam pedido (6.2008ms)
-✔ repetição com mesma chave reusa resposta; payload alterado dá conflito (5.549ms)
-✔ preços permanecem consistentes nos canais suportados (7.7952ms)
-✔ reiniciar a aplicação perde pedidos, conforme limite do store em memória (5.5847ms)
-✔ consulta exige token e não devolve o token na resposta de leitura (4.9934ms)
-✔ valida JSON, tipo de conteúdo, chave e tamanho máximo do corpo (6.3082ms)
-✔ rate limit padrão retorna 429 após 60 requests e logs não guardam o corpo (32.7946ms)
-✔ calcula subtotal em centavos com preço do catálogo (2.0038ms)
-✔ aplica cupom de 10% e fidelidade sem ultrapassar subtotal (0.2424ms)
-✔ rejeita unidade indisponível (0.4766ms)
-✔ rejeita produto indisponível e produto de outro cardápio (0.2241ms)
-✔ distingue cupom expirado e inválido (0.2358ms)
-✔ falha de fidelidade não retorna desconto (0.1539ms)
-✔ valida carrinho, quantidade, duplicidade e campos proibidos (0.6964ms)
-✔ valida dados de pagamento e não aceita cartão real (0.2411ms)
-✔ idempotência não cria duplicidade e rejeita chave reutilizada com payload diferente (40.6606ms)
-✔ recusa e timeout são idempotentes e não criam pedido (0.3866ms)
-✔ store remove registros expirados e devolve cópia defensiva (0.2078ms)
+✔ health, catálogo e cabeçalhos básicos são servidos (43.3421ms)
+✔ painel lista pedidos confirmados somente com chave e omite dados do cliente (19.9423ms)
+✔ painel não atende sem chave de administração configurada (3.3934ms)
+✔ prévia e pedido aprovado usam preço calculado no servidor (7.4885ms)
+✔ rejeita carrinho vazio, unidade indisponível e cupom inválido sem pagamento (7.7483ms)
+✔ recusa, timeout e falha de fidelidade não confirmam pedido (6.4111ms)
+✔ indisponibilidade de pagamento e exceção interna não vazam detalhes nem criam pedido (6.0267ms)
+✔ repetição com mesma chave reusa resposta; payload alterado dá conflito (5.3247ms)
+✔ preços permanecem consistentes nos canais suportados (8.1108ms)
+✔ reiniciar a aplicação perde pedidos, conforme limite do store em memória (5.4041ms)
+✔ consulta exige token e não devolve o token na resposta de leitura (4.5181ms)
+✔ valida JSON, tipo de conteúdo, chave e tamanho máximo do corpo (5.4852ms)
+✔ rate limit padrão retorna 429 após 60 requests e logs não guardam o corpo (33.3258ms)
+✔ calcula subtotal em centavos com preço do catálogo (2.127ms)
+✔ aplica cupom de 10% e fidelidade sem ultrapassar subtotal (0.2624ms)
+✔ rejeita unidade indisponível (0.5008ms)
+✔ rejeita produto indisponível e produto de outro cardápio (0.2296ms)
+✔ distingue cupom expirado e inválido (0.2419ms)
+✔ falha de fidelidade não retorna desconto (0.1509ms)
+✔ valida carrinho, quantidade, duplicidade e campos proibidos (0.8028ms)
+✔ valida dados de pagamento e não aceita cartão real (0.2448ms)
+✔ idempotência não cria duplicidade e rejeita chave reutilizada com payload diferente (37.133ms)
+✔ recusa e timeout são idempotentes e não criam pedido (0.4905ms)
+✔ store remove registros expirados e devolve cópia defensiva (0.2179ms)
 ℹ tests 24
 ℹ suites 0
 ℹ pass 24
@@ -33,7 +33,7 @@
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 269.8138
+ℹ duration_ms 274.564
 ℹ start of coverage report
 ℹ --------------------------------------------------------------------------------------------------
 ℹ file              | line % | branch % | funcs % | uncovered lines
