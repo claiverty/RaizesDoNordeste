@@ -1,0 +1,102 @@
+{
+  "date": "2026-11-17",
+  "origin": "https://raizesdonordeste7.vercel.app",
+  "commit": "83d82bdf8788c13ad0fcc50f8da037f4cf2adc2b",
+  "ci": "https://github.com/claiverty/RaizesDoNordeste/actions/runs/44128433320",
+  "vercelStatus": "success",
+  "configuration": {
+    "name": "ADMIN_PIN",
+    "target": "production",
+    "type": "secret",
+    "metadataObservedInVercel": true
+  },
+  "requests": [
+    {
+      "path": "/",
+      "auth": "none",
+      "expected": 200,
+      "status": 200,
+      "pass": true
+    },
+    {
+      "path": "/cardapio",
+      "auth": "none",
+      "expected": 200,
+      "status": 200,
+      "pass": true
+    },
+    {
+      "path": "/checkout",
+      "auth": "none",
+      "expected": 200,
+      "status": 200,
+      "pass": true
+    },
+    {
+      "path": "/comprovante",
+      "auth": "none",
+      "expected": 200,
+      "status": 200,
+      "pass": true
+    },
+    {
+      "path": "/admin",
+      "auth": "none",
+      "expected": 200,
+      "status": 200,
+      "pass": true
+    },
+    {
+      "path": "/admin/cardapio",
+      "auth": "none",
+      "expected": 200,
+      "status": 200,
+      "pass": true
+    },
+    {
+      "path": "/admin/unidades",
+      "auth": "none",
+      "expected": 200,
+      "status": 200,
+      "pass": true
+    },
+    {
+      "path": "/api/v1/health",
+      "auth": "none",
+      "expected": 200,
+      "status": 200,
+      "pass": true,
+      "health": "ok"
+    },
+    {
+      "path": "/api/v1/admin/orders",
+      "auth": "configuredPin",
+      "expected": 200,
+      "status": 200,
+      "pass": true
+    },
+    {
+      "path": "/api/v1/admin/catalog",
+      "auth": "configuredPin",
+      "expected": 200,
+      "status": 200,
+      "pass": true
+    },
+    {
+      "path": "/api/v1/admin/orders",
+      "auth": "none",
+      "expected": 401,
+      "status": 401,
+      "pass": true,
+      "errorCode": "ADMIN_UNAUTHORIZED"
+    },
+    {
+      "path": "/api/v1/admin/catalog",
+      "auth": "wrongPin",
+      "expected": 401,
+      "status": 401,
+      "pass": true,
+      "errorCode": "ADMIN_UNAUTHORIZED"
+    }
+  ]
+}
