@@ -239,6 +239,8 @@ async function sendWebAsset(response, pathname) {
     '.css': 'text/css; charset=utf-8',
     '.html': 'text/html; charset=utf-8',
     '.js': 'text/javascript; charset=utf-8',
+    '.woff2': 'font/woff2',
+    '.otf': 'font/otf',
   }[extname(filename)] ?? 'application/octet-stream';
   const cacheControl = pathname.startsWith('/assets/') ? 'public, max-age=31536000, immutable' : 'no-cache';
   response.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': cacheControl });

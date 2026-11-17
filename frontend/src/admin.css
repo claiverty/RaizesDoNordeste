@@ -28,7 +28,7 @@
 }
 
 .admin-brand { display: grid; width: max-content; color: var(--forest); text-decoration: none; line-height: 1; }
-.admin-brand strong { font-size: 1.22rem; font-weight: 850; letter-spacing: -.075em; }
+.admin-brand strong { font-family: var(--font-display); font-size: 1.35rem; font-weight: 400; letter-spacing: .06em; }
 .admin-brand span { margin-top: .15rem; font-size: .48rem; font-weight: 700; letter-spacing: .27em; }
 .admin-header-actions { display: flex; align-items: center; gap: 1rem; }
 .admin-private-label { display: inline-flex; align-items: center; gap: .45rem; color: var(--muted); font-size: .74rem; }
@@ -56,7 +56,7 @@
 .admin-loading { display: grid; min-height: 50vh; place-items: center; color: var(--muted); font-size: .9rem; }
 .admin-intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; margin-bottom: 1.6rem; }
 .admin-eyebrow { margin: 0 0 .35rem; color: #547364; font-size: .65rem; font-weight: 850; letter-spacing: .14em; text-transform: uppercase; }
-.admin-intro h1, .admin-access-card h1 { margin: 0; font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 3.7rem); font-weight: 350; letter-spacing: -.055em; line-height: 1.03; }
+.admin-intro h1, .admin-access-card h1 { margin: 0; font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 3.7rem); font-weight: 400; letter-spacing: .02em; line-height: 1.12; text-transform: uppercase; }
 .admin-intro > div > p:last-child { margin: .5rem 0 0; color: var(--muted); font-size: .9rem; }
 .admin-live-badge { display: inline-flex; align-items: center; gap: .5rem; padding: .48rem .75rem; border: 1px solid #d4decf; border-radius: 999px; color: #46634f; background: #f0f4e9; font-size: .68rem; white-space: nowrap; }
 .admin-live-badge > span { width: .42rem; height: .42rem; border-radius: 50%; background: #438359; }
@@ -200,7 +200,7 @@
 }
 
 .admin-header { min-height: 64px; background: var(--card); }
-.admin-brand strong { font-weight: 650; letter-spacing: -.05em; }
+.admin-brand strong { font-weight: 400; letter-spacing: .06em; }
 .admin-brand span { font-size: .52rem; font-weight: 500; letter-spacing: .13em; }
 .admin-header-actions { gap: 1.25rem; }
 .admin-private-label { font-size: .8rem; }
@@ -209,7 +209,7 @@
 .admin-main { width: min(100% - 3rem, 1320px); padding: 2.5rem 0 3.5rem; }
 .admin-intro { align-items: center; margin-bottom: 1.5rem; }
 .admin-eyebrow { margin-bottom: .4rem; color: var(--muted); font-size: .8rem; font-weight: 500; letter-spacing: 0; text-transform: none; }
-.admin-intro h1, .admin-access-card h1 { font-size: clamp(2.25rem, 4vw, 3rem); font-weight: 400; letter-spacing: -.04em; line-height: 1.08; }
+.admin-intro h1, .admin-access-card h1 { font-size: clamp(2.25rem, 4vw, 3rem); font-weight: 400; letter-spacing: .02em; line-height: 1.12; }
 .admin-intro > div > p:last-child { margin-top: .6rem; font-size: .95rem; }
 .admin-live-badge { display: block; padding: 0; border: 0; border-radius: 0; color: var(--muted); background: transparent; font-size: .8rem; }
 .admin-live-badge > span { display: none; }
