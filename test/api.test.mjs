@@ -111,7 +111,7 @@ test('cadastros rejeitam valores inválidos e métodos sem alterar o catálogo',
   assert.equal((await manage(app, productPath, 'PUT', sampleProduct)).status, 405);
   assert.equal((await manage(app, '/units/inexistente/products', 'POST', sampleProduct)).status, 404);
   const menu = (await (await manage(app, '/catalog')).json()).productsByUnit['recife-centro'];
-  assert.equal(menu.length, 24);
+  assert.equal(menu.length, 25);
   assert.equal(menu.find((product) => product.id === 'bolo-milho').priceCents, 1250);
   const closed = await startServer({ adminPin: '' });
   t.after(() => closed.close());

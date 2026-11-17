@@ -11,6 +11,7 @@ import aguaCocoImage from './assets/agua-coco.webp';
 import boloRoloImage from './assets/bolo-rolo.webp';
 import cartolaImage from './assets/cartola.webp';
 import sucoCajuImage from './assets/suco-caju.webp';
+import sucoLaranjaImage from './assets/suco-laranja.webp';
 import sucoGraviolaImage from './assets/suco-graviola.webp';
 import sucoAcerolaImage from './assets/suco-acerola.webp';
 import colaImage from './assets/cola-tradicional.webp';
@@ -42,6 +43,7 @@ export const productImages: Record<string, string> = {
   'carne-sol-macaxeira': carneMacaxeiraImage,
   'suco-caja': cajaImage,
   'suco-caju': sucoCajuImage,
+  'suco-laranja': sucoLaranjaImage,
   'suco-graviola': sucoGraviolaImage,
   'suco-acerola': sucoAcerolaImage,
   'agua-coco': aguaCocoImage,

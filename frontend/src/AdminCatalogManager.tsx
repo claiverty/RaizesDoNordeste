@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { adminCatalogRequest } from './api';
 import { productImages } from './product-media';
+import Icon from './Icon';
 import type { AdminCatalog, Product, ProductInput, Unit, UnitInput } from './types';
 
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -123,7 +124,7 @@ export default function AdminCatalogManager({ section, catalog, accessPin, onCha
     <section className="admin-intro">
       <div><p className="admin-eyebrow">Gestão da operação</p><h1 ref={headingRef} tabIndex={-1}>{section === 'menu' ? 'Gerenciar cardápio' : 'Gerenciar unidades'}</h1>
         <p>{section === 'menu' ? 'Cadastre produtos e controle o que cada unidade oferece.' : 'Prepare novas lojas e controle quais recebem pedidos.'}</p></div>
-      <button className="admin-primary-button" type="button" disabled={busy || (section === 'menu' && !unit)} onClick={() => section === 'menu' ? openProduct() : openUnit()}>{section === 'menu' ? 'Novo produto' : 'Nova unidade'}</button>
+      <button className="admin-primary-button" type="button" disabled={busy || (section === 'menu' && !unit)} onClick={() => section === 'menu' ? openProduct() : openUnit()}><Icon name="plus" />{section === 'menu' ? 'Novo produto' : 'Nova unidade'}</button>
     </section>
 
     {notice && <p className="admin-notice" role="status">{notice}</p>}
@@ -147,7 +148,7 @@ export default function AdminCatalogManager({ section, catalog, accessPin, onCha
         <label htmlFor="product-photo">Foto da galeria<select id="product-photo" value={productDraft.imageKey} onChange={(event) => setProductDraft({ ...productDraft, imageKey: event.target.value })}><option value="">Sem foto</option>{catalog.imageKeys.map((key) => <option key={key} value={key}>{Object.values(catalog.productsByUnit).flat().find((product) => product.id === key)?.name ?? key.replaceAll('-', ' ')}</option>)}</select></label>
         {productImages[productDraft.imageKey] && <img className="admin-photo-preview" src={productImages[productDraft.imageKey]} alt="Prévia da foto escolhida" />}
         <label className="admin-checkbox admin-field-wide"><input type="checkbox" checked={productDraft.available} onChange={(event) => setProductDraft({ ...productDraft, available: event.target.checked })} />Disponível para pedidos</label>
-        <div className="admin-form-actions admin-field-wide"><button className="admin-primary-button" type="submit" disabled={busy}>{busy ? 'Salvando…' : 'Salvar produto'}</button><button className="admin-back-button" type="button" disabled={busy} onClick={() => clearForm()}>Cancelar</button></div>
+        <div className="admin-form-actions admin-field-wide"><button className="admin-primary-button" type="submit" disabled={busy}><Icon name="save" />{busy ? 'Salvando…' : 'Salvar produto'}</button><button className="admin-back-button" type="button" disabled={busy} onClick={() => clearForm()}>Cancelar</button></div>
       </form>
     </section>}
 
@@ -157,7 +158,7 @@ export default function AdminCatalogManager({ section, catalog, accessPin, onCha
         <label htmlFor="unit-name">Nome da unidade<input ref={nameRef} id="unit-name" required maxLength={100} placeholder="Recife Boa Viagem" value={unitDraft.name} onChange={(event) => setUnitDraft({ ...unitDraft, name: event.target.value })} /></label>
         <label htmlFor="unit-city">Cidade<input id="unit-city" required maxLength={80} value={unitDraft.city} onChange={(event) => setUnitDraft({ ...unitDraft, city: event.target.value })} /></label>
         <p className="admin-field-help admin-field-wide">Novas unidades começam desativadas. Cadastre ao menos um produto disponível e use “Liberar” para começar a receber pedidos.</p>
-        <div className="admin-form-actions admin-field-wide"><button className="admin-primary-button" type="submit" disabled={busy}>{busy ? 'Salvando…' : 'Salvar unidade'}</button><button className="admin-back-button" type="button" disabled={busy} onClick={() => clearForm()}>Cancelar</button></div>
+        <div className="admin-form-actions admin-field-wide"><button className="admin-primary-button" type="submit" disabled={busy}><Icon name="save" />{busy ? 'Salvando…' : 'Salvar unidade'}</button><button className="admin-back-button" type="button" disabled={busy} onClick={() => clearForm()}>Cancelar</button></div>
       </form>
     </section>}
 
@@ -165,7 +166,7 @@ export default function AdminCatalogManager({ section, catalog, accessPin, onCha
       {filteredProducts.map((product) => <article className="admin-panel-card admin-product-card" key={product.id} aria-labelledby={`name-${product.id}`}>
         <div className="admin-product-thumb">{productImages[product.imageKey] ? <img src={productImages[product.imageKey]} alt="" loading="lazy" /> : <span>Sem foto</span>}</div>
         <div className="admin-product-details"><p className="admin-eyebrow">{product.category}</p><h2 id={`name-${product.id}`}>{product.name}</h2><p>{product.description}</p><div className="admin-product-meta"><strong>{product.priceCents ? money.format(product.priceCents / 100) : 'Cortesia'}</strong><span className={`admin-availability${product.available ? ' is-available' : ''}`}>{product.available ? 'Disponível' : 'Indisponível'}</span></div></div>
-        <div className="admin-row-actions"><button type="button" disabled={busy} aria-label={`Editar ${product.name}`} onClick={() => openProduct(product)}>Editar</button><button type="button" disabled={busy} aria-label={`${product.available ? 'Indisponibilizar' : 'Disponibilizar'} ${product.name}`} onClick={() => { clearForm(false); void mutate(`/units/${encodeURIComponent(unitId)}/products/${encodeURIComponent(product.id)}`, 'PATCH', { available: !product.available }, product.available ? 'Produto marcado como indisponível.' : 'Produto disponível para pedidos.'); }}>{product.available ? 'Indisponibilizar' : 'Disponibilizar'}</button><button className="admin-delete-button" type="button" disabled={busy} aria-label={`Excluir ${product.name}`} onClick={() => { setError(''); setRemoval({ kind: 'product', id: product.id, name: product.name, unitId }); }}>Excluir</button></div>
+        <div className="admin-row-actions"><button type="button" disabled={busy} aria-label={`Editar ${product.name}`} onClick={() => openProduct(product)}><Icon name="edit" />Editar</button><button type="button" disabled={busy} aria-label={`${product.available ? 'Indisponibilizar' : 'Disponibilizar'} ${product.name}`} onClick={() => { clearForm(false); void mutate(`/units/${encodeURIComponent(unitId)}/products/${encodeURIComponent(product.id)}`, 'PATCH', { available: !product.available }, product.available ? 'Produto marcado como indisponível.' : 'Produto disponível para pedidos.'); }}><Icon name={product.available ? 'eyeClosed' : 'eye'} />{product.available ? 'Indisponibilizar' : 'Disponibilizar'}</button><button className="admin-delete-button" type="button" disabled={busy} aria-label={`Excluir ${product.name}`} onClick={() => { setError(''); setRemoval({ kind: 'product', id: product.id, name: product.name, unitId }); }}><Icon name="trash" />Excluir</button></div>
       </article>)}
       {!filteredProducts.length && <div className="admin-empty-state admin-panel-card"><h2>{!catalog.units.length ? 'Cadastre sua primeira unidade' : products.length ? 'Nenhum produto encontrado' : 'O cardápio está vazio'}</h2><p>{!catalog.units.length ? 'Abra Unidades para criar uma loja.' : products.length ? 'Tente outro nome ou categoria.' : 'Use Novo produto para começar.'}</p></div>}
     </section> : <section className="admin-management-grid" aria-label="Unidades cadastradas">
@@ -176,8 +177,8 @@ export default function AdminCatalogManager({ section, catalog, accessPin, onCha
           <div className="admin-unit-status"><span className={`admin-availability${entry.active ? ' is-available' : ''}`}>{entry.active ? 'Liberada para pedidos' : 'Desativada'}</span><span>{menu.length} {menu.length === 1 ? 'produto' : 'produtos'}</span></div>
           <h2 id={`name-${entry.id}`}>{entry.name}</h2><p>{entry.city}</p>
           {!entry.active && !availableCount && <p className="admin-field-help">Adicione um produto disponível para liberar esta unidade.</p>}
-          <a className="admin-manage-menu-link" href={`/admin/cardapio?unidade=${encodeURIComponent(entry.id)}`}>Gerenciar cardápio →</a>
-          <div className="admin-row-actions"><button type="button" disabled={busy} aria-label={`Editar ${entry.name}`} onClick={() => openUnit(entry)}>Editar</button><button type="button" disabled={busy || (!entry.active && !availableCount)} aria-label={`${entry.active ? 'Desativar' : 'Liberar'} ${entry.name}`} onClick={() => { clearForm(false); void mutate(`/units/${encodeURIComponent(entry.id)}`, 'PATCH', { active: !entry.active }, entry.active ? 'Unidade desativada para novos pedidos.' : 'Unidade liberada para pedidos.'); }}>{entry.active ? 'Desativar' : 'Liberar'}</button><button className="admin-delete-button" type="button" disabled={busy} aria-label={`Excluir ${entry.name}`} onClick={() => { setError(''); setRemoval({ kind: 'unit', id: entry.id, name: entry.name }); }}>Excluir</button></div>
+          <a className="admin-manage-menu-link" href={`/admin/cardapio?unidade=${encodeURIComponent(entry.id)}`}>Gerenciar cardápio <Icon name="arrowRight" /></a>
+          <div className="admin-row-actions"><button type="button" disabled={busy} aria-label={`Editar ${entry.name}`} onClick={() => openUnit(entry)}><Icon name="edit" />Editar</button><button type="button" disabled={busy || (!entry.active && !availableCount)} aria-label={`${entry.active ? 'Desativar' : 'Liberar'} ${entry.name}`} onClick={() => { clearForm(false); void mutate(`/units/${encodeURIComponent(entry.id)}`, 'PATCH', { active: !entry.active }, entry.active ? 'Unidade desativada para novos pedidos.' : 'Unidade liberada para pedidos.'); }}><Icon name={entry.active ? 'lock' : 'store'} />{entry.active ? 'Desativar' : 'Liberar'}</button><button className="admin-delete-button" type="button" disabled={busy} aria-label={`Excluir ${entry.name}`} onClick={() => { setError(''); setRemoval({ kind: 'unit', id: entry.id, name: entry.name }); }}><Icon name="trash" />Excluir</button></div>
         </article>;
       })}
       {!filteredUnits.length && <div className="admin-empty-state admin-panel-card"><h2>{catalog.units.length ? 'Nenhuma unidade encontrada' : 'Nenhuma unidade cadastrada'}</h2><p>{catalog.units.length ? 'Tente outro nome ou cidade.' : 'Use Nova unidade para começar.'}</p></div>}
@@ -198,7 +199,7 @@ function DeleteDialog({ name, unit, busy, error, onClose, onConfirm }: { name: s
     <p className="admin-eyebrow">Confirmar exclusão</p><h2 id="delete-title">Excluir {name}?</h2>
     <p id="delete-description">{unit ? 'A unidade e todos os produtos do seu cardápio serão removidos.' : 'Este produto será removido do cardápio desta unidade.'} Pedidos já confirmados serão preservados. Esta ação não pode ser desfeita nesta sessão.</p>
     {error && <p className="admin-error" role="alert">{error}</p>}
-    <div className="admin-form-actions"><button autoFocus className="admin-back-button" type="button" disabled={busy} onClick={onClose}>Cancelar</button><button className="admin-primary-button admin-confirm-delete" type="button" disabled={busy} onClick={onConfirm}>{busy ? 'Excluindo…' : unit ? 'Excluir unidade' : 'Excluir produto'}</button></div>
+    <div className="admin-form-actions"><button autoFocus className="admin-back-button" type="button" disabled={busy} onClick={onClose}>Cancelar</button><button className="admin-primary-button admin-confirm-delete" type="button" disabled={busy} onClick={onConfirm}><Icon name="trash" />{busy ? 'Excluindo…' : unit ? 'Excluir unidade' : 'Excluir produto'}</button></div>
   </dialog>;
 }
 

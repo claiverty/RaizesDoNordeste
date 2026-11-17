@@ -35,6 +35,7 @@ const productsByUnit = {
     { id: 'cuscuz-sertao', name: 'Cuscuz sertanejo', description: 'Indisponível nesta unidade hoje.', priceCents: 1850, available: false },
     { id: 'suco-caja', name: 'Suco de cajá', description: 'Polpa de cajá batida e servida gelada · 300 ml.', priceCents: 950, available: true },
     { id: 'suco-caju', name: 'Suco de caju', description: 'Suco de caju natural e gelado · 300 ml.', priceCents: 950, available: true },
+    { id: 'suco-laranja', name: 'Suco de laranja', description: 'Suco de laranja natural e gelado · 300 ml.', priceCents: 950, available: true },
     { id: 'suco-graviola', name: 'Suco de graviola', description: 'Suco cremoso de graviola · 300 ml.', priceCents: 1050, available: true },
     { id: 'suco-acerola', name: 'Suco de acerola', description: 'Suco de acerola natural e gelado · 300 ml.', priceCents: 890, available: true },
     { id: 'agua-coco', name: 'Água de coco', description: 'Água de coco gelada · 300 ml.', priceCents: 800, available: true },
@@ -57,7 +58,7 @@ const categoryById = Object.fromEntries([
   ['Pratos', ['carne-sol', 'baiao-dois', 'carne-sol-macaxeira', 'cuscuz-sertao']],
   ['Tapiocas', ['tapioca-queijo', 'tapioca-carne-sol', 'tapioca-frango', 'tapioca-coco']],
   ['Acompanhamentos', ['queijo-coalho', 'macaxeira-frita', 'farofa-banana', 'vinagrete']],
-  ['Bebidas', ['suco-caja', 'suco-caju', 'suco-graviola', 'suco-acerola', 'agua-coco', 'cola-tradicional', 'cola-zero', 'guarana', 'agua-mineral']],
+  ['Bebidas', ['suco-caja', 'suco-caju', 'suco-laranja', 'suco-graviola', 'suco-acerola', 'agua-coco', 'cola-tradicional', 'cola-zero', 'guarana', 'agua-mineral']],
   ['Doces', ['bolo-milho', 'bolo-rolo', 'cartola']],
 ].flatMap(([category, ids]) => ids.map((id) => [id, category])));
 

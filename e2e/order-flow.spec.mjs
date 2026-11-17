@@ -8,9 +8,9 @@ test('pedido aprovado percorre a jornada em viewport mobile', async ({ page }) =
   await page.getByRole('radio', { name: /Recife Centro/ }).check();
   await page.getByRole('button', { name: 'Ver cardápio' }).click();
   await expect(page).toHaveURL(/\/cardapio$/);
-  await expect(page.locator('.product')).toHaveCount(24);
+  await expect(page.locator('.product')).toHaveCount(25);
   await page.getByRole('button', { name: 'Bebidas' }).click();
-  await expect(page.locator('.product')).toHaveCount(9);
+  await expect(page.locator('.product')).toHaveCount(10);
   await expect(page.getByRole('heading', { name: 'Suco de caju' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Refrigerante de cola', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Refrigerante de guaraná' })).toBeVisible();

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { adminCatalogRequest, getAdminOrders } from './api';
 import type { AdminCatalog, AdminOrder, Channel } from './types';
 import AdminCatalogManager from './AdminCatalogManager';
+import Icon from './Icon';
 import './admin.css';
 
 const PIN_STORAGE = 'raizes-admin-pin';
@@ -220,12 +221,12 @@ function AdminApp() {
         </a>
         <div className="admin-header-actions">
           <span className="admin-private-label">Área administrativa</span>
-          <a className="admin-back-link" href="/">Voltar à loja <span aria-hidden="true">↗</span></a>
+          <a className="admin-back-link" href="/">Voltar à loja <Icon name="arrowUpRight" /></a>
           {authorized && <>
             <button className="admin-icon-button" type="button" onClick={refreshOrders} disabled={refreshing}>
-              {refreshing ? 'Atualizando…' : 'Atualizar'}
+              <Icon name="refresh" />{refreshing ? 'Atualizando…' : 'Atualizar'}
             </button>
-            <button className="admin-logout" type="button" onClick={signOut}>Sair</button>
+            <button className="admin-logout" type="button" onClick={signOut}><Icon name="exit" />Sair</button>
           </>}
         </div>
       </header>
@@ -237,14 +238,14 @@ function AdminApp() {
               event.preventDefault();
               if (section !== item) window.history.pushState({}, '', sectionPaths[item]);
               setSection(item);
-            }}>{sectionLabels[item]}</a>)}
+            }}><Icon name={item === 'orders' ? 'receipt' : item === 'menu' ? 'menu' : 'store'} />{sectionLabels[item]}</a>)}
           </nav>
           <p className="admin-demo-note">Demonstração: os cadastros são temporários e voltam ao estado inicial quando o servidor reinicia.</p>
         </>}
         {loading && <div className="admin-loading" role="status">Carregando painel…</div>}
 
         {!loading && !authorized && configured === false && <section className="admin-access-card" aria-labelledby="admin-setup-title">
-          <span className="admin-access-mark" aria-hidden="true">!</span>
+          <span className="admin-access-mark"><Icon name="alert" /></span>
           <p className="admin-eyebrow">Acesso restrito</p>
           <h1 id="admin-setup-title">Painel ainda não configurado</h1>
           <p>O PIN administrativo ainda não foi configurado. Fale com o responsável pela demonstração.</p>
@@ -253,7 +254,7 @@ function AdminApp() {
         </section>}
 
         {!loading && !authorized && configured !== false && <section className="admin-access-card" aria-labelledby="admin-login-title">
-          <span className="admin-access-mark" aria-hidden="true">RN</span>
+          <span className="admin-access-mark"><Icon name="lock" /></span>
           <p className="admin-eyebrow">Acesso restrito</p>
           <h1 id="admin-login-title">Painel administrativo</h1>
           <p>Digite o PIN de 4 dígitos para acessar a operação.</p>
@@ -275,7 +276,7 @@ function AdminApp() {
               required
             />
             {errorMessage && <p className="admin-error" role="alert">{errorMessage}</p>}
-            <button className="admin-primary-button" type="submit" disabled={loading}>Acessar painel <span aria-hidden="true">→</span></button>
+            <button className="admin-primary-button" type="submit" disabled={loading}>Acessar painel <Icon name="arrowRight" /></button>
           </form>
         </section>}
 

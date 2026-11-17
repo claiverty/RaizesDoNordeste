@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createOrder, getMenu, getQuote, getUnits } from './api';
 import { heroImage, productImages } from './product-media';
+import Icon from './Icon';
 import type {
   Channel,
   CreatedOrder,
@@ -296,10 +297,10 @@ function App() {
         </a>
         <div className="header-actions">
           <span className="demo-badge">Pedido simulado</span>
-          {currentStep === 1 && <a className="header-order" href="#unit-selection">Fazer pedido <span aria-hidden="true">↗</span></a>}
-          {currentStep === 2 && <button className="header-order" type="button" disabled={!canReview} onClick={() => navigateToStep(3)}>Carrinho · {itemCount}</button>}
-          {currentStep === 3 && <a className="header-order" href="#summary-title">Ver resumo</a>}
-          {currentStep === 4 && <button className="header-order" type="button" onClick={startNewOrder}>Outro pedido</button>}
+          {currentStep === 1 && <a className="header-order" href="#unit-selection">Fazer pedido <Icon name="arrowUpRight" /></a>}
+          {currentStep === 2 && <button className="header-order" type="button" disabled={!canReview} onClick={() => navigateToStep(3)}><Icon name="cart" />Carrinho · {itemCount}</button>}
+          {currentStep === 3 && <a className="header-order" href="#summary-title"><Icon name="receipt" />Ver resumo</a>}
+          {currentStep === 4 && <button className="header-order" type="button" onClick={startNewOrder}><Icon name="plus" />Outro pedido</button>}
         </div>
       </header>
 
@@ -312,7 +313,7 @@ function App() {
               <p className="eyebrow">Comida com história</p>
               <h1 id="page-title" tabIndex={-1} ref={stepHeadingRef}>O Nordeste servido à mesa.</h1>
               <p>Receitas cheias de identidade, feitas para compartilhar bons momentos.</p>
-              <a className="button button-lime" href="#unit-selection">Escolha sua unidade <span aria-hidden="true">→</span></a>
+              <a className="button button-lime" href="#unit-selection">Escolha sua unidade <Icon name="arrowRight" /></a>
             </div>
             <span className="hero-caption">Sabores que trazem a gente pra perto.</span>
           </section>
@@ -337,7 +338,7 @@ function App() {
                 })}
               </fieldset>
               <button className="button button-primary landing-cta" type="button" disabled={!unitId || menuLoading || menu.length === 0} onClick={() => { setMessage(null); navigateToStep(2); }}>
-                {menuLoading ? 'Carregando cardápio…' : 'Ver cardápio'} <span aria-hidden="true">→</span>
+                {menuLoading ? 'Carregando cardápio…' : 'Ver cardápio'} <Icon name="arrowRight" />
               </button>
             </div>
           </section>
@@ -407,9 +408,9 @@ function App() {
             {currentStep === 2 && <>
               <section className="card menu-cart-summary" aria-label="Resumo rápido do carrinho">
                 <div><strong>{itemCount === 1 ? '1 item no carrinho' : `${itemCount} itens no carrinho`}</strong><span>{quote ? money.format(quote.totalCents / 100) : quoteLoading && hasCartItems ? 'Calculando total…' : 'Adicione ao menos um item'}</span></div>
-                <button className="button button-primary action-button" type="button" disabled={!canReview} onClick={() => { setMessage(null); navigateToStep(3); }}>Ir para checkout</button>
+                <button className="button button-primary action-button" type="button" disabled={!canReview} onClick={() => { setMessage(null); navigateToStep(3); }}>Ir para checkout<Icon name="arrowRight" /></button>
               </section>
-              <div className="step-actions"><button className="button button-secondary action-button" type="button" onClick={() => window.history.back()}>Trocar unidade</button><span className="muted">Ao voltar do checkout, seus itens continuam no carrinho.</span></div>
+              <div className="step-actions"><button className="button button-secondary action-button" type="button" onClick={() => window.history.back()}><Icon name="arrowLeft" />Trocar unidade</button><span className="muted">Ao voltar do checkout, seus itens continuam no carrinho.</span></div>
             </>}
 
             {currentStep === 3 && <section className="card checkout-cart-card" aria-labelledby="checkout-cart-title">
@@ -427,9 +428,9 @@ function App() {
                         <div className="cart-line-name">{product.name}</div>
                         <div className="cart-line-meta">{currentPrice === 0 ? 'Cortesia' : `${money.format(currentPrice / 100)} cada`}</div>
                         <div className="checkout-cart-controls">
-                          <QuantityButton label={`Diminuir ${product.name}`} onClick={() => updateQuantity(product.id, (current) => current - 1)}>−</QuantityButton>
+                          <QuantityButton kind="minus" label={`Diminuir ${product.name}`} onClick={() => updateQuantity(product.id, (current) => current - 1)} />
                           <span aria-label={`${quantity} unidades`}>{quantity}</span>
-                          <QuantityButton label={`Aumentar ${product.name}`} disabled={quantity >= 20} onClick={() => updateQuantity(product.id, (current) => current + 1)}>+</QuantityButton>
+                          <QuantityButton kind="plus" label={`Aumentar ${product.name}`} disabled={quantity >= 20} onClick={() => updateQuantity(product.id, (current) => current + 1)} />
                         </div>
                       </div>
                       <strong className="checkout-cart-line-total">{currentPrice === 0 ? 'Cortesia' : money.format((currentPrice * quantity) / 100)}</strong>
@@ -442,7 +443,7 @@ function App() {
                 <div className="inline-control"><input id="coupon-code" type="text" maxLength={32} autoComplete="off" placeholder="Digite o código" value={couponDraft} onChange={(event) => setCouponDraft(event.target.value)} /><button id="apply-coupon" className="button button-secondary" type="button" onClick={applyCoupon}>Aplicar</button></div>
               </div>
               <label className="choice loyalty-choice"><input id="use-loyalty" type="checkbox" checked={useLoyalty} onChange={(event) => { setUseLoyalty(event.target.checked); onOrderOptionChange(); }} /><span>Usar benefício simulado de fidelidade <small>500 pontos · até R$ 3,00</small></span></label>
-              <div className="step-actions checkout-back-action"><button className="button button-secondary action-button" type="button" onClick={() => window.history.back()}>Voltar ao cardápio</button></div>
+              <div className="step-actions checkout-back-action"><button className="button button-secondary action-button" type="button" onClick={() => window.history.back()}><Icon name="arrowLeft" />Voltar ao cardápio</button></div>
             </section>}
 
           </div>
@@ -479,7 +480,7 @@ function App() {
                 </div>
               </div>
               <div className="payment-note" aria-label="Aviso de pagamento">
-                <span className="lock-mark" aria-hidden="true">✓</span>
+                <span className="lock-mark"><Icon name="lock" /></span>
                 <div><strong>Ambiente de demonstração</strong><p>Nenhum pagamento real será feito. Nenhum dado de cartão é solicitado ou armazenado.</p></div>
               </div>
             </section>}
@@ -489,7 +490,7 @@ function App() {
             <div id="quote-breakdown" className="price-breakdown" aria-live="polite">
               {quoteError ? <p className="message error">{quoteError}</p> : quote ? <QuoteBreakdown quote={quote} /> : <p className="muted">{quoteLoading ? 'Calculando total…' : 'Adicione um produto para calcular o total.'}</p>}
             </div>
-            <button id="submit-order" className="button button-primary" type="button" disabled={!canSubmit} onClick={submitOrder}>{isSubmitting ? 'Processando…' : 'Confirmar pedido'}</button>
+            <button id="submit-order" className="button button-primary" type="button" disabled={!canSubmit} onClick={submitOrder}>{isSubmitting ? 'Processando…' : 'Confirmar pedido'}<Icon name="check" /></button>
             <p className="privacy-note">O nome curto é opcional e expira após 24 horas; a limpeza automática ocorre em até 1 minuto. Ao reiniciar o servidor, os pedidos de demonstração são removidos.</p>
             {confirmedOrder && <div id="confirmation" className="confirmation" role="status" aria-live="polite" tabIndex={-1} ref={confirmationRef}>
               <h3>Pedido {confirmedOrder.orderNumber} confirmado</h3>
@@ -502,7 +503,7 @@ function App() {
         </div>}
 
         {currentStep === 4 && confirmedOrder && <section id="confirmation" className="confirmation confirmation-screen" role="status" aria-live="polite" tabIndex={-1} ref={confirmationRef}>
-          <span className="confirmation-mark" aria-hidden="true">✓</span><p className="eyebrow">Pedido concluído</p>
+          <span className="confirmation-mark"><Icon name="check" /></span><p className="eyebrow">Pedido concluído</p>
           <h2>Pedido {confirmedOrder.orderNumber} confirmado</h2>
           <div className="receipt-pickup-code">
             <span>{confirmedOrder.fulfillment === 'PICKUP' ? 'Senha de retirada' : 'Número do pedido'}</span>
@@ -540,7 +541,7 @@ function App() {
               <p className="receipt-demo-note">Nenhuma cobrança real foi realizada.</p>
             </section>
           </div>
-          <button className="button button-primary action-button" type="button" onClick={startNewOrder}>Fazer outro pedido</button>
+          <button className="button button-primary action-button" type="button" onClick={startNewOrder}><Icon name="plus" />Fazer outro pedido</button>
         </section>}
         <footer><p>Projeto de Qualidade de Software · Raízes do Nordeste</p><p><a href="/admin">Acesso da operação</a> · Protótipo · catálogo e integrações simulados</p></footer>
       </main>
@@ -574,9 +575,9 @@ function MenuItemControls({ product, quantity, onChange }: { product: Product; q
 
   return <div ref={controlsRef}>
     {product.available && quantity > 0 ? <div className="product-quantity-controls" role="group" aria-label={`Quantidade de ${product.name}`}>
-      <QuantityButton label={`Diminuir ${product.name}`} onClick={() => changeQuantity(quantity - 1)}>−</QuantityButton>
+      <QuantityButton kind="minus" label={`Diminuir ${product.name}`} onClick={() => changeQuantity(quantity - 1)} />
       <span className="product-quantity-count" aria-label={`${quantity} ${quantity === 1 ? 'unidade' : 'unidades'}`}>{quantity}</span>
-      <QuantityButton label={`Aumentar ${product.name}`} disabled={quantity >= 20} onClick={() => changeQuantity(quantity + 1)}>+</QuantityButton>
+      <QuantityButton kind="plus" label={`Aumentar ${product.name}`} disabled={quantity >= 20} onClick={() => changeQuantity(quantity + 1)} />
     </div> : <button className="button button-add" type="button" disabled={!product.available} aria-label={`${product.available ? 'Adicionar' : 'Indisponível'} ${product.name}`} onClick={() => changeQuantity(1)}>
       {product.available ? 'Adicionar' : 'Indisponível'}
     </button>}
@@ -584,8 +585,8 @@ function MenuItemControls({ product, quantity, onChange }: { product: Product; q
   </div>;
 }
 
-function QuantityButton({ label, onClick, children, disabled = false }: { label: string; onClick: () => void; children: string; disabled?: boolean }) {
-  return <button className="button button-qty" type="button" aria-label={label} disabled={disabled} onClick={onClick}><span className={`quantity-control-symbol${children === '+' ? ' is-plus' : ''}`} aria-hidden="true">{children}</span></button>;
+function QuantityButton({ label, onClick, kind, disabled = false }: { label: string; onClick: () => void; kind: 'plus' | 'minus'; disabled?: boolean }) {
+  return <button className="button button-qty" type="button" aria-label={label} disabled={disabled} onClick={onClick}><Icon name={kind} className="quantity-control-symbol" /></button>;
 }
 
 function QuoteBreakdown({ quote }: { quote: Quote }) {
