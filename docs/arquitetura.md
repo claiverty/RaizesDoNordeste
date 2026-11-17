@@ -12,8 +12,9 @@ flowchart LR
   S --> UI[SPA React + TypeScript]
   V[Vite: build e servidor de desenvolvimento] -. compila .-> UI
   UI -->|JSON /api/v1| API[API HTTP]
-  ADM[SPA /admin] -->|Bearer ADMIN_API_KEY| ADMIN[GET /api/v1/admin/orders]
+  ADM[SPA /admin e telas de gestão] -->|Bearer ADMIN_API_KEY| ADMIN[API administrativa]
   ADMIN --> STORE
+  ADMIN --> CAT
   API --> DOM[Aplicação e domínio de pedidos]
   DOM --> CAT[Catálogo por unidade]
   DOM --> LOY[Mock de fidelidade]
@@ -38,7 +39,7 @@ flowchart TB
     ERR[Erros de domínio estruturados]
   end
   subgraph INFRA[Infraestrutura substituível]
-    CATALOG[Catálogo fixo por unidade]
+    CATALOG[Catálogo editável por unidade em memória]
     MEMORY[(OrderStore em memória)]
     LOYALTY[Loyalty mock]
     PAYMENT[Payment mock]
@@ -136,4 +137,18 @@ flowchart LR
 
 ## Escalabilidade e trade-offs
 
-A aplicação é stateless quanto à interface, mas **não** quanto aos pedidos, idempotência ou rate limit: tudo reside no processo. Isso simplifica demonstração e testes, ao custo de perder dados em reinício e não coordenar múltiplas réplicas. Catálogo fixo é suficiente para validar contrato, mas não substitui integração de estoque/preço nem cache com invalidação. Um banco relacional, transação/outbox, autenticação institucional, observabilidade centralizada, TLS e gestão de segredos são pré-requisitos de produção, não funcionalidades alegadas aqui.
+A aplicação é stateless quanto à interface, mas **não** quanto aos pedidos, catálogo, idempotência ou rate limit: tudo reside no processo. Isso simplifica demonstração e testes, ao custo de perder dados em reinício e não coordenar múltiplas réplicas. `createCatalog()` cria uma cópia inicial independente por servidor; as mutações validadas atualizam essa cópia, e leituras devolvem cópias defensivas. O modo temporário foi escolhido explicitamente para esta demonstração. Um banco relacional, transação/outbox, autenticação institucional, observabilidade centralizada, TLS e gestão de segredos são pré-requisitos de produção, não funcionalidades alegadas aqui.
+
+## Gestão administrativa
+
+Todas as rotas abaixo exigem `Authorization: Bearer <chave>` e respondem sem cache. Alterações devolvem o retrato atualizado do catálogo; o frontend usa esse retorno para atualizar a listagem. As operações no catálogo são síncronas no processo. A API rejeita campos desconhecidos e não aceita imagens externas.
+
+| Método | Rota | Operação |
+|---|---|---|
+| GET | `/api/v1/admin/catalog` | Unidades, menus, categorias e fotos permitidas |
+| POST | `/api/v1/admin/units` | Criar unidade desativada |
+| PATCH / DELETE | `/api/v1/admin/units/:unitId` | Editar, liberar/desativar ou excluir unidade e menu |
+| POST | `/api/v1/admin/units/:unitId/products` | Criar produto no menu da unidade |
+| PATCH / DELETE | `/api/v1/admin/units/:unitId/products/:productId` | Editar disponibilidade/dados ou excluir produto |
+
+O pedido guarda `unitName` e os nomes/preços dos itens no momento da confirmação. Alterar ou excluir cadastros não reescreve esse retrato. O checkout envia o total revisado como condição: quando difere do recálculo, `QUOTE_CHANGED` interrompe a tentativa antes do mock de pagamento. A interface busca os preços atuais e solicita nova confirmação.

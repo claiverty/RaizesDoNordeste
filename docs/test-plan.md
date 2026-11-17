@@ -6,7 +6,7 @@ Os comandos usam Node.js 24. A execução atual e os resultados estão resumidos
 |---|---|---|---|---|---|
 | Unitário | Cálculo, descontos, validações, status e limite de itens | `node:test`; local/CI | Fixtures sintéticas, dependências injetadas | Casos críticos verdes; cobertura domínio ≥80% meta | `evidencias/unit/` log + cobertura |
 | Integração | Use case, store, pagamento e fidelidade mock | `node:test`; processo em memória | Mocks determinísticos | Aprovação grava um pedido; falhas não gravam; idempotência respeitada | `evidencias/integration/` |
-| Sistema/API | Contratos, HTTP status, headers, validação, auth e rate limit, incluindo painel protegido | `node:test` + `fetch`; servidor local | JSON malformado/limite, chaves e tokens sintéticos | Contratos RF01–RF18 corretos; dados pessoais e tokens ausentes da listagem administrativa | `evidencias/integration/` |
+| Sistema/API | Contratos, HTTP status, headers, validação, auth e rate limit, incluindo painel e cadastros protegidos | `node:test` + `fetch`; servidor local | JSON malformado/limite, chaves e tokens sintéticos | Contratos RF01–RF21 corretos; dados pessoais e tokens ausentes da listagem administrativa; mutações autorizadas e validadas | `evidencias/integration/`; `evidencias/unit/coverage-run.txt` |
 | E2E | LP `/` → `/cardapio` → `/checkout` → `/comprovante`; painel `/admin`; falha de pagamento, retorno com carrinho, proteção por chave e navegação por teclado | Playwright; navegador local | Browser instalado, servidor de teste | Pedido confirmado; falha mantém carrinho; acesso sem estado é redirecionado; chave administrativa protege a lista; skip link e transição de etapa acessíveis por teclado | `evidencias/e2e/` screenshots/log |
 | Regressão | Reexecutar casos críticos após mudança | `npm test` e `npm run test:e2e` | Build atual | Nenhum crítico regressivo | Logs de cada execução |
 | UAT | Verificar se clientes entendem unidade, quantidades, total, pagamento simulado e retirada | Roteiro manual em navegador local | 3–5 participantes voluntários; catálogo e pagamentos simulados | Tarefas críticas concluídas sem ajuda; confusões/erros registrados sem PII | Roteiro na seção abaixo; folha de resultados anonimizada |
@@ -72,7 +72,7 @@ Ambiente da escuta: data, sistema, navegador/versão e leitor/versão **a preenc
 
 ## Casos de teste
 
-Os estados abaixo refletem a execução automatizada em 10/11/2026 e a carga de CT015 em 09/11/2026. Os dados são sintéticos e as evidências estão em `evidencias/` e `docs/relatorio-final-conformidade.md`.
+Os estados abaixo refletem a execução automatizada em 17/11/2026 e a carga de CT015 em 09/11/2026. A revisão técnica manual datada de 10/11/2026 mantém seu escopo histórico. Os dados são sintéticos e as evidências estão em `evidencias/` e `docs/relatorio-final-conformidade.md`.
 
 ### CT001 — Pedido básico aprovado
 
@@ -308,3 +308,21 @@ Os estados abaixo refletem a execução automatizada em 10/11/2026 e a carga de 
 - **Passos:** adicionar pelo Enter; aumentar; usar Shift+Tab para diminuir até zero; adicionar novamente e atingir 20; reduzir para 19. Em outro cenário, enviar pagamento recusado e verificar o foco na mensagem.
 - **Esperado:** foco passa ao controle de aumentar após adicionar, volta a Adicionar ao remover e passa a Diminuir no limite; quantidade/remoção são expostas em região de status; limite de 20 impede aumento adicional; recusa recebe foco e preserva o carrinho; controles de quantidade no cardápio e checkout têm área clicável ≥44×44 CSS px. Axe não encontra violações nas tags consultadas no cardápio com item selecionado.
 - **Pós-condição:** carrinho editável e tentativa recuperável. **Evidência:** [E2E](../evidencias/e2e/e2e-run.txt), [foco no controle](../evidencias/e2e/ct026-quantidade-teclado.png), [revisão técnica manual](../evidencias/accessibility/revisao-manual-2026-11-10.txt). **Status:** PASS. A fala do leitor de tela aguarda escuta humana.
+
+### CT027 — Gestão de produtos e unidades
+
+- **Requisito:** RF18–RF20. **Prioridade:** P1. **Tipo:** API/E2E/segurança.
+- **Pré-condições:** chave administrativa sintética e catálogo inicial independente em memória.
+- **Dados:** unidade QA em Olinda; produto com preço de 24,90 alterado para 26,50; nome, descrição, categoria, foto e disponibilidade.
+- **Passos:** negar mutações sem chave; cadastrar unidade; impedir liberação com menu vazio; criar e editar produto; alternar disponibilidade; liberar unidade; concluir pedido pelo storefront; desativar unidade; cancelar uma exclusão; confirmar exclusões do produto e da unidade; conferir pedido antigo.
+- **Esperado:** somente chave válida altera cadastros; valores inválidos e métodos incorretos são rejeitados; rotas administrativas distintas funcionam; unidade desativada bloqueia pedidos; exclusão exige confirmação na UI e preserva nome/valor do pedido; foco retorna ao título após excluir. Axe não encontra violações nas tags consultadas; páginas não excedem 360 px de largura.
+- **Pós-condição:** cadastros sintéticos removidos e pedido confirmado preservado até a retenção do protótipo. **Evidência:** [cobertura/API](../evidencias/unit/coverage-run.txt), [E2E](../evidencias/e2e/e2e-run.txt), [cardápio](../evidencias/e2e/admin-cardapio-mobile.png), [unidades](../evidencias/e2e/admin-unidades-mobile.png). **Status:** PASS em 17/11/2026.
+
+### CT028 — Alteração de preço durante o checkout
+
+- **Requisito:** RF04, RF21. **Prioridade:** P0. **Tipo:** API/E2E/regressão.
+- **Pré-condições:** unidade sintética ativa e produto disponível.
+- **Dados:** preço inicial de R$ 10,00 alterado para R$ 12,00 pelo administrador durante a revisão.
+- **Passos:** abrir checkout no preço inicial; alterar preço pela API protegida; confirmar; observar mensagem e novos valores; confirmar novamente com nova chave de tentativa.
+- **Esperado:** primeira tentativa retorna `QUOTE_CHANGED` antes do pagamento; foco fica na mensagem; carrinho mantém itens com preço e total atualizados; segundo clique confirma R$ 12,00. API rejeita total de referência inválido e não aceita esse valor como fonte de preço.
+- **Pós-condição:** um pedido no novo valor; unidade sintética removida. **Evidência:** [cobertura/API](../evidencias/unit/coverage-run.txt), [E2E](../evidencias/e2e/e2e-run.txt). **Status:** PASS em 17/11/2026.

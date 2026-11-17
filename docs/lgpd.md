@@ -47,7 +47,8 @@ Os testes automatizados verificaram estes controles no protótipo. Isso não equ
 | Controle | Resultado | Validação |
 |---|---|---|
 | Campos desconhecidos, forma de pagamento e quantidades inválidas rejeitados | PASS | `test/domain.test.mjs`; `evidencias/integration/integration-run.txt` |
-| Preço e total enviados pelo cliente não aceitos | PASS — o contrato estrito rejeita os campos; cálculo vem do catálogo | `test/api.test.mjs`, teste de prévia/pedido |
+| Preço e total do cliente não definem cobrança | PASS — cálculo vem do catálogo; `expectedTotalCents` é uma condição de confirmação e divergência interrompe antes do pagamento | `test/api.test.mjs`, teste de preço alterado e CT028 |
+| Mutações de catálogo/unidades exigem chave e validam entrada | PASS — chave ausente nega criação/edição/exclusão; campos desconhecidos, preço inválido e imagens externas são rejeitados; logs não contêm a credencial | `test/api.test.mjs`, cadastros e CT027 |
 | Consulta de pedido sem token ou com token incorreto negada; leitura autorizada não devolve o token | PASS | `test/api.test.mjs`, teste de consulta protegida |
 | JSON malformado, tipo de conteúdo incorreto e corpo acima de 32 KB tratados sem stack trace | PASS | `test/api.test.mjs`, teste de validação de corpo |
 | Rate limit retorna 429 e `Retry-After` | PASS | `test/api.test.mjs`, teste de rate limit |

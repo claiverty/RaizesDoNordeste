@@ -27,6 +27,8 @@ A aplicação demonstra a jornada de pedido, da escolha da unidade ao comprovant
 | `/checkout` | Resumo, modalidade e pagamento simulado |
 | `/comprovante` | Confirmação, itens, total e retirada |
 | `/admin` | Painel protegido para analisar pedidos confirmados |
+| `/admin/cardapio` | Criar, editar, disponibilizar e excluir produtos por unidade |
+| `/admin/unidades` | Cadastrar, editar, liberar, desativar e excluir unidades |
 
 ## Tecnologias
 
@@ -38,6 +40,12 @@ A aplicação demonstra a jornada de pedido, da escolha da unidade ao comprovant
 | Dados externos | Adaptadores simulados; pedidos guardados em memória |
 
 O checkout web envia o canal `WEB` automaticamente. A API também valida outros canais para os cenários de teste.
+
+### Gestão no painel
+
+Com a mesma chave administrativa, abra Cardápio para escolher a unidade e cadastrar nome, descrição, categoria, preço, disponibilidade e uma foto da galeria. Preço zero indica cortesia. Em Unidades, cadastre nome e cidade; a nova loja começa desativada e pode ser liberada depois de receber ao menos um produto disponível. Excluir uma unidade também remove seu cardápio, após confirmação. Pedidos já confirmados preservam os nomes e valores originais.
+
+Se um preço mudar enquanto o cliente revisa o checkout, o sistema atualiza os valores e pede nova confirmação antes de processar o pagamento simulado.
 
 ## Executar localmente
 
@@ -70,7 +78,7 @@ npm run test:e2e
 npm audit --audit-level=high
 ```
 
-Última validação local, em 10/11/2026: 24/24 testes unitários e de integração, 8/8 testes E2E, cobertura de 89,41% das linhas e 84,27% dos branches; zero vulnerabilidades na auditoria. O código do commit `6db3e05` também passou no [GitHub Actions](https://github.com/claiverty/RaizesDoNordeste/actions/runs/42835645597). Veja o [relatório final](docs/relatorio-final-conformidade.md).
+Última validação local, em 17/11/2026: 27/27 testes unitários e de integração e 10/10 testes E2E; cobertura de 89,71% das linhas e 84,69% dos branches. Inclui gestão administrativa, autorização das alterações, exclusão com confirmação e revisão de preço no checkout. Veja o [relatório final](docs/relatorio-final-conformidade.md) e o [workflow de qualidade](https://github.com/claiverty/RaizesDoNordeste/actions/workflows/quality.yml).
 
 A revisão técnica por teclado foi executada. Para concluir a validação com pessoas, siga o [roteiro de UAT e leitor de tela](docs/test-plan.md#roteiro-de-uat-e-acessibilidade-manual) e registre as tarefas dos 3–5 voluntários na [ficha de resultados](evidencias/uat/resultados.csv). Esses resultados ainda aguardam coleta.
 
@@ -97,7 +105,7 @@ A documentação começa pelo [plano de execução](docs/00-plano-de-execucao.md
 
 ## Limites conhecidos
 
-O painel administrativo é somente de leitura e utiliza a mesma memória volátil da API. Ele serve para demonstrar análise dos pedidos; a Vercel pode reiniciar ou criar instâncias independentes, então não há histórico operacional garantido. `ADMIN_API_KEY` foi confirmada como segredo de produção na Vercel em 10/11/2026; a API nega acesso sem chave. Ao criar outra implantação, configure uma chave exclusiva nesse ambiente.
+O painel permite analisar pedidos e gerenciar produtos e unidades. Os cadastros são temporários, conforme o modo de demonstração escolhido: reiniciar restaura o catálogo inicial, e instâncias independentes da Vercel não compartilham alterações. Pedidos e idempotência também ficam em memória, sem histórico operacional garantido. `ADMIN_API_KEY` foi confirmada como segredo de produção na Vercel em 10/11/2026; todas as consultas e alterações administrativas exigem essa chave. Ao criar outra implantação, configure uma chave exclusiva nesse ambiente.
 
 O armazenamento é volátil: reiniciar o servidor remove os pedidos. Não há integração real com pagamento, estoque, fidelidade ou sistemas de franquia. O protótipo está pronto para demonstração e avaliação; não para operação comercial.
 

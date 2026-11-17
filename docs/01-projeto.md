@@ -6,7 +6,7 @@ A Raízes do Nordeste opera unidades franqueadas e precisa padronizar pedidos em
 
 ## Objetivo e limites
 
-O objetivo desta entrega é demonstrar uma jornada de pedido verificável e uma estratégia de qualidade rastreável. A aplicação é um protótipo com catálogo fixo e armazenamento volátil em memória. Promoções, fidelidade e pagamento são simulados. Não é sistema de produção, não captura dados de cartão e não se conecta a franquias ou gateways reais.
+O objetivo desta entrega é demonstrar uma jornada de pedido verificável e uma estratégia de qualidade rastreável. A aplicação é um protótipo com catálogo editável por unidade e armazenamento volátil em memória. Promoções, fidelidade e pagamento são simulados. Não é sistema de produção, não captura dados de cartão e não se conecta a franquias ou gateways reais.
 
 ## Atores e canais
 
@@ -33,6 +33,8 @@ O objetivo desta entrega é demonstrar uma jornada de pedido verificável e uma 
 
 Além da jornada principal do briefing, foi adicionada a rota `/admin` para análise somente de leitura dos pedidos confirmados. O painel resume vendas, ticket médio, volume diário e itens mais pedidos, com filtros por unidade, canal, período e número. A API exige `ADMIN_API_KEY` e omite nome, identificador interno, token de consulta e prazo de retenção.
 
+A extensão de gestão solicitada em 17/11/2026 acrescenta `/admin/cardapio` e `/admin/unidades`, com a mesma proteção por chave. Produtos têm categoria, descrição, preço em centavos, foto da galeria e disponibilidade por unidade. Lojas podem ser criadas, editadas, liberadas, desativadas ou excluídas; a criação começa desativada e a liberação exige produto disponível. Exclusões pedem confirmação na interface. Pedidos confirmados guardam um retrato do nome da loja e dos itens, preservado após alterações ou exclusões.
+
 Essa extensão usa o mesmo armazenamento em memória do protótipo. Os dados são temporários e não formam histórico confiável entre reinícios ou instâncias.
 
 ## Diretrizes do fluxo
@@ -52,7 +54,7 @@ Essa extensão usa o mesmo armazenamento em memória do protótipo. Os dados sã
 
 ## Fora do escopo
 
-Gateway real, captura/armazenamento de cartão, autenticação federada, cadastro de conta, delivery com endereço, integração real de estoque/ERP/CRM/fidelidade, persistência durável, edição administrativa de pedidos, gestão de catálogo/promoções, emissão fiscal e auditoria formal de segurança/LGPD.
+Gateway real, captura/armazenamento de cartão, autenticação federada, cadastro de conta, delivery com endereço, integração real de estoque/ERP/CRM/fidelidade, persistência durável, edição administrativa de pedidos, upload de imagens, gestão de promoções, emissão fiscal e auditoria formal de segurança/LGPD.
 
 ## Fluxo de falha e recuperação
 
@@ -82,6 +84,9 @@ Prioridade: **P0** crítica para a jornada; **P1** importante; **P2** complement
 | RF16 | Consultar prévia autoritativa de subtotal, descontos e total antes de confirmar. | Cliente/Sistema | P0 | O cliente precisa entender o valor final e o servidor deve ser fonte de verdade. | Endpoint de prévia calcula com catálogo da unidade e as mesmas regras do pedido; nenhuma chamada de pagamento ou persistência ocorre. | R03, R06, R07 | Todos |
 | RF17 | Analisar pedidos confirmados no painel administrativo. | Administração | P2 | A operação precisa consultar vendas e composição dos pedidos do protótipo. | Painel oferece contagem, vendas, ticket médio, volume diário, itens mais pedidos e lista filtrável por período, unidade, canal e número. | R12, R13 | WEB |
 | RF18 | Proteger o painel administrativo e minimizar os dados exibidos. | Sistema/Administração | P0 | Pedidos não podem ficar disponíveis anonimamente nem revelar dados desnecessários. | Chave inválida/ausente é negada; segredo fica no servidor; lista omite nome do cliente, ID interno, token e retenção. | R05, R13 | WEB |
+| RF19 | Gerenciar produtos por unidade. | Administração | P1 | A operação precisa atualizar o cardápio sem editar o código. | Criar, editar, marcar disponibilidade e excluir; validar nome, descrição, categoria, foto da galeria e preço inteiro entre 0 e 1.000.000 centavos; pedir confirmação na exclusão; refletir as alterações nas novas consultas/pedidos. | R03, R04, R13 | WEB |
+| RF20 | Gerenciar unidades. | Administração | P1 | A rede precisa demonstrar abertura e interrupção de lojas. | Cadastrar nome/cidade, editar, liberar, desativar e excluir; nova unidade começa desativada e vazia; liberação exige produto disponível; desativação bloqueia novos pedidos; exclusão remove o cardápio sem apagar pedidos confirmados. | R04, R12, R13 | WEB |
+| RF21 | Reconfirmar total após alteração de preço. | Sistema/Cliente | P0 | Evita confirmar um valor diferente do revisado pelo cliente. | Checkout envia `expectedTotalCents`; o servidor recalcula e retorna `QUOTE_CHANGED` antes do pagamento em caso de diferença; interface atualiza itens/total e exige novo clique de confirmação; registros antigos preservam os valores. | R01, R03 | WEB |
 
 ### Regras de negócio
 
@@ -91,6 +96,8 @@ Prioridade: **P0** crítica para a jornada; **P1** importante; **P2** complement
 - Fidelidade simulada: resgate fixo de 500 pontos reduz até 300 centavos; descontos nunca deixam total negativo.
 - Cupom e fidelidade podem ser acumulados nesta demonstração, limitados ao subtotal. Não existe frete ou tarifa oculta.
 - Só o resultado `APPROVED` do adaptador de pagamento autoriza persistir pedido `CONFIRMED`.
+- `expectedTotalCents` é apenas uma condição de confirmação, nunca a fonte de preço; os clientes antigos da API podem omitir esse campo, e o checkout web sempre o informa.
+- Cadastros administrativos exigem a chave antes da leitura/alteração. Nomes/IDs fornecidos não executam código, fotos vêm da galeria local e cada unidade possui seu próprio cardápio.
 - Dados de pedido e chaves de idempotência tornam-se inacessíveis após 24 horas e são removidos pela rotina de limpeza em até 1 minuto; reiniciar o servidor remove todos os dados.
 
 ## Requisitos de qualidade

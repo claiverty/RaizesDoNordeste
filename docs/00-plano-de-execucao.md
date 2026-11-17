@@ -2,7 +2,7 @@
 
 - **Projeto:** Raízes do Nordeste — Projeto de Qualidade de Software
 - **Data do levantamento inicial:** 13/10/2026
-- **Status em 10/11/2026:** implementação, revisão técnica por teclado e verificações automatizadas concluídas. Código `6db3e05` aprovado no [CI remoto](https://github.com/claiverty/RaizesDoNordeste/actions/runs/42835645597), com 24 testes unitários/de integração e 8 E2E. UAT e escuta com leitor de tela aguardam coleta humana conforme o plano de testes.
+- **Status em 17/11/2026:** gestão temporária de produtos/unidades implementada, com preservação dos pedidos e reconfirmação após mudança de preço. Código `2faf3d5` aprovado no [CI remoto](https://github.com/claiverty/RaizesDoNordeste/actions/runs/44102137383), com 27 testes unitários/de integração e 10 E2E. UAT e escuta com leitor de tela aguardam coleta humana conforme o plano de testes; a revisão técnica manual anterior está datada de 10/11/2026.
 
 ## Situação no levantamento inicial
 

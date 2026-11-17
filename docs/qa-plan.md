@@ -4,7 +4,7 @@
 
 Validar que a jornada de realização do pedido recalcula preço no servidor, aplica regras de desconto, não confirma cobrança recusada/indeterminada, evita duplicidade por chave, protege consulta do pedido e permanece utilizável em viewport móvel. A extensão `/admin` também deve exigir chave, minimizar dados retornados e permitir consultar pedidos sem editar a operação. O plano cobre API e interface demonstrativa, mocks, dados em memória, documentação e CI local.
 
-- **Dentro do escopo:** regras de domínio; API HTTP; unidade/cardápio/carrinho/cupom/fidelidade/pagamento; idempotência; autorização por token do pedido e chave administrativa; minimização dos dados no painel; filtros e indicadores somente de leitura; validação e rate limit; interface responsiva; testes e evidências sintéticas; métricas de latência local.
+- **Dentro do escopo:** regras de domínio; API HTTP; unidade/cardápio/carrinho/cupom/fidelidade/pagamento; idempotência; autorização por token do pedido e chave administrativa; minimização dos dados no painel; filtros e indicadores de pedidos; gestão de produtos e unidades com autorização e confirmação de exclusão; validação e rate limit; interface responsiva; testes e evidências sintéticas; métricas de latência local.
 - **Fora do escopo:** edição de pedidos e catálogo, gateway real, segurança ofensiva, pentest, auditoria LGPD formal, persistência/alta disponibilidade de produção, integração com POS/ERP, validação com consumidores reais e garantia de SLO mensal.
 
 ## Estratégia e gates
@@ -22,7 +22,7 @@ Release demonstrativo é **NO-GO** se houver falha em pedido/preço/idempotênci
 
 | Ambiente | Uso | Dados |
 |---|---|---|
-| Local de desenvolvimento | API e interface em `localhost` | Catálogo fixo e pedidos sintéticos voláteis |
+| Local de desenvolvimento | API e interface em `localhost` | Catálogo editável e pedidos sintéticos voláteis |
 | Testes automatizados | `node:test`, processos HTTP locais e Playwright (se dependência instalada) | Fixtures determinísticas; sem PII real |
 | Carga local | Gerador reprodutível contra servidor local | Produtos e identificadores sintéticos |
 | CI | GitHub Actions, Node 24 | Sem segredos e sem gateway |

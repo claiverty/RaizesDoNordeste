@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-17",
+  "origin": "https://raizesdonordeste7.vercel.app",
+  "commit": "2faf3d534f4816d21abe90f7ca2fcf3047efd820",
+  "ci": "https://github.com/claiverty/RaizesDoNordeste/actions/runs/44102137383",
+  "vercelStatus": "success",
+  "requests": [
+    {
+      "path": "/admin",
+      "status": 200
+    },
+    {
+      "path": "/admin/cardapio",
+      "status": 200
+    },
+    {
+      "path": "/admin/unidades",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/admin/catalog",
+      "status": 401,
+      "errorCode": "ADMIN_UNAUTHORIZED"
+    },
+    {
+      "path": "/api/v1/units/recife-centro/menu",
+      "status": 200,
+      "products": 24,
+      "categoryPresent": true,
+      "imageKeyPresent": true
+    }
+  ]
+}
