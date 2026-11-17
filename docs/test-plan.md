@@ -7,14 +7,14 @@ Os comandos usam Node.js 24. A execução atual e os resultados estão resumidos
 | Unitário | Cálculo, descontos, validações, status e limite de itens | `node:test`; local/CI | Fixtures sintéticas, dependências injetadas | Casos críticos verdes; cobertura domínio ≥80% meta | `evidencias/unit/` log + cobertura |
 | Integração | Use case, store, pagamento e fidelidade mock | `node:test`; processo em memória | Mocks determinísticos | Aprovação grava um pedido; falhas não gravam; idempotência respeitada | `evidencias/integration/` |
 | Sistema/API | Contratos, HTTP status, headers, validação, auth e rate limit, incluindo painel e cadastros protegidos | `node:test` + `fetch`; servidor local | JSON malformado/limite, chaves e tokens sintéticos | Contratos RF01–RF21 corretos; dados pessoais e tokens ausentes da listagem administrativa; mutações autorizadas e validadas | `evidencias/integration/`; `evidencias/unit/coverage-run.txt` |
-| E2E | LP `/` → `/cardapio` → `/checkout` → `/comprovante`; painel `/admin`; falha de pagamento, retorno com carrinho, proteção por chave e navegação por teclado | Playwright; navegador local | Browser instalado, servidor de teste | Pedido confirmado; falha mantém carrinho; acesso sem estado é redirecionado; chave administrativa protege a lista; skip link e transição de etapa acessíveis por teclado | `evidencias/e2e/` screenshots/log |
+| E2E | LP `/` → `/cardapio` → `/checkout` → `/comprovante`; painel `/admin`; falha de pagamento, retorno com carrinho, proteção por PIN e navegação por teclado | Playwright; navegador local | Browser instalado, servidor de teste | Pedido confirmado; falha mantém carrinho; acesso sem estado é redirecionado; PIN administrativo protege a lista; skip link e transição de etapa acessíveis por teclado | `evidencias/e2e/` screenshots/log |
 | Regressão | Reexecutar casos críticos após mudança | `npm test` e `npm run test:e2e` | Build atual | Nenhum crítico regressivo | Logs de cada execução |
 | UAT | Verificar se clientes entendem unidade, quantidades, total, pagamento simulado e retirada | Roteiro manual em navegador local | 3–5 participantes voluntários; catálogo e pagamentos simulados | Tarefas críticas concluídas sem ajuda; confusões/erros registrados sem PII | Roteiro na seção abaixo; folha de resultados anonimizada |
 | Usabilidade | Fricção, clareza de erro, confirmação e taxa de conclusão | Observação manual; questionários SUS/CSAT opcionais | Usuários representativos após protótipo | Rodada exploratória; amostra pequena não deve ser tratada como estimativa estatística | `docs/metricas.md`; respostas sem identificação |
 | Responsividade/mobile | Viewport 360×800, overflow, foco e alvos de toque | Playwright + inspeção manual/teclado | Chromium viewport mobile | Sem scroll horizontal; controles ≥44×44 CSS px; foco visível e fluxo por teclado | Screenshot, teste E2E e folha manual abaixo |
 | Desempenho/carga | Latência p50/p95/p99, taxa de erro, duração e throughput; mix menu/pedido | `scripts/run-load-test.mjs` + `scripts/load-test.mjs`; localhost | Rampa até 500 VUs, aquecimento, sustentação e redução gradual; dados sintéticos | Metas RQF01/RQF02; reportar se não atingir | JSON + resumo em `evidencias/performance/` |
 | Estresse | Observar degradação acima da carga de referência | Script local com VUs configuráveis | Ambiente isolado; nunca contra produção | Em 1.000 VUs, erro zero e p95 abaixo dos limites locais; não representa capacidade de produção | `evidencias/performance/stress-local-1000-2026-11-09.json` |
-| Segurança | Entrada, autorização por token e chave administrativa, minimização de dados, preço, rate limit, headers, logs e erros | Testes de contrato locais | Payloads sintéticos malformados | Sem acesso não autorizado, preço adulterado aceito ou segredo em log; listagem sem nome/token do cliente | `lgpd.md` e `evidencias/security/` |
+| Segurança | Entrada, autorização por token e PIN administrativo, minimização de dados, preço, rate limit, headers, logs e erros | Testes de contrato locais | Payloads sintéticos malformados | Sem acesso não autorizado, preço adulterado aceito ou segredo em log; listagem sem nome/token do cliente | `lgpd.md` e `evidencias/security/` |
 | LGPD | Necessidade, finalidade, minimização, acesso, retenção, logs e exclusão | Revisão documental + testes | Apenas dados sintéticos | Nenhum campo desnecessário é exigido; pedido consultado só com token; retenção demonstrativa documentada | `lgpd.md` |
 
 ## Comandos previstos
@@ -285,20 +285,20 @@ Os estados abaixo refletem a execução automatizada em 17/11/2026 e a carga de 
 ### CT024 — Autorização e minimização no painel
 
 - **Requisito:** RF18, RQF13. **Prioridade:** P0. **Tipo:** segurança/API.
-- **Pré-condições:** serviço com `ADMIN_API_KEY` configurada e pedido sintético criado.
-- **Dados:** chave ausente, chave incorreta, chave correta e pedido com nome/token sintéticos.
-- **Passos:** consultar a listagem sem chave e com chave incorreta; consultar com chave correta; inspecionar os campos retornados.
+- **Pré-condições:** serviço com `ADMIN_PIN` configurado e pedido sintético criado.
+- **Dados:** PIN ausente, incorreto, correto de quatro dígitos e formatos inválidos; pedido com nome/token sintéticos.
+- **Passos:** consultar a listagem sem PIN e com PIN incorreto; consultar com PIN correto; inspecionar os campos retornados.
 - **Esperado:** acessos inválidos recebem 401; o acesso válido recebe apenas dados operacionais, sem nome, ID interno, token ou expiração; método diferente de GET recebe 405.
 - **Pós-condição:** pedido permanece inalterado. **Evidência:** [testes de integração](../evidencias/integration/integration-run.txt). **Status:** PASS — acessos ausentes/incorretos negados, resposta minimizada, sem cache e método diferente de GET negado.
 
 ### CT025 — Login, filtros e saída do painel
 
 - **Requisito:** RF17, RF18, RQF13. **Prioridade:** P1. **Tipo:** E2E/interface responsiva.
-- **Pré-condições:** pedido sintético disponível e chave de teste definida no servidor E2E.
-- **Dados:** pedido com produto e nome sintético; chave de teste.
-- **Passos:** acessar `/admin`; tentar a listagem sem credencial; informar chave; filtrar por unidade e canal; localizar o pedido por número e buscar um número inexistente; verificar ausência de overflow horizontal; encerrar sessão.
-- **Esperado:** o painel exige chave, apresenta pedido e indicadores, não mostra dados pessoais, passa a análise axe, não tem rolagem horizontal e retorna à tela de acesso após remover a chave da sessão ao sair.
-- **Pós-condição:** chave removida da sessão do navegador. **Evidência:** [execução E2E](../evidencias/e2e/e2e-run.txt), [painel mobile](../evidencias/e2e/admin-mobile.png). **Status:** PASS — 1/1 cenário E2E com filtros por unidade, canal e número, saída e viewport móvel.
+- **Pré-condições:** pedido sintético disponível e PIN de teste definido no servidor E2E.
+- **Dados:** pedido com produto e nome sintético; PIN de teste.
+- **Passos:** acessar `/admin`; tentar a listagem sem credencial; informar PIN incorreto e conferir a recusa; informar PIN correto; filtrar por unidade e canal; localizar o pedido por número e buscar um número inexistente; verificar ausência de overflow horizontal; encerrar sessão.
+- **Esperado:** o campo exige quatro dígitos e oferece teclado numérico; o painel apresenta pedido e indicadores somente com PIN válido, não mostra dados pessoais, passa a análise axe, não tem rolagem horizontal e retorna à tela de acesso após remover o PIN da sessão ao sair.
+- **Pós-condição:** PIN removido da sessão do navegador. **Evidência:** [execução E2E](../evidencias/e2e/e2e-run.txt), [entrada por PIN](../evidencias/e2e/admin-pin-mobile.png), [painel mobile](../evidencias/e2e/admin-mobile.png). **Status:** PASS — 1/1 cenário E2E com PIN incorreto/correto, filtros, saída e viewport móvel.
 
 ### CT026 — Quantidades e recuperação de erro por teclado
 
@@ -312,10 +312,10 @@ Os estados abaixo refletem a execução automatizada em 17/11/2026 e a carga de 
 ### CT027 — Gestão de produtos e unidades
 
 - **Requisito:** RF18–RF20. **Prioridade:** P1. **Tipo:** API/E2E/segurança.
-- **Pré-condições:** chave administrativa sintética e catálogo inicial independente em memória.
+- **Pré-condições:** PIN administrativo sintético e catálogo inicial independente em memória.
 - **Dados:** unidade QA em Olinda; produto com preço de 24,90 alterado para 26,50; nome, descrição, categoria, foto e disponibilidade.
-- **Passos:** negar mutações sem chave; cadastrar unidade; impedir liberação com menu vazio; criar e editar produto; alternar disponibilidade; liberar unidade; concluir pedido pelo storefront; desativar unidade; cancelar uma exclusão; confirmar exclusões do produto e da unidade; conferir pedido antigo.
-- **Esperado:** somente chave válida altera cadastros; valores inválidos e métodos incorretos são rejeitados; rotas administrativas distintas funcionam; unidade desativada bloqueia pedidos; exclusão exige confirmação na UI e preserva nome/valor do pedido; foco retorna ao título após excluir. Axe não encontra violações nas tags consultadas; páginas não excedem 360 px de largura.
+- **Passos:** negar mutações sem PIN; cadastrar unidade; impedir liberação com menu vazio; criar e editar produto; alternar disponibilidade; liberar unidade; concluir pedido pelo storefront; desativar unidade; cancelar uma exclusão; confirmar exclusões do produto e da unidade; conferir pedido antigo.
+- **Esperado:** somente PIN válido altera cadastros; valores inválidos e métodos incorretos são rejeitados; rotas administrativas distintas funcionam; unidade desativada bloqueia pedidos; exclusão exige confirmação na UI e preserva nome/valor do pedido; foco retorna ao título após excluir. Axe não encontra violações nas tags consultadas; páginas não excedem 360 px de largura.
 - **Pós-condição:** cadastros sintéticos removidos e pedido confirmado preservado até a retenção do protótipo. **Evidência:** [cobertura/API](../evidencias/unit/coverage-run.txt), [E2E](../evidencias/e2e/e2e-run.txt), [cardápio](../evidencias/e2e/admin-cardapio-mobile.png), [unidades](../evidencias/e2e/admin-unidades-mobile.png). **Status:** PASS em 17/11/2026.
 
 ### CT028 — Alteração de preço durante o checkout

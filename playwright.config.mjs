@@ -22,7 +22,7 @@ export default defineConfig({
       HOST: '127.0.0.1',
       PORT: '4173',
       NODE_ENV: 'test',
-      ADMIN_API_KEY: 'admin-e2e-key-000000000000000000000000',
+      ADMIN_PIN: '4826',
       // Journeys share one test server; the nominal rate limit has a dedicated API test.
       RATE_LIMIT_MAX: '1000',
     },

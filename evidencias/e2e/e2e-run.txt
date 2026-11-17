@@ -15,7 +15,7 @@ transforming...
 ✓ 46 modules transformed.
 rendering chunks...
 computing gzip size...
-dist/client/index.html                                  0.57 kB │ gzip:  0.35 kB
+dist/client/index.html                                  0.57 kB │ gzip:  0.36 kB
 dist/client/assets/suco-caju-DGLIslv8.webp             54.30 kB
 dist/client/assets/suco-graviola-BzCw14ps.webp         56.69 kB
 dist/client/assets/suco-caja-DimZzdjz.webp             57.07 kB
@@ -41,26 +41,26 @@ dist/client/assets/queijo-coalho-QwPjCQzY.webp        230.70 kB
 dist/client/assets/cuscuz-sertao-CgbFUFUT.webp        233.78 kB
 dist/client/assets/hero-mesa-DTP9rEZb.webp            239.59 kB
 dist/client/assets/carne-sol-hNpR767f.webp            295.44 kB
-dist/client/assets/index-CR9PoFkX.css                  46.00 kB │ gzip:  9.52 kB
-dist/client/assets/index-Bvglbo6p.js                  276.77 kB │ gzip: 83.33 kB
+dist/client/assets/index-2__WKgX4.css                  46.18 kB │ gzip:  9.55 kB
+dist/client/assets/index-cZzjkiXx.js                  276.98 kB │ gzip: 83.35 kB
 
-✓ built in 139ms
-[WebServer] (node:29624) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+✓ built in 136ms
+[WebServer] (node:29320) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 [WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
 
 Running 10 tests using 1 worker
 
-(node:10280) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(node:16348) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)
   ok  1 [chromium-mobile] › e2e\order-flow.spec.mjs:6:1 › pedido aprovado percorre a jornada em viewport mobile (2.2s)
-  ok  2 [chromium-mobile] › e2e\order-flow.spec.mjs:54:1 › falha de pagamento mantém o carrinho e não mostra confirmação (1.8s)
-  ok  3 [chromium-mobile] › e2e\order-flow.spec.mjs:75:1 › voltar do checkout preserva os itens do carrinho (2.1s)
-  ok  4 [chromium-mobile] › e2e\order-flow.spec.mjs:93:1 › rotas de etapa abrem a aplicação e protegem checkout sem pedido (612ms)
-  ok  5 [chromium-mobile] › e2e\order-flow.spec.mjs:99:1 › campos e controles básicos de acessibilidade passam na análise axe (921ms)
-  ok  6 [chromium-mobile] › e2e\order-flow.spec.mjs:105:1 › link de salto, seleção de unidade e avanço funcionam com teclado (519ms)
-  ok  7 [chromium-mobile] › e2e\order-flow.spec.mjs:128:1 › painel administrativo exige chave e lista pedidos sem dados pessoais (1.1s)
-  ok  8 [chromium-mobile] › e2e\order-flow.spec.mjs:178:1 › quantidades preservam o foco ao adicionar, limitar e remover pelo teclado (1.9s)
-  ok  9 [chromium-mobile] › e2e\order-flow.spec.mjs:225:1 › admin cadastra, edita, libera e exclui produtos e unidades com confirmação (5.1s)
-  ok 10 [chromium-mobile] › e2e\order-flow.spec.mjs:300:1 › checkout atualiza o total e pede nova confirmação quando o admin muda o preço (2.2s)
+  ok  2 [chromium-mobile] › e2e\order-flow.spec.mjs:54:1 › falha de pagamento mantém o carrinho e não mostra confirmação (1.9s)
+  ok  3 [chromium-mobile] › e2e\order-flow.spec.mjs:75:1 › voltar do checkout preserva os itens do carrinho (2.2s)
+  ok  4 [chromium-mobile] › e2e\order-flow.spec.mjs:93:1 › rotas de etapa abrem a aplicação e protegem checkout sem pedido (621ms)
+  ok  5 [chromium-mobile] › e2e\order-flow.spec.mjs:99:1 › campos e controles básicos de acessibilidade passam na análise axe (909ms)
+  ok  6 [chromium-mobile] › e2e\order-flow.spec.mjs:105:1 › link de salto, seleção de unidade e avanço funcionam com teclado (423ms)
+  ok  7 [chromium-mobile] › e2e\order-flow.spec.mjs:128:1 › painel administrativo exige PIN e lista pedidos sem dados pessoais (1.3s)
+  ok  8 [chromium-mobile] › e2e\order-flow.spec.mjs:184:1 › quantidades preservam o foco ao adicionar, limitar e remover pelo teclado (1.7s)
+  ok  9 [chromium-mobile] › e2e\order-flow.spec.mjs:231:1 › admin cadastra, edita, libera e exclui produtos e unidades com confirmação (5.1s)
+  ok 10 [chromium-mobile] › e2e\order-flow.spec.mjs:306:1 › checkout atualiza o total e pede nova confirmação quando o admin muda o preço (2.2s)
 
-  10 passed (19.8s)
+  10 passed (19.7s)

@@ -7,11 +7,17 @@
 - **Ambiente:** Windows; Node.js 24.13.0; dados sintéticos; HTTP local; store em memória
 - **Escopo da decisão:** apresentação acadêmica/profissional do protótipo. Esta decisão não aprova operação comercial.
 
-Lint, TypeScript/sintaxe, build, cobertura e E2E foram repetidos em 17/11/2026, incluindo cadastros administrativos e atualização de preço. A carga/estresse de 09/11/2026 pertence à versão anterior e não foi repetida após essa extensão. A carga e o smoke de `npm start` mantêm as evidências históricas de 09/11/2026. A validação inclui a extensão `/admin` para análise de pedidos, com acesso por chave e resposta minimizada. A revisão técnica por teclado foi executada em 10/11/2026; UAT e escuta com leitor de tela aguardam coleta humana.
+Lint, TypeScript/sintaxe, build, cobertura e E2E foram repetidos em 17/11/2026, incluindo cadastros administrativos, atualização de preço e acesso por PIN. A carga/estresse de 09/11/2026 pertence à versão anterior e não foi repetida após essa extensão. A carga e o smoke de `npm start` mantêm as evidências históricas de 09/11/2026. A validação inclui a extensão `/admin` para análise de pedidos, com autenticação e resposta minimizada. A revisão técnica por teclado foi executada em 10/11/2026; UAT e escuta com leitor de tela aguardam coleta humana.
 
 ## O que foi avaliado
 
-Seleção de unidade e cardápio; carrinho e quantidades; preview de preço; cupom e fidelidade simulada; modalidade/canal; pagamento mock aprovado/recusado/timeout/indisponível; confirmação e consulta protegida; painel `/admin` com chave, filtros e métricas; minimização da resposta administrativa; idempotência; validação e rate limit; logs e headers; interface móvel; acessibilidade automatizável; carga local; lint, sintaxe e vulnerabilidades das dependências.
+### Atualização do acesso por PIN — 17/11/2026
+
+A entrada administrativa passou a usar PIN de quatro dígitos, configurado somente em `ADMIN_PIN` no servidor. A validação local passou com 27 testes unitários/de integração e 10 E2E, incluindo PIN incorreto/correto, formato inválido, saída da sessão e rejeição do PIN como token de consulta de pedido. O valor local foi configurado no `.env` ignorado pelo Git e sua aceitação foi verificada sem registrar a credencial. [Tela de entrada](../evidencias/e2e/admin-pin-mobile.png).
+
+A presença de `ADMIN_PIN` como segredo de Production foi confirmada na Vercel, sem ler seu valor. A publicação dessa mudança e sua validação remota ainda estão pendentes. Os resultados remotos listados acima e a evidência de publicação abaixo são da versão anterior à troca de credencial.
+
+Seleção de unidade e cardápio; carrinho e quantidades; preview de preço; cupom e fidelidade simulada; modalidade/canal; pagamento mock aprovado/recusado/timeout/indisponível; confirmação e consulta protegida; painel `/admin` com PIN, filtros e métricas; minimização da resposta administrativa; idempotência; validação e rate limit; logs e headers; interface móvel; acessibilidade automatizável; carga local; lint, sintaxe e vulnerabilidades das dependências.
 
 ## O que foi executado
 

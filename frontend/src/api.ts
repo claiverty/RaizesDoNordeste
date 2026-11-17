@@ -44,9 +44,9 @@ export async function createOrder(order: OrderBody, idempotencyKey: string): Pro
   return data;
 }
 
-export async function getAdminOrders(accessKey: string): Promise<AdminOrder[]> {
+export async function getAdminOrders(accessPin: string): Promise<AdminOrder[]> {
   const response = await fetch('/api/v1/admin/orders', {
-    headers: accessKey ? { Authorization: `Bearer ${accessKey}` } : {},
+    headers: accessPin ? { Authorization: `Bearer ${accessPin}` } : {},
   });
   const data = await responseBody<{ orders: AdminOrder[] } & ApiError>(response);
   if (!response.ok) {
@@ -58,10 +58,10 @@ export async function getAdminOrders(accessKey: string): Promise<AdminOrder[]> {
   return data.orders;
 }
 
-export async function adminCatalogRequest(accessKey: string, path = '/catalog', method = 'GET', body?: unknown): Promise<AdminCatalog> {
+export async function adminCatalogRequest(accessPin: string, path = '/catalog', method = 'GET', body?: unknown): Promise<AdminCatalog> {
   const response = await fetch(`/api/v1/admin${path}`, {
     method,
-    headers: { Authorization: `Bearer ${accessKey}`, ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
+    headers: { Authorization: `Bearer ${accessPin}`, ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
   });
   const data = await responseBody<AdminCatalog & ApiError>(response);

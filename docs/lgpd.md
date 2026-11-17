@@ -21,7 +21,7 @@ Esta análise descreve os dados usados pelo protótipo, as finalidades e os cont
 - API rejeita campos fora do contrato, reduzindo coleta por mass assignment. Os testes usam valores sintéticos.
 - O total e as regras do pedido não dependem de cadastro. Fidelidade é mock e não recebe identificador de pessoa.
 - Consulta do pedido exige token de acesso aleatório. Logs omitem body, Authorization, token e IP.
-- A listagem `/admin` exige uma chave mantida no servidor, usa `Cache-Control: no-store` e entrega somente campos de operação; não retorna nome, ID interno, token de consulta ou prazo de expiração. O navegador mantém a chave somente na sessão da aba e a remove ao sair. A credencial local de `.env.example` é demonstrativa e não deve ser reutilizada em produção.
+- A listagem `/admin` exige o PIN de quatro dígitos configurado no servidor, usa `Cache-Control: no-store` e entrega somente campos de operação; não retorna nome, ID interno, token de consulta ou prazo de expiração. O navegador mantém o PIN informado somente na sessão da aba e o remove ao sair. `.env.example` contém apenas o nome da variável, sem seu valor.
 - Cabeçalhos limitam framing, conteúdo e capabilities desnecessárias; localmente o serviço escuta em loopback. Em produção deve usar TLS, controle de acesso operacional, gestão de segredos, backups protegidos e política de incidentes.
 - A interface não apresenta consentimento genérico para o processamento estritamente necessário ao pedido. Marketing futuro deve ter finalidade e base próprias, separadas e revogáveis quando o consentimento for a base adequada.
 
@@ -35,7 +35,7 @@ No protótipo, não há portal de direitos; reiniciar o processo remove os dados
 |---|---|---|
 | Minimização | Sem CPF, telefone, endereço, e-mail obrigatório ou dado de cartão | CT016 |
 | Acesso | Token ausente/incorreto não devolve pedido | CT013 |
-| Acesso administrativo | Chave ausente/incorreta é negada; listagem minimizada omite nome, ID interno, token e retenção | CT024, CT025 |
+| Acesso administrativo | PIN ausente/incorreto é negado; listagem minimizada omite nome, ID interno, token e retenção | CT024, CT025 |
 | Log | Nenhum nome, token, corpo ou Authorization em log sintético | CT016 |
 | Retenção demonstrativa | Expiração de 24h e limpeza no processo | CT020 |
 | Transparência | Microcopy explica dado opcional e simulação antes da ação | CT014, CT016 |
@@ -48,7 +48,7 @@ Os testes automatizados verificaram estes controles no protótipo. Isso não equ
 |---|---|---|
 | Campos desconhecidos, forma de pagamento e quantidades inválidas rejeitados | PASS | `test/domain.test.mjs`; `evidencias/integration/integration-run.txt` |
 | Preço e total do cliente não definem cobrança | PASS — cálculo vem do catálogo; `expectedTotalCents` é uma condição de confirmação e divergência interrompe antes do pagamento | `test/api.test.mjs`, teste de preço alterado e CT028 |
-| Mutações de catálogo/unidades exigem chave e validam entrada | PASS — chave ausente nega criação/edição/exclusão; campos desconhecidos, preço inválido e imagens externas são rejeitados; logs não contêm a credencial | `test/api.test.mjs`, cadastros e CT027 |
+| Mutações de catálogo/unidades exigem PIN e validam entrada | PASS — PIN ausente nega criação/edição/exclusão; campos desconhecidos, preço inválido e imagens externas são rejeitados; logs não contêm a credencial | `test/api.test.mjs`, cadastros e CT027 |
 | Consulta de pedido sem token ou com token incorreto negada; leitura autorizada não devolve o token | PASS | `test/api.test.mjs`, teste de consulta protegida |
 | JSON malformado, tipo de conteúdo incorreto e corpo acima de 32 KB tratados sem stack trace | PASS | `test/api.test.mjs`, teste de validação de corpo |
 | Rate limit retorna 429 e `Retry-After` | PASS | `test/api.test.mjs`, teste de rate limit |

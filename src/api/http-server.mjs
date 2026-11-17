@@ -52,7 +52,7 @@ export function createApiServer({
   store = new MemoryStore(),
   loyaltyService = createLoyaltyMock(),
   paymentService = createPaymentMock(),
-  adminApiKey = process.env.ADMIN_API_KEY ?? '',
+  adminPin = process.env.ADMIN_PIN ?? '',
   rateLimiter = createRateLimiter({
     limit: Number.parseInt(process.env.RATE_LIMIT_MAX ?? '60', 10),
     windowMs: Number.parseInt(process.env.RATE_LIMIT_WINDOW_MS ?? '60000', 10),
@@ -99,14 +99,14 @@ export function createApiServer({
           status = 200;
           writeJson(response, status, { units: catalog.listUnits() });
         } else if (pathname.startsWith('/api/v1/admin/')) {
-          if (!isAdminKeyConfigured(adminApiKey)) {
+          if (!isAdminPinConfigured(adminPin)) {
             status = 503;
             errorCode = 'ADMIN_NOT_CONFIGURED';
-            writeJson(response, status, { error: { code: errorCode, message: 'O acesso administrativo ainda não foi configurado.', requestId } });
-          } else if (!hasValidAdminKey(request.headers.authorization, adminApiKey)) {
+            writeJson(response, status, { error: { code: errorCode, message: 'O PIN administrativo ainda não foi configurado.', requestId } });
+          } else if (!hasValidAdminPin(request.headers.authorization, adminPin)) {
             status = 401;
             errorCode = 'ADMIN_UNAUTHORIZED';
-            writeJson(response, status, { error: { code: errorCode, message: 'Acesso administrativo não autorizado.', requestId } });
+            writeJson(response, status, { error: { code: errorCode, message: 'PIN inválido ou ausente.', requestId } });
           } else if (pathname === '/api/v1/admin/orders' && method === 'GET') {
             status = 200;
             writeJson(response, status, { orders: store.listOrders().map(toAdminOrder) });
@@ -290,13 +290,13 @@ function constantTimeEqual(left, right) {
   return timingSafeEqual(a, b);
 }
 
-function isAdminKeyConfigured(value) {
-  return typeof value === 'string' && /^[A-Za-z0-9-]{32,80}$/.test(value);
+function isAdminPinConfigured(value) {
+  return typeof value === 'string' && /^\d{4}$/.test(value);
 }
 
-function hasValidAdminKey(authorization, configuredKey) {
-  const token = readBearerToken(authorization);
-  return constantTimeEqual(token, configuredKey);
+function hasValidAdminPin(authorization, configuredPin) {
+  const pin = typeof authorization === 'string' ? /^Bearer (\d{4})$/.exec(authorization)?.[1] ?? '' : '';
+  return constantTimeEqual(pin, configuredPin);
 }
 
 function toAdminOrder(order) {

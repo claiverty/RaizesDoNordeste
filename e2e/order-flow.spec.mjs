@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-const adminHeaders = { Authorization: 'Bearer admin-e2e-key-000000000000000000000000' };
+const adminHeaders = { Authorization: 'Bearer 4826' };
 
 test('pedido aprovado percorre a jornada em viewport mobile', async ({ page }) => {
   await page.goto('/');
@@ -125,7 +125,7 @@ test('link de salto, seleção de unidade e avanço funcionam com teclado', asyn
   await expect(page.locator('#page-title')).toBeFocused();
 });
 
-test('painel administrativo exige chave e lista pedidos sem dados pessoais', async ({ page }) => {
+test('painel administrativo exige PIN e lista pedidos sem dados pessoais', async ({ page }) => {
   const orderResponse = await page.request.post('http://127.0.0.1:4173/api/v1/orders', {
     headers: { 'Content-Type': 'application/json', 'Idempotency-Key': 'admin-e2e-order-0001' },
     data: {
@@ -143,7 +143,13 @@ test('painel administrativo exige chave e lista pedidos sem dados pessoais', asy
   expect(unauthorizedResponse.status()).toBe(401);
 
   await page.goto('/admin');
-  await page.getByLabel('Chave de acesso').fill('admin-e2e-key-000000000000000000000000');
+  await expect(page.getByLabel('PIN de acesso')).toHaveAttribute('inputmode', 'numeric');
+  await expect(page.getByLabel('PIN de acesso')).toHaveAttribute('maxlength', '4');
+  await page.screenshot({ path: 'evidencias/e2e/admin-pin-mobile.png', fullPage: true });
+  await page.getByLabel('PIN de acesso').fill('1111');
+  await page.getByRole('button', { name: /Acessar painel/ }).click();
+  await expect(page.getByRole('alert')).toHaveText('PIN inválido ou ausente.');
+  await page.getByLabel('PIN de acesso').fill('4826');
   await page.getByRole('button', { name: /Acessar painel/ }).click();
   await expect(page.getByRole('heading', { name: 'Visão dos pedidos' })).toBeVisible();
   const adminAccessibility = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
@@ -172,7 +178,7 @@ test('painel administrativo exige chave e lista pedidos sem dados pessoais', asy
   await page.screenshot({ path: 'evidencias/e2e/admin-mobile.png', fullPage: true });
   await page.getByRole('button', { name: 'Sair' }).click();
   await expect(page.getByRole('heading', { name: 'Painel administrativo' })).toBeVisible();
-  expect(await page.evaluate(() => globalThis.sessionStorage.getItem('raizes-admin-access-key'))).toBeNull();
+  expect(await page.evaluate(() => globalThis.sessionStorage.getItem('raizes-admin-pin'))).toBeNull();
 });
 
 test('quantidades preservam o foco ao adicionar, limitar e remover pelo teclado', async ({ page }) => {
@@ -224,7 +230,7 @@ test('quantidades preservam o foco ao adicionar, limitar e remover pelo teclado'
 
 test('admin cadastra, edita, libera e exclui produtos e unidades com confirmação', async ({ page }) => {
   await page.goto('/admin/unidades');
-  await page.getByLabel('Chave de acesso').fill('admin-e2e-key-000000000000000000000000');
+  await page.getByLabel('PIN de acesso').fill('4826');
   await page.getByRole('button', { name: 'Acessar painel' }).click();
   await expect(page.getByRole('heading', { name: 'Gerenciar unidades' })).toBeVisible();
   await page.getByRole('button', { name: 'Nova unidade', exact: true }).click();

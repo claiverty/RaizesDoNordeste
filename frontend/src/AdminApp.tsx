@@ -4,7 +4,7 @@ import type { AdminCatalog, AdminOrder, Channel } from './types';
 import AdminCatalogManager from './AdminCatalogManager';
 import './admin.css';
 
-const ACCESS_KEY_STORAGE = 'raizes-admin-access-key';
+const PIN_STORAGE = 'raizes-admin-pin';
 const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 const dateTime = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 type Period = '7' | '30' | 'all';
@@ -33,12 +33,13 @@ function channelLabel(channel: Channel): string {
 }
 
 function AdminApp() {
-  const [accessKey, setAccessKey] = useState('');
-  const [draftKey, setDraftKey] = useState('');
+  const [accessPin, setAccessPin] = useState('');
+  const [draftPin, setDraftPin] = useState('');
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [catalog, setCatalog] = useState<AdminCatalog | null>(null);
   const [section, setSection] = useState<Section>(sectionFromPath);
   const mainRef = useRef<HTMLElement>(null);
+  const pinRef = useRef<HTMLInputElement>(null);
   const [authorized, setAuthorized] = useState(false);
   const [configured, setConfigured] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,12 +53,13 @@ function AdminApp() {
   useEffect(() => {
     document.title = 'Painel administrativo | Raízes do Nordeste';
     let active = true;
-    const savedKey = window.sessionStorage.getItem(ACCESS_KEY_STORAGE) ?? '';
-    setDraftKey(savedKey);
-    Promise.all([getAdminOrders(savedKey), adminCatalogRequest(savedKey)])
+    window.sessionStorage.removeItem('raizes-admin-access-key');
+    const savedPin = window.sessionStorage.getItem(PIN_STORAGE) ?? '';
+    setDraftPin(savedPin);
+    Promise.all([getAdminOrders(savedPin), adminCatalogRequest(savedPin)])
       .then(([nextOrders, nextCatalog]) => {
         if (!active) return;
-        setAccessKey(savedKey);
+        setAccessPin(savedPin);
         setOrders(nextOrders);
         setCatalog(nextCatalog);
         setAuthorized(true);
@@ -68,8 +70,8 @@ function AdminApp() {
         const failure = asApiFailure(caught);
         setConfigured(failure.status !== 503);
         if (failure.status === 401) {
-          window.sessionStorage.removeItem(ACCESS_KEY_STORAGE);
-          setErrorMessage(savedKey ? 'A chave salva nesta sessão expirou ou está incorreta.' : '');
+          window.sessionStorage.removeItem(PIN_STORAGE);
+          setErrorMessage(savedPin ? 'O PIN salvo nesta sessão expirou ou está incorreto.' : '');
         } else {
           setErrorMessage(failure.message);
         }
@@ -85,6 +87,13 @@ function AdminApp() {
     window.addEventListener('popstate', sync);
     return () => window.removeEventListener('popstate', sync);
   }, []);
+
+  useEffect(() => {
+    if (!loading && !authorized) {
+      pinRef.current?.focus();
+      pinRef.current?.select();
+    }
+  }, [loading, authorized]);
 
   useEffect(() => {
     document.title = `${sectionLabels[section]} | Administração — Raízes do Nordeste`;
@@ -153,17 +162,17 @@ function AdminApp() {
 
   async function signIn(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const candidate = draftKey.trim();
-    if (!candidate) {
-      setErrorMessage('Informe a chave de acesso.');
+    const candidate = draftPin.trim();
+    if (!/^\d{4}$/.test(candidate)) {
+      setErrorMessage('Informe o PIN de 4 dígitos.');
       return;
     }
     setLoading(true);
     setErrorMessage('');
     try {
       const [nextOrders, nextCatalog] = await Promise.all([getAdminOrders(candidate), adminCatalogRequest(candidate)]);
-      window.sessionStorage.setItem(ACCESS_KEY_STORAGE, candidate);
-      setAccessKey(candidate);
+      window.sessionStorage.setItem(PIN_STORAGE, candidate);
+      setAccessPin(candidate);
       setOrders(nextOrders);
       setCatalog(nextCatalog);
       setAuthorized(true);
@@ -181,7 +190,7 @@ function AdminApp() {
     setRefreshing(true);
     setErrorMessage('');
     try {
-      const [nextOrders, nextCatalog] = await Promise.all([getAdminOrders(accessKey), adminCatalogRequest(accessKey)]);
+      const [nextOrders, nextCatalog] = await Promise.all([getAdminOrders(accessPin), adminCatalogRequest(accessPin)]);
       setOrders(nextOrders);
       setCatalog(nextCatalog);
     } catch (caught) {
@@ -194,9 +203,9 @@ function AdminApp() {
   }
 
   function signOut() {
-    window.sessionStorage.removeItem(ACCESS_KEY_STORAGE);
-    setAccessKey('');
-    setDraftKey('');
+    window.sessionStorage.removeItem(PIN_STORAGE);
+    setAccessPin('');
+    setDraftPin('');
     setOrders([]);
     setCatalog(null);
     setAuthorized(false);
@@ -238,7 +247,7 @@ function AdminApp() {
           <span className="admin-access-mark" aria-hidden="true">!</span>
           <p className="admin-eyebrow">Acesso restrito</p>
           <h1 id="admin-setup-title">Painel ainda não configurado</h1>
-          <p>Defina a variável secreta <code>ADMIN_API_KEY</code> no ambiente do servidor para liberar o acesso administrativo.</p>
+          <p>O PIN administrativo ainda não foi configurado. Fale com o responsável pela demonstração.</p>
           {errorMessage && <p className="admin-error" role="alert">{errorMessage}</p>}
           <a className="admin-back-button" href="/">Voltar à loja</a>
         </section>}
@@ -247,16 +256,22 @@ function AdminApp() {
           <span className="admin-access-mark" aria-hidden="true">RN</span>
           <p className="admin-eyebrow">Acesso restrito</p>
           <h1 id="admin-login-title">Painel administrativo</h1>
-          <p>Entre com a chave da operação para acompanhar pedidos, gerenciar o cardápio e as unidades.</p>
+          <p>Digite o PIN de 4 dígitos para acessar a operação.</p>
           <form className="admin-login-form" onSubmit={signIn}>
-            <label htmlFor="admin-access-key">Chave de acesso</label>
+            <label htmlFor="admin-access-pin">PIN de acesso</label>
             <input
-              id="admin-access-key"
+              id="admin-access-pin"
+              ref={pinRef}
+              className="admin-pin-input"
               type="password"
-              autoComplete="current-password"
-              value={draftKey}
-              onChange={(event) => setDraftKey(event.target.value)}
-              placeholder="Digite sua chave"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              minLength={4}
+              maxLength={4}
+              pattern="[0-9]{4}"
+              value={draftPin}
+              onChange={(event) => setDraftPin(event.target.value.replace(/\D/g, '').slice(0, 4))}
+              placeholder="4 dígitos"
               required
             />
             {errorMessage && <p className="admin-error" role="alert">{errorMessage}</p>}
@@ -264,7 +279,7 @@ function AdminApp() {
           </form>
         </section>}
 
-        {!loading && authorized && section !== 'orders' && catalog && <AdminCatalogManager key={section} section={section} catalog={catalog} accessKey={accessKey} onChange={setCatalog} onUnauthorized={signOut} />}
+        {!loading && authorized && section !== 'orders' && catalog && <AdminCatalogManager key={section} section={section} catalog={catalog} accessPin={accessPin} onChange={setCatalog} onUnauthorized={signOut} />}
 
         {!loading && authorized && section === 'orders' && <>
           <section className="admin-intro">

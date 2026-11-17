@@ -2,33 +2,33 @@
 > raizes-do-nordeste-qa@1.0.0 test:coverage
 > node --experimental-test-coverage "--test-coverage-include=src/domain/*.mjs" --test-coverage-lines=80 --test-coverage-branches=75 --test test/api.test.mjs test/domain.test.mjs
 
-✔ cadastros exigem chave, gerenciam unidades e produtos e preservam pedidos antigos (70.8311ms)
-✔ cadastros rejeitam valores inválidos e métodos sem alterar o catálogo (22.8216ms)
-✔ preço alterado exige nova revisão e unidade desativada bloqueia pedido antes do pagamento (9.8115ms)
-✔ health, catálogo e cabeçalhos básicos são servidos (5.4499ms)
-✔ painel lista pedidos confirmados somente com chave e omite dados do cliente (6.932ms)
-✔ painel não atende sem chave de administração configurada (2.5959ms)
-✔ prévia e pedido aprovado usam preço calculado no servidor (5.1425ms)
-✔ rejeita carrinho vazio, unidade indisponível e cupom inválido sem pagamento (6.0204ms)
-✔ recusa, timeout e falha de fidelidade não confirmam pedido (5.7757ms)
-✔ indisponibilidade de pagamento e exceção interna não vazam detalhes nem criam pedido (6.7836ms)
-✔ repetição com mesma chave reusa resposta; payload alterado dá conflito (4.821ms)
-✔ preços permanecem consistentes nos canais suportados (7.0045ms)
-✔ reiniciar a aplicação perde pedidos, conforme limite do store em memória (4.9443ms)
-✔ consulta exige token e não devolve o token na resposta de leitura (6.0986ms)
-✔ valida JSON, tipo de conteúdo, chave e tamanho máximo do corpo (8.0465ms)
-✔ rate limit padrão retorna 429 após 60 requests e logs não guardam o corpo (33.8903ms)
-✔ calcula subtotal em centavos com preço do catálogo (1.5918ms)
-✔ aplica cupom de 10% e fidelidade sem ultrapassar subtotal (0.2982ms)
-✔ rejeita unidade indisponível (0.5061ms)
-✔ rejeita produto indisponível e produto de outro cardápio (0.321ms)
-✔ distingue cupom expirado e inválido (0.3065ms)
-✔ falha de fidelidade não retorna desconto (0.1999ms)
-✔ valida carrinho, quantidade, duplicidade e campos proibidos (0.6899ms)
-✔ valida dados de pagamento e não aceita cartão real (0.2301ms)
-✔ idempotência não cria duplicidade e rejeita chave reutilizada com payload diferente (40.482ms)
-✔ recusa e timeout são idempotentes e não criam pedido (0.5861ms)
-✔ store remove registros expirados e devolve cópia defensiva (0.3224ms)
+✔ cadastros exigem PIN, gerenciam unidades e produtos e preservam pedidos antigos (68.736ms)
+✔ cadastros rejeitam valores inválidos e métodos sem alterar o catálogo (23.4287ms)
+✔ preço alterado exige nova revisão e unidade desativada bloqueia pedido antes do pagamento (9.8135ms)
+✔ health, catálogo e cabeçalhos básicos são servidos (4.8986ms)
+✔ painel lista pedidos confirmados somente com PIN e omite dados do cliente (9.3836ms)
+✔ painel não atende sem PIN administrativo válido configurado (6.312ms)
+✔ prévia e pedido aprovado usam preço calculado no servidor (5.3475ms)
+✔ rejeita carrinho vazio, unidade indisponível e cupom inválido sem pagamento (6.342ms)
+✔ recusa, timeout e falha de fidelidade não confirmam pedido (5.8682ms)
+✔ indisponibilidade de pagamento e exceção interna não vazam detalhes nem criam pedido (5.0382ms)
+✔ repetição com mesma chave reusa resposta; payload alterado dá conflito (4.7999ms)
+✔ preços permanecem consistentes nos canais suportados (6.4049ms)
+✔ reiniciar a aplicação perde pedidos, conforme limite do store em memória (7.9927ms)
+✔ consulta exige token e não devolve o token na resposta de leitura (4.9266ms)
+✔ valida JSON, tipo de conteúdo, chave e tamanho máximo do corpo (5.7422ms)
+✔ rate limit padrão retorna 429 após 60 requests e logs não guardam o corpo (29.9523ms)
+✔ calcula subtotal em centavos com preço do catálogo (1.7391ms)
+✔ aplica cupom de 10% e fidelidade sem ultrapassar subtotal (0.286ms)
+✔ rejeita unidade indisponível (0.5071ms)
+✔ rejeita produto indisponível e produto de outro cardápio (0.3337ms)
+✔ distingue cupom expirado e inválido (0.3085ms)
+✔ falha de fidelidade não retorna desconto (0.1971ms)
+✔ valida carrinho, quantidade, duplicidade e campos proibidos (0.6815ms)
+✔ valida dados de pagamento e não aceita cartão real (0.2319ms)
+✔ idempotência não cria duplicidade e rejeita chave reutilizada com payload diferente (29.605ms)
+✔ recusa e timeout são idempotentes e não criam pedido (0.4758ms)
+✔ store remove registros expirados e devolve cópia defensiva (0.2069ms)
 ℹ tests 27
 ℹ suites 0
 ℹ pass 27
@@ -36,7 +36,7 @@
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 318.5888
+ℹ duration_ms 316.002
 ℹ start of coverage report
 ℹ --------------------------------------------------------------------------------------------------
 ℹ file              | line % | branch % | funcs % | uncovered lines

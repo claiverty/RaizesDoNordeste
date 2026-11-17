@@ -11,12 +11,12 @@ type Removal = { kind: 'product' | 'unit'; id: string; name: string; unitId?: st
 interface Props {
   section: 'menu' | 'units';
   catalog: AdminCatalog;
-  accessKey: string;
+  accessPin: string;
   onChange: (catalog: AdminCatalog) => void;
   onUnauthorized: () => void;
 }
 
-export default function AdminCatalogManager({ section, catalog, accessKey, onChange, onUnauthorized }: Props) {
+export default function AdminCatalogManager({ section, catalog, accessPin, onChange, onUnauthorized }: Props) {
   const requestedUnit = new URLSearchParams(window.location.search).get('unidade');
   const [selectedUnit, setSelectedUnit] = useState(requestedUnit ?? catalog.units[0]?.id ?? '');
   const [search, setSearch] = useState('');
@@ -73,7 +73,7 @@ export default function AdminCatalogManager({ section, catalog, accessKey, onCha
     setError('');
     setNotice('');
     try {
-      onChange(await adminCatalogRequest(accessKey, path, method, body));
+      onChange(await adminCatalogRequest(accessPin, path, method, body));
       setNotice(success);
       return true;
     } catch (caught) {

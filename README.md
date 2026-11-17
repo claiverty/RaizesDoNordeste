@@ -43,7 +43,7 @@ O checkout web envia o canal `WEB` automaticamente. A API também valida outros 
 
 ### Gestão no painel
 
-Com a mesma chave administrativa, abra Cardápio para escolher a unidade e cadastrar nome, descrição, categoria, preço, disponibilidade e uma foto da galeria. Preço zero indica cortesia. Em Unidades, cadastre nome e cidade; a nova loja começa desativada e pode ser liberada depois de receber ao menos um produto disponível. Excluir uma unidade também remove seu cardápio, após confirmação. Pedidos já confirmados preservam os nomes e valores originais.
+Com o mesmo PIN administrativo, abra Cardápio para escolher a unidade e cadastrar nome, descrição, categoria, preço, disponibilidade e uma foto da galeria. Preço zero indica cortesia. Em Unidades, cadastre nome e cidade; a nova loja começa desativada e pode ser liberada depois de receber ao menos um produto disponível. Excluir uma unidade também remove seu cardápio, após confirmação. Pedidos já confirmados preservam os nomes e valores originais.
 
 Se um preço mudar enquanto o cliente revisa o checkout, o sistema atualiza os valores e pede nova confirmação antes de processar o pagamento simulado.
 
@@ -58,7 +58,7 @@ npm run dev
 
 Abra `http://127.0.0.1:5173`. A unidade Recife Centro aceita pedidos; Natal Norte fica indisponível para testar o tratamento de falhas.
 
-Para habilitar o painel local, copie `.env.example` para `.env` e gere uma chave de 64 caracteres hexadecimais com `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`. Guarde esse valor apenas no `.env`, que é ignorado pelo Git. A produção usa outra chave, configurada como segredo na Vercel; nunca reutilize ou publique a chave local.
+Para habilitar o painel local, copie `.env.example` para `.env` e configure `ADMIN_PIN` com o PIN de quatro dígitos definido para a demonstração. Na Vercel, configure `ADMIN_PIN` como segredo de Production e publique uma nova versão. O servidor valida o PIN; seu valor não fica no código da interface. `ADMIN_API_KEY` deixou de ser usada. O acesso fica indisponível se o PIN estiver ausente ou fora do formato.
 
 Para compilar e servir a versão local de produção:
 
@@ -105,7 +105,7 @@ A documentação começa pelo [plano de execução](docs/00-plano-de-execucao.md
 
 ## Limites conhecidos
 
-O painel permite analisar pedidos e gerenciar produtos e unidades. Os cadastros são temporários, conforme o modo de demonstração escolhido: reiniciar restaura o catálogo inicial, e instâncias independentes da Vercel não compartilham alterações. Pedidos e idempotência também ficam em memória, sem histórico operacional garantido. `ADMIN_API_KEY` foi confirmada como segredo de produção na Vercel em 10/11/2026; todas as consultas e alterações administrativas exigem essa chave. Ao criar outra implantação, configure uma chave exclusiva nesse ambiente.
+O painel permite analisar pedidos e gerenciar produtos e unidades. Os cadastros são temporários, conforme o modo de demonstração escolhido: reiniciar restaura o catálogo inicial, e instâncias independentes da Vercel não compartilham alterações. Pedidos e idempotência também ficam em memória, sem histórico operacional garantido. Todas as consultas e alterações administrativas exigem o PIN configurado em `ADMIN_PIN`. O valor é mantido no servidor e o acesso é encerrado ao sair ou fechar a sessão do navegador.
 
 O armazenamento é volátil: reiniciar o servidor remove os pedidos. Não há integração real com pagamento, estoque, fidelidade ou sistemas de franquia. O protótipo está pronto para demonstração e avaliação; não para operação comercial.
 

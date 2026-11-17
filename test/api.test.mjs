@@ -36,8 +36,8 @@ function validBody(overrides = {}) {
   };
 }
 
-const managementKey = 'admin-catalog-test-key-000000000000000000';
-function manage(app, path, method = 'GET', body, key = managementKey) {
+const managementPin = '4826';
+function manage(app, path, method = 'GET', body, key = managementPin) {
   return fetch(`${app.baseUrl}/api/v1/admin${path}`, {
     method,
     headers: { ...(key ? { Authorization: `Bearer ${key}` } : {}), ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
@@ -47,8 +47,8 @@ function manage(app, path, method = 'GET', body, key = managementKey) {
 
 const sampleProduct = { name: 'Bolo de mandioca', description: 'Fatia da casa.', priceCents: 850, category: 'Doces', available: true, imageKey: 'bolo-milho' };
 
-test('cadastros exigem chave, gerenciam unidades e produtos e preservam pedidos antigos', async (t) => {
-  const app = await startServer({ adminApiKey: managementKey });
+test('cadastros exigem PIN, gerenciam unidades e produtos e preservam pedidos antigos', async (t) => {
+  const app = await startServer({ adminPin: managementPin });
   t.after(() => app.close());
   for (const [path, method, body] of [
     ['/catalog', 'GET'], ['/units', 'POST', { name: 'Loja proibida', city: 'Recife' }],
@@ -90,14 +90,14 @@ test('cadastros exigem chave, gerenciam unidades e produtos e preservam pedidos 
   assert.equal(orders[0].unitName, 'Olinda Centro');
   assert.equal(orders[0].items[0].name, 'Bolo de mandioca');
   assert.equal(orders[0].totalCents, 850);
-  const secondApp = await startServer({ adminApiKey: managementKey });
+  const secondApp = await startServer({ adminPin: managementPin });
   t.after(() => secondApp.close());
   assert.equal((await (await manage(secondApp, '/catalog')).json()).units.length, 2);
-  assert.ok(app.logs.every((entry) => !JSON.stringify(entry).includes(managementKey)));
+  assert.ok(app.logs.every((entry) => !('authorization' in entry) && !('pin' in entry) && !('body' in entry)));
 });
 
 test('cadastros rejeitam valores inválidos e métodos sem alterar o catálogo', async (t) => {
-  const app = await startServer({ adminApiKey: managementKey });
+  const app = await startServer({ adminPin: managementPin });
   t.after(() => app.close());
   const productPath = '/units/recife-centro/products/bolo-milho';
   for (const value of [{ priceCents: -1 }, { priceCents: 1.5 }, { priceCents: 1_000_001 }, { category: 'Inválida' }, { available: 'true' }, { imageKey: 'https://example.com/image.jpg' }, { name: '<script>' }, { id: 'novo-id' }, {}]) {
@@ -113,14 +113,14 @@ test('cadastros rejeitam valores inválidos e métodos sem alterar o catálogo',
   const menu = (await (await manage(app, '/catalog')).json()).productsByUnit['recife-centro'];
   assert.equal(menu.length, 24);
   assert.equal(menu.find((product) => product.id === 'bolo-milho').priceCents, 1250);
-  const closed = await startServer({ adminApiKey: '' });
+  const closed = await startServer({ adminPin: '' });
   t.after(() => closed.close());
   assert.equal((await manage(closed, '/catalog')).status, 503);
 });
 
 test('preço alterado exige nova revisão e unidade desativada bloqueia pedido antes do pagamento', async (t) => {
   const paymentService = createPaymentMock();
-  const app = await startServer({ adminApiKey: managementKey, paymentService });
+  const app = await startServer({ adminPin: managementPin, paymentService });
   t.after(() => app.close());
   await manage(app, '/units/recife-centro/products/bolo-milho', 'PATCH', { priceCents: 1400 });
   const stale = await postOrder(app, validBody({ expectedTotalCents: 2500 }), 'catalog-stale-price');
@@ -159,18 +159,23 @@ test('health, catálogo e cabeçalhos básicos são servidos', async (t) => {
   assert.equal((await fetch(`${app.baseUrl}/api/v1/units/natal-norte/menu`)).status, 409);
 });
 
-test('painel lista pedidos confirmados somente com chave e omite dados do cliente', async (t) => {
-  const adminApiKey = 'admin-api-test-key-000000000000000000000000';
-  const app = await startServer({ adminApiKey });
+test('painel lista pedidos confirmados somente com PIN e omite dados do cliente', async (t) => {
+  const adminPin = '4826';
+  const app = await startServer({ adminPin });
   t.after(() => app.close());
   const created = await postOrder(app, validBody({ customerName: 'Nome sintético' }));
   assert.equal(created.status, 201);
+  const customerOrder = await created.json();
+  assert.equal((await fetch(`${app.baseUrl}/api/v1/orders/${customerOrder.id}`, { headers: { Authorization: `Bearer ${adminPin}` } })).status, 401);
 
   const url = `${app.baseUrl}/api/v1/admin/orders`;
   assert.equal((await fetch(url)).status, 401);
   assert.equal((await fetch(url, { headers: { Authorization: 'Bearer chave-incorreta-000000000000000' } })).status, 401);
+  for (const value of ['1111', '482', '48260', '48a6']) {
+    assert.equal((await fetch(url, { headers: { Authorization: `Bearer ${value}` } })).status, 401);
+  }
 
-  const response = await fetch(url, { headers: { Authorization: `Bearer ${adminApiKey}` } });
+  const response = await fetch(url, { headers: { Authorization: `Bearer ${adminPin}` } });
   assert.equal(response.status, 200);
   assert.equal(response.headers.get('cache-control'), 'no-store');
   const { orders } = await response.json();
@@ -181,15 +186,17 @@ test('painel lista pedidos confirmados somente com chave e omite dados do client
   assert.equal('accessToken' in orders[0], false);
   assert.equal('id' in orders[0], false);
   assert.equal('expiresAt' in orders[0], false);
-  assert.equal((await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${adminApiKey}` } })).status, 405);
+  assert.equal((await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${adminPin}` } })).status, 405);
 });
 
-test('painel não atende sem chave de administração configurada', async (t) => {
-  const app = await startServer({ adminApiKey: '' });
-  t.after(() => app.close());
-  const response = await fetch(`${app.baseUrl}/api/v1/admin/orders`);
-  assert.equal(response.status, 503);
-  assert.equal((await response.json()).error.code, 'ADMIN_NOT_CONFIGURED');
+test('painel não atende sem PIN administrativo válido configurado', async (t) => {
+  for (const adminPin of ['', '12345', 'abcd']) {
+    const app = await startServer({ adminPin });
+    t.after(() => app.close());
+    const response = await fetch(`${app.baseUrl}/api/v1/admin/orders`);
+    assert.equal(response.status, 503);
+    assert.equal((await response.json()).error.code, 'ADMIN_NOT_CONFIGURED');
+  }
 });
 
 test('prévia e pedido aprovado usam preço calculado no servidor', async (t) => {

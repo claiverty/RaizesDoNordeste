@@ -273,6 +273,8 @@
 .admin-access-mark { width: 2.5rem; height: 2.5rem; margin-bottom: 1.25rem; border-radius: .5rem; background: #f0f2e9; font-weight: 500; }
 .admin-access-card > p:not(.admin-eyebrow) { font-size: .9rem; }
 .admin-login-form { gap: .8rem; }
+.admin-login-form .admin-pin-input { font-size: 1.25rem; letter-spacing: .5em; text-align: center; }
+.admin-login-form .admin-pin-input::placeholder { letter-spacing: 0; font-size: .86rem; }
 .admin-primary-button, .admin-back-button { border-radius: .5rem; font-size: .86rem; font-weight: 500; }
 .admin-back-button { border-color: var(--line); }
 

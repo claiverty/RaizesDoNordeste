@@ -31,9 +31,9 @@ O objetivo desta entrega é demonstrar uma jornada de pedido verificável e uma 
 
 ## Extensão solicitada: análise administrativa
 
-Além da jornada principal do briefing, foi adicionada a rota `/admin` para análise somente de leitura dos pedidos confirmados. O painel resume vendas, ticket médio, volume diário e itens mais pedidos, com filtros por unidade, canal, período e número. A API exige `ADMIN_API_KEY` e omite nome, identificador interno, token de consulta e prazo de retenção.
+Além da jornada principal do briefing, foi adicionada a rota `/admin` para análise somente de leitura dos pedidos confirmados. O painel resume vendas, ticket médio, volume diário e itens mais pedidos, com filtros por unidade, canal, período e número. A API exige o PIN configurado em `ADMIN_PIN` e omite nome, identificador interno, token de consulta e prazo de retenção.
 
-A extensão de gestão solicitada em 17/11/2026 acrescenta `/admin/cardapio` e `/admin/unidades`, com a mesma proteção por chave. Produtos têm categoria, descrição, preço em centavos, foto da galeria e disponibilidade por unidade. Lojas podem ser criadas, editadas, liberadas, desativadas ou excluídas; a criação começa desativada e a liberação exige produto disponível. Exclusões pedem confirmação na interface. Pedidos confirmados guardam um retrato do nome da loja e dos itens, preservado após alterações ou exclusões.
+A extensão de gestão solicitada em 17/11/2026 acrescenta `/admin/cardapio` e `/admin/unidades`, com a mesma proteção por PIN. Produtos têm categoria, descrição, preço em centavos, foto da galeria e disponibilidade por unidade. Lojas podem ser criadas, editadas, liberadas, desativadas ou excluídas; a criação começa desativada e a liberação exige produto disponível. Exclusões pedem confirmação na interface. Pedidos confirmados guardam um retrato do nome da loja e dos itens, preservado após alterações ou exclusões.
 
 Essa extensão usa o mesmo armazenamento em memória do protótipo. Os dados são temporários e não formam histórico confiável entre reinícios ou instâncias.
 
@@ -83,7 +83,7 @@ Prioridade: **P0** crítica para a jornada; **P1** importante; **P2** complement
 | RF15 | Consultar pedido confirmado mediante token de acesso do pedido. | Cliente | P1 | Acesso anônimo não deve expor pedido alheio. | Sem token ou token errado retorna 401/403; token correto acessa apenas o pedido correspondente. | R05 | APP, WEB, PICKUP |
 | RF16 | Consultar prévia autoritativa de subtotal, descontos e total antes de confirmar. | Cliente/Sistema | P0 | O cliente precisa entender o valor final e o servidor deve ser fonte de verdade. | Endpoint de prévia calcula com catálogo da unidade e as mesmas regras do pedido; nenhuma chamada de pagamento ou persistência ocorre. | R03, R06, R07 | Todos |
 | RF17 | Analisar pedidos confirmados no painel administrativo. | Administração | P2 | A operação precisa consultar vendas e composição dos pedidos do protótipo. | Painel oferece contagem, vendas, ticket médio, volume diário, itens mais pedidos e lista filtrável por período, unidade, canal e número. | R12, R13 | WEB |
-| RF18 | Proteger o painel administrativo e minimizar os dados exibidos. | Sistema/Administração | P0 | Pedidos não podem ficar disponíveis anonimamente nem revelar dados desnecessários. | Chave inválida/ausente é negada; segredo fica no servidor; lista omite nome do cliente, ID interno, token e retenção. | R05, R13 | WEB |
+| RF18 | Proteger o painel administrativo e minimizar os dados exibidos. | Sistema/Administração | P0 | Pedidos não podem ficar disponíveis anonimamente nem revelar dados desnecessários. | PIN inválido/ausente é negado; segredo fica no servidor; lista omite nome do cliente, ID interno, token e retenção. | R05, R13 | WEB |
 | RF19 | Gerenciar produtos por unidade. | Administração | P1 | A operação precisa atualizar o cardápio sem editar o código. | Criar, editar, marcar disponibilidade e excluir; validar nome, descrição, categoria, foto da galeria e preço inteiro entre 0 e 1.000.000 centavos; pedir confirmação na exclusão; refletir as alterações nas novas consultas/pedidos. | R03, R04, R13 | WEB |
 | RF20 | Gerenciar unidades. | Administração | P1 | A rede precisa demonstrar abertura e interrupção de lojas. | Cadastrar nome/cidade, editar, liberar, desativar e excluir; nova unidade começa desativada e vazia; liberação exige produto disponível; desativação bloqueia novos pedidos; exclusão remove o cardápio sem apagar pedidos confirmados. | R04, R12, R13 | WEB |
 | RF21 | Reconfirmar total após alteração de preço. | Sistema/Cliente | P0 | Evita confirmar um valor diferente do revisado pelo cliente. | Checkout envia `expectedTotalCents`; o servidor recalcula e retorna `QUOTE_CHANGED` antes do pagamento em caso de diferença; interface atualiza itens/total e exige novo clique de confirmação; registros antigos preservam os valores. | R01, R03 | WEB |
@@ -97,7 +97,7 @@ Prioridade: **P0** crítica para a jornada; **P1** importante; **P2** complement
 - Cupom e fidelidade podem ser acumulados nesta demonstração, limitados ao subtotal. Não existe frete ou tarifa oculta.
 - Só o resultado `APPROVED` do adaptador de pagamento autoriza persistir pedido `CONFIRMED`.
 - `expectedTotalCents` é apenas uma condição de confirmação, nunca a fonte de preço; os clientes antigos da API podem omitir esse campo, e o checkout web sempre o informa.
-- Cadastros administrativos exigem a chave antes da leitura/alteração. Nomes/IDs fornecidos não executam código, fotos vêm da galeria local e cada unidade possui seu próprio cardápio.
+- Cadastros administrativos exigem o PIN antes da leitura/alteração. Nomes/IDs fornecidos não executam código, fotos vêm da galeria local e cada unidade possui seu próprio cardápio.
 - Dados de pedido e chaves de idempotência tornam-se inacessíveis após 24 horas e são removidos pela rotina de limpeza em até 1 minuto; reiniciar o servidor remove todos os dados.
 
 ## Requisitos de qualidade
@@ -118,7 +118,7 @@ As metas abaixo são **planejadas** para o protótipo e devem ser medidas pelos 
 | RQF10 | Experiência e completude | Jornada em rotas próprias: LP `/` para unidade, `/cardapio`, `/checkout` e `/comprovante`; sem cadastro ou campos de e-mail, senha, CPF, telefone ou endereço. Voltar/avançar mantém o pedido na sessão; o total aparece antes da confirmação. | URLs e etapas percorridas, campos exigidos, estado do carrinho e clareza do total | E2E valida as rotas, o caminho e a preservação do carrinho; avaliar conclusão e abandono por etapa com usuários antes de afirmar conversão. | R11 |
 | RQF11 | Observabilidade | 100% das respostas HTTP têm `X-Request-Id`; log estruturado tem requestId, método, rota, status e duração, sem corpo da requisição. | Respostas e logs instrumentados | Teste HTTP e inspeção de logs. | R01, R08, R10 |
 | RQF12 | Manutenibilidade/testabilidade | Cobertura de linhas ≥80% no domínio de pedido e desconto. | Cobertura nativa de linhas | `node --experimental-test-coverage --test`; relatório real arquivado. | R01, R02, R03, R06 |
-| RQF13 | Autorização e minimização administrativa | 100% dos acessos ao painel sem chave válida são negados; 0 campos de nome, ID interno, token ou retenção na listagem. | Acessos indevidos aceitos e campos sensíveis retornados | Teste de integração e E2E com pedido sintético (CT024–CT025). | R05, R13 |
+| RQF13 | Autorização e minimização administrativa | 100% dos acessos ao painel sem PIN válido são negados; 0 campos de nome, ID interno, token ou retenção na listagem. | Acessos indevidos aceitos e campos sensíveis retornados | Teste de integração e E2E com pedido sintético (CT024–CT025). | R05, R13 |
 
 ### Justificativas e limites
 
@@ -146,7 +146,7 @@ Escalas: probabilidade (P) e impacto (I) de 1 a 5; severidade = P×I. Prioridade
 | R10 | Indisponibilidade durante pico/reflexo de serviço externo. | Vendas interrompidas | 3 | 4 | 12 / Alta | RF07, RF10 | Isolar adaptadores, timeout, teste de carga e SLO; fallback operacional a definir antes de produção. | CT015, CT011 |
 | R11 | Interface ilegível ou difícil de operar no celular/totem. | Abandono e erro de pedido | 3 | 3 | 9 / Média | RNF mobile, RF03 | Layout mobile-first, resumo de preço persistente, labels, foco visível e alvos de toque. | CT014 |
 | R12 | Perda de pedidos ao reiniciar ou subir outra instância. | Histórico e idempotência perdidos | 4 | 3 | 12 / Alta | RNF confiabilidade | Limitação explicitada; não usar em produção; trocar por armazenamento transacional compartilhado antes de liberar comercialmente. | CT020 |
-| R13 | Chave administrativa exposta ou painel retorna dados de cliente sem autorização. | Acesso indevido a informações operacionais e de pedido | 2 | 5 | 10 / Média | RF18, RQF13 | Chave somente no servidor, comparação em tempo constante, resposta minimizada, rate limit e logout que limpa a sessão. | CT024, CT025 |
+| R13 | PIN administrativo exposto ou painel retorna dados de cliente sem autorização. | Acesso indevido a informações operacionais e de pedido | 2 | 5 | 10 / Média | RF18, RQF13 | PIN configurado no servidor, comparação em tempo constante, resposta minimizada, rate limit e logout que limpa a sessão. | CT024, CT025 |
 
 ### Leitura da matriz P×I
 
