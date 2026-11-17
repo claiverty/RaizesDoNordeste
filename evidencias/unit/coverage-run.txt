@@ -2,38 +2,41 @@
 > raizes-do-nordeste-qa@1.0.0 test:coverage
 > node --experimental-test-coverage "--test-coverage-include=src/domain/*.mjs" --test-coverage-lines=80 --test-coverage-branches=75 --test test/api.test.mjs test/domain.test.mjs
 
-✔ health, catálogo e cabeçalhos básicos são servidos (43.3421ms)
-✔ painel lista pedidos confirmados somente com chave e omite dados do cliente (19.9423ms)
-✔ painel não atende sem chave de administração configurada (3.3934ms)
-✔ prévia e pedido aprovado usam preço calculado no servidor (7.4885ms)
-✔ rejeita carrinho vazio, unidade indisponível e cupom inválido sem pagamento (7.7483ms)
-✔ recusa, timeout e falha de fidelidade não confirmam pedido (6.4111ms)
-✔ indisponibilidade de pagamento e exceção interna não vazam detalhes nem criam pedido (6.0267ms)
-✔ repetição com mesma chave reusa resposta; payload alterado dá conflito (5.3247ms)
-✔ preços permanecem consistentes nos canais suportados (8.1108ms)
-✔ reiniciar a aplicação perde pedidos, conforme limite do store em memória (5.4041ms)
-✔ consulta exige token e não devolve o token na resposta de leitura (4.5181ms)
-✔ valida JSON, tipo de conteúdo, chave e tamanho máximo do corpo (5.4852ms)
-✔ rate limit padrão retorna 429 após 60 requests e logs não guardam o corpo (33.3258ms)
-✔ calcula subtotal em centavos com preço do catálogo (2.127ms)
-✔ aplica cupom de 10% e fidelidade sem ultrapassar subtotal (0.2624ms)
-✔ rejeita unidade indisponível (0.5008ms)
-✔ rejeita produto indisponível e produto de outro cardápio (0.2296ms)
-✔ distingue cupom expirado e inválido (0.2419ms)
-✔ falha de fidelidade não retorna desconto (0.1509ms)
-✔ valida carrinho, quantidade, duplicidade e campos proibidos (0.8028ms)
-✔ valida dados de pagamento e não aceita cartão real (0.2448ms)
-✔ idempotência não cria duplicidade e rejeita chave reutilizada com payload diferente (37.133ms)
-✔ recusa e timeout são idempotentes e não criam pedido (0.4905ms)
-✔ store remove registros expirados e devolve cópia defensiva (0.2179ms)
-ℹ tests 24
+✔ cadastros exigem chave, gerenciam unidades e produtos e preservam pedidos antigos (70.8311ms)
+✔ cadastros rejeitam valores inválidos e métodos sem alterar o catálogo (22.8216ms)
+✔ preço alterado exige nova revisão e unidade desativada bloqueia pedido antes do pagamento (9.8115ms)
+✔ health, catálogo e cabeçalhos básicos são servidos (5.4499ms)
+✔ painel lista pedidos confirmados somente com chave e omite dados do cliente (6.932ms)
+✔ painel não atende sem chave de administração configurada (2.5959ms)
+✔ prévia e pedido aprovado usam preço calculado no servidor (5.1425ms)
+✔ rejeita carrinho vazio, unidade indisponível e cupom inválido sem pagamento (6.0204ms)
+✔ recusa, timeout e falha de fidelidade não confirmam pedido (5.7757ms)
+✔ indisponibilidade de pagamento e exceção interna não vazam detalhes nem criam pedido (6.7836ms)
+✔ repetição com mesma chave reusa resposta; payload alterado dá conflito (4.821ms)
+✔ preços permanecem consistentes nos canais suportados (7.0045ms)
+✔ reiniciar a aplicação perde pedidos, conforme limite do store em memória (4.9443ms)
+✔ consulta exige token e não devolve o token na resposta de leitura (6.0986ms)
+✔ valida JSON, tipo de conteúdo, chave e tamanho máximo do corpo (8.0465ms)
+✔ rate limit padrão retorna 429 após 60 requests e logs não guardam o corpo (33.8903ms)
+✔ calcula subtotal em centavos com preço do catálogo (1.5918ms)
+✔ aplica cupom de 10% e fidelidade sem ultrapassar subtotal (0.2982ms)
+✔ rejeita unidade indisponível (0.5061ms)
+✔ rejeita produto indisponível e produto de outro cardápio (0.321ms)
+✔ distingue cupom expirado e inválido (0.3065ms)
+✔ falha de fidelidade não retorna desconto (0.1999ms)
+✔ valida carrinho, quantidade, duplicidade e campos proibidos (0.6899ms)
+✔ valida dados de pagamento e não aceita cartão real (0.2301ms)
+✔ idempotência não cria duplicidade e rejeita chave reutilizada com payload diferente (40.482ms)
+✔ recusa e timeout são idempotentes e não criam pedido (0.5861ms)
+✔ store remove registros expirados e devolve cópia defensiva (0.3224ms)
+ℹ tests 27
 ℹ suites 0
-ℹ pass 24
+ℹ pass 27
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 274.564
+ℹ duration_ms 318.5888
 ℹ start of coverage report
 ℹ --------------------------------------------------------------------------------------------------
 ℹ file              | line % | branch % | funcs % | uncovered lines
@@ -41,8 +44,8 @@
 ℹ src               |        |          |         |
 ℹ  domain           |        |          |         |
 ℹ   errors.mjs      |  80.00 |   100.00 |   50.00 | 15-16 19-20
-ℹ   order-rules.mjs |  90.67 |    83.72 |   81.25 | 10-11 39-40 62-63 79-80 116-117 145-146 149-150
+ℹ   order-rules.mjs |  90.97 |    84.21 |   81.25 | 10-11 39-40 65-66 83-84 121-122 150-151 154-155
 ℹ --------------------------------------------------------------------------------------------------
-ℹ all files         |  89.41 |    84.27 |   75.00 |
+ℹ all files         |  89.71 |    84.69 |   75.00 |
 ℹ --------------------------------------------------------------------------------------------------
 ℹ end of coverage report

@@ -23,6 +23,8 @@ export default defineConfig({
       PORT: '4173',
       NODE_ENV: 'test',
       ADMIN_API_KEY: 'admin-e2e-key-000000000000000000000000',
+      // Journeys share one test server; the nominal rate limit has a dedicated API test.
+      RATE_LIMIT_MAX: '1000',
     },
   },
 });

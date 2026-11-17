@@ -4,7 +4,7 @@ import './styles.css';
 import App from './App';
 import AdminApp from './AdminApp';
 
-const isAdminRoute = window.location.pathname.replace(/\/+$/, '') === '/admin';
+const isAdminRoute = /^\/admin(?:\/cardapio|\/unidades)?$/.test(window.location.pathname.replace(/\/+$/, ''));
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

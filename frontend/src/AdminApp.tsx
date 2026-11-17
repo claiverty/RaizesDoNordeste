@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { getAdminOrders } from './api';
-import type { AdminOrder, Channel } from './types';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { adminCatalogRequest, getAdminOrders } from './api';
+import type { AdminCatalog, AdminOrder, Channel } from './types';
+import AdminCatalogManager from './AdminCatalogManager';
 import './admin.css';
 
 const ACCESS_KEY_STORAGE = 'raizes-admin-access-key';
@@ -13,12 +14,11 @@ function asApiFailure(value: unknown): ApiFailure {
   return value instanceof Error ? value as ApiFailure : new Error('Não foi possível acessar o painel.');
 }
 
-function unitLabel(unitId: string): string {
-  const names: Record<string, string> = {
-    'recife-centro': 'Recife Centro',
-    'natal-norte': 'Natal Norte',
-  };
-  return names[unitId] ?? unitId;
+type Section = 'orders' | 'menu' | 'units';
+const sectionPaths: Record<Section, string> = { orders: '/admin', menu: '/admin/cardapio', units: '/admin/unidades' };
+const sectionLabels: Record<Section, string> = { orders: 'Pedidos', menu: 'Cardápio', units: 'Unidades' };
+function sectionFromPath(): Section {
+  return window.location.pathname.replace(/\/+$/, '') === '/admin/cardapio' ? 'menu' : window.location.pathname.replace(/\/+$/, '') === '/admin/unidades' ? 'units' : 'orders';
 }
 
 function channelLabel(channel: Channel): string {
@@ -36,6 +36,9 @@ function AdminApp() {
   const [accessKey, setAccessKey] = useState('');
   const [draftKey, setDraftKey] = useState('');
   const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [catalog, setCatalog] = useState<AdminCatalog | null>(null);
+  const [section, setSection] = useState<Section>(sectionFromPath);
+  const mainRef = useRef<HTMLElement>(null);
   const [authorized, setAuthorized] = useState(false);
   const [configured, setConfigured] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
@@ -51,11 +54,12 @@ function AdminApp() {
     let active = true;
     const savedKey = window.sessionStorage.getItem(ACCESS_KEY_STORAGE) ?? '';
     setDraftKey(savedKey);
-    getAdminOrders(savedKey)
-      .then((nextOrders) => {
+    Promise.all([getAdminOrders(savedKey), adminCatalogRequest(savedKey)])
+      .then(([nextOrders, nextCatalog]) => {
         if (!active) return;
         setAccessKey(savedKey);
         setOrders(nextOrders);
+        setCatalog(nextCatalog);
         setAuthorized(true);
         setConfigured(true);
       })
@@ -75,6 +79,20 @@ function AdminApp() {
       });
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    const sync = () => setSection(sectionFromPath());
+    window.addEventListener('popstate', sync);
+    return () => window.removeEventListener('popstate', sync);
+  }, []);
+
+  useEffect(() => {
+    document.title = `${sectionLabels[section]} | Administração — Raízes do Nordeste`;
+    if (authorized) mainRef.current?.querySelector<HTMLElement>('h1')?.focus();
+  }, [section, authorized]);
+
+  const unitNames = new Map(catalog?.units.map((unit) => [unit.id, unit.name.replace(/^Raízes do Nordeste — /, '')]));
+  for (const order of orders) if (!unitNames.has(order.unitId)) unitNames.set(order.unitId, `${order.unitName ?? order.unitId} (excluída)`);
 
   const filteredOrders = useMemo(() => {
     const cutoff = period === 'all' ? null : Date.now() - Number(period) * 24 * 60 * 60 * 1000;
@@ -143,10 +161,11 @@ function AdminApp() {
     setLoading(true);
     setErrorMessage('');
     try {
-      const nextOrders = await getAdminOrders(candidate);
+      const [nextOrders, nextCatalog] = await Promise.all([getAdminOrders(candidate), adminCatalogRequest(candidate)]);
       window.sessionStorage.setItem(ACCESS_KEY_STORAGE, candidate);
       setAccessKey(candidate);
       setOrders(nextOrders);
+      setCatalog(nextCatalog);
       setAuthorized(true);
       setConfigured(true);
     } catch (caught) {
@@ -162,7 +181,9 @@ function AdminApp() {
     setRefreshing(true);
     setErrorMessage('');
     try {
-      setOrders(await getAdminOrders(accessKey));
+      const [nextOrders, nextCatalog] = await Promise.all([getAdminOrders(accessKey), adminCatalogRequest(accessKey)]);
+      setOrders(nextOrders);
+      setCatalog(nextCatalog);
     } catch (caught) {
       const failure = asApiFailure(caught);
       setErrorMessage(failure.message);
@@ -177,6 +198,7 @@ function AdminApp() {
     setAccessKey('');
     setDraftKey('');
     setOrders([]);
+    setCatalog(null);
     setAuthorized(false);
   }
 
@@ -199,7 +221,17 @@ function AdminApp() {
         </div>
       </header>
 
-      <main id="admin-content" className="admin-main">
+      <main id="admin-content" className="admin-main" ref={mainRef} tabIndex={-1}>
+        {authorized && <>
+          <nav className="admin-section-nav" aria-label="Seções administrativas">
+            {(Object.keys(sectionPaths) as Section[]).map((item) => <a key={item} href={sectionPaths[item]} aria-current={section === item ? 'page' : undefined} onClick={(event) => {
+              event.preventDefault();
+              if (section !== item) window.history.pushState({}, '', sectionPaths[item]);
+              setSection(item);
+            }}>{sectionLabels[item]}</a>)}
+          </nav>
+          <p className="admin-demo-note">Demonstração: os cadastros são temporários e voltam ao estado inicial quando o servidor reinicia.</p>
+        </>}
         {loading && <div className="admin-loading" role="status">Carregando painel…</div>}
 
         {!loading && !authorized && configured === false && <section className="admin-access-card" aria-labelledby="admin-setup-title">
@@ -215,7 +247,7 @@ function AdminApp() {
           <span className="admin-access-mark" aria-hidden="true">RN</span>
           <p className="admin-eyebrow">Acesso restrito</p>
           <h1 id="admin-login-title">Painel administrativo</h1>
-          <p>Entre com a chave de acesso da operação para consultar pedidos confirmados.</p>
+          <p>Entre com a chave da operação para acompanhar pedidos, gerenciar o cardápio e as unidades.</p>
           <form className="admin-login-form" onSubmit={signIn}>
             <label htmlFor="admin-access-key">Chave de acesso</label>
             <input
@@ -232,11 +264,13 @@ function AdminApp() {
           </form>
         </section>}
 
-        {!loading && authorized && <>
+        {!loading && authorized && section !== 'orders' && catalog && <AdminCatalogManager key={section} section={section} catalog={catalog} accessKey={accessKey} onChange={setCatalog} onUnauthorized={signOut} />}
+
+        {!loading && authorized && section === 'orders' && <>
           <section className="admin-intro">
             <div>
               <p className="admin-eyebrow">Operação Raízes do Nordeste</p>
-              <h1>Visão dos pedidos</h1>
+              <h1 tabIndex={-1}>Visão dos pedidos</h1>
               <p>Acompanhe vendas confirmadas, unidades e itens mais pedidos.</p>
             </div>
             <span className="admin-live-badge">Atualizado {dateTime.format(new Date())}</span>
@@ -253,8 +287,7 @@ function AdminApp() {
               <span>Unidade</span>
               <select id="admin-unit-filter" value={selectedUnit} onChange={(event) => setSelectedUnit(event.target.value)}>
                 <option value="all">Todas as unidades</option>
-                <option value="recife-centro">Recife Centro</option>
-                <option value="natal-norte">Natal Norte</option>
+                {[...unitNames].map(([id, name]) => <option key={id} value={id}>{name}</option>)}
               </select>
             </label>
             <label htmlFor="admin-channel-filter">
@@ -347,7 +380,7 @@ function AdminApp() {
                 <tbody>{filteredOrders.map((order) => <tr key={order.orderNumber}>
                   <td><strong>{order.orderNumber}</strong><span className="admin-order-status">Confirmado</span></td>
                   <td>{dateTime.format(new Date(order.createdAt))}</td>
-                  <td>{unitLabel(order.unitId)}</td>
+                  <td>{order.unitName ?? unitNames.get(order.unitId) ?? order.unitId}</td>
                   <td><span className="admin-channel-pill">{channelLabel(order.channel)}</span></td>
                   <td>{order.fulfillment === 'PICKUP' ? 'Retirada' : 'Consumo na unidade'}</td>
                   <td><span className="admin-order-items">{order.items.map((item) => `${item.quantity}× ${item.name}`).join(', ')}</span></td>

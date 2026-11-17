@@ -1,30 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createOrder, getMenu, getQuote, getUnits } from './api';
-import heroImage from './assets/hero-mesa.webp';
-import boloImage from './assets/bolo-milho.webp';
-import carneImage from './assets/carne-sol.webp';
-import tapiocaImage from './assets/tapioca-queijo.webp';
-import queijoImage from './assets/queijo-coalho.webp';
-import cuscuzImage from './assets/cuscuz-sertao.webp';
-import baiaoImage from './assets/baiao-dois.webp';
-import carneMacaxeiraImage from './assets/carne-sol-macaxeira.webp';
-import cajaImage from './assets/suco-caja.webp';
-import aguaCocoImage from './assets/agua-coco.webp';
-import boloRoloImage from './assets/bolo-rolo.webp';
-import cartolaImage from './assets/cartola.webp';
-import sucoCajuImage from './assets/suco-caju.webp';
-import sucoGraviolaImage from './assets/suco-graviola.webp';
-import sucoAcerolaImage from './assets/suco-acerola.webp';
-import colaImage from './assets/cola-tradicional.webp';
-import colaZeroImage from './assets/cola-zero.webp';
-import guaranaImage from './assets/guarana.webp';
-import aguaMineralImage from './assets/agua-mineral.webp';
-import tapiocaCarneSolImage from './assets/tapioca-carne-sol.webp';
-import tapiocaFrangoImage from './assets/tapioca-frango.webp';
-import tapiocaCocoImage from './assets/tapioca-coco.webp';
-import macaxeiraFritaImage from './assets/macaxeira-frita.webp';
-import farofaBananaImage from './assets/farofa-banana.webp';
-import vinagreteImage from './assets/vinagrete.webp';
+import { heroImage, productImages } from './product-media';
 import type {
   Channel,
   CreatedOrder,
@@ -41,58 +17,6 @@ type OrderStep = 1 | 2 | 3 | 4;
 type MenuCategory = 'Todos' | 'Pratos' | 'Tapiocas' | 'Acompanhamentos' | 'Bebidas' | 'Doces';
 const stepPaths: Record<OrderStep, string> = { 1: '/', 2: '/cardapio', 3: '/checkout', 4: '/comprovante' };
 const menuCategories: MenuCategory[] = ['Todos', 'Pratos', 'Tapiocas', 'Acompanhamentos', 'Bebidas', 'Doces'];
-const productCategories: Record<string, Exclude<MenuCategory, 'Todos'>> = {
-  'bolo-milho': 'Doces',
-  'carne-sol': 'Pratos',
-  'baiao-dois': 'Pratos',
-  'carne-sol-macaxeira': 'Pratos',
-  'tapioca-queijo': 'Tapiocas',
-  'tapioca-carne-sol': 'Tapiocas',
-  'tapioca-frango': 'Tapiocas',
-  'tapioca-coco': 'Tapiocas',
-  'queijo-coalho': 'Acompanhamentos',
-  'macaxeira-frita': 'Acompanhamentos',
-  'farofa-banana': 'Acompanhamentos',
-  vinagrete: 'Acompanhamentos',
-  'cuscuz-sertao': 'Pratos',
-  'suco-caja': 'Bebidas',
-  'suco-caju': 'Bebidas',
-  'suco-graviola': 'Bebidas',
-  'suco-acerola': 'Bebidas',
-  'agua-coco': 'Bebidas',
-  'cola-tradicional': 'Bebidas',
-  'cola-zero': 'Bebidas',
-  guarana: 'Bebidas',
-  'agua-mineral': 'Bebidas',
-  'bolo-rolo': 'Doces',
-  cartola: 'Doces',
-};
-const productImages: Record<string, string> = {
-  'bolo-milho': boloImage,
-  'carne-sol': carneImage,
-  'tapioca-queijo': tapiocaImage,
-  'tapioca-carne-sol': tapiocaCarneSolImage,
-  'tapioca-frango': tapiocaFrangoImage,
-  'tapioca-coco': tapiocaCocoImage,
-  'queijo-coalho': queijoImage,
-  'macaxeira-frita': macaxeiraFritaImage,
-  'farofa-banana': farofaBananaImage,
-  vinagrete: vinagreteImage,
-  'cuscuz-sertao': cuscuzImage,
-  'baiao-dois': baiaoImage,
-  'carne-sol-macaxeira': carneMacaxeiraImage,
-  'suco-caja': cajaImage,
-  'suco-caju': sucoCajuImage,
-  'suco-graviola': sucoGraviolaImage,
-  'suco-acerola': sucoAcerolaImage,
-  'agua-coco': aguaCocoImage,
-  'cola-tradicional': colaImage,
-  'cola-zero': colaZeroImage,
-  guarana: guaranaImage,
-  'agua-mineral': aguaMineralImage,
-  'bolo-rolo': boloRoloImage,
-  cartola: cartolaImage,
-};
 
 function stepFromPath(pathname: string): OrderStep | null {
   const entry = Object.entries(stepPaths).find(([, path]) => path === pathname);
@@ -117,6 +41,7 @@ function App() {
   const [quote, setQuote] = useState<Quote | null>(null);
   const [quoteError, setQuoteError] = useState('');
   const [quoteLoading, setQuoteLoading] = useState(false);
+  const [quoteRevision, setQuoteRevision] = useState(0);
   const [message, setMessage] = useState<{ text: string; kind: 'info' | 'success' | 'error' } | null>(null);
   const [orderKey, setOrderKey] = useState<string | null>(null);
   const [confirmedOrder, setConfirmedOrder] = useState<CreatedOrder | null>(null);
@@ -212,7 +137,7 @@ function App() {
         if (active) setMenuLoading(false);
       });
     return () => { active = false; };
-  }, [unitId]);
+  }, [unitId, quoteRevision]);
 
   useEffect(() => {
     let active = true;
@@ -245,7 +170,7 @@ function App() {
         if (active) setQuoteLoading(false);
       });
     return () => { active = false; };
-  }, [unitId, fulfillment, cartItems, couponCode, useLoyalty, hasCartItems]);
+  }, [unitId, fulfillment, cartItems, couponCode, useLoyalty, hasCartItems, quoteRevision]);
 
   useEffect(() => {
     if (confirmedOrder) confirmationRef.current?.focus();
@@ -321,13 +246,14 @@ function App() {
     const idempotencyKey = orderKey ?? crypto.randomUUID();
     setOrderKey(idempotencyKey);
     try {
-      const order = await createOrder(currentOrderBody(), idempotencyKey);
+      const order = await createOrder({ ...currentOrderBody(), expectedTotalCents: quote.totalCents }, idempotencyKey);
       setConfirmedOrder(order);
       setMessage(null);
       navigateToStep(4);
     } catch (caught) {
       const error = caught as Error & { code?: string };
       setMessage({ text: error.message, kind: 'error' });
+      if (error.code === 'QUOTE_CHANGED') setQuoteRevision((revision) => revision + 1);
       if (error.code !== 'PAYMENT_TIMEOUT' && error.code !== 'REQUEST_IN_PROGRESS') setOrderKey(null);
     } finally {
       setIsSubmitting(false);
@@ -355,7 +281,7 @@ function App() {
   const selectedUnit = units.find((unit) => unit.id === unitId);
   const visibleMenu = selectedCategory === 'Todos'
     ? menu
-    : menu.filter((item) => productCategories[item.id] === selectedCategory);
+    : menu.filter((item) => item.category === selectedCategory);
   const itemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   return (
@@ -465,10 +391,10 @@ function App() {
                   const quantity = cart[item.id] ?? 0;
                   return <article className="product" key={item.id}>
                     <div className="product-image-wrap">
-                      <img className="product-image" src={productImages[item.id] ?? heroImage} alt={`Imagem ilustrativa de ${item.name}`} loading="lazy" />
+                      {productImages[item.imageKey] ? <img className="product-image" src={productImages[item.imageKey]} alt={`Imagem ilustrativa de ${item.name}`} loading="lazy" /> : <span className="product-image-placeholder">Foto em breve</span>}
                       {!item.available && <span className="product-unavailable">Indisponível hoje</span>}
                     </div>
-                    <div className="product-copy"><p className="product-category">{productCategories[item.id] ?? 'Da casa'}</p><h3>{item.name}</h3><p>{item.description}</p>
+                    <div className="product-copy"><p className="product-category">{item.category}</p><h3>{item.name}</h3><p>{item.description}</p>
                       <div className="product-footer"><strong>{item.priceCents === 0 ? 'Cortesia' : money.format(item.priceCents / 100)}</strong>
                         <MenuItemControls product={item} quantity={quantity} onChange={(nextQuantity) => updateQuantity(item.id, nextQuantity)} />
                       </div>
@@ -493,19 +419,20 @@ function App() {
                 {cartItems.map(({ productId, quantity }) => {
                   const product = menu.find((item) => item.id === productId);
                   if (!product) return null;
+                  const currentPrice = quote?.lines.find((line) => line.productId === productId)?.unitPriceCents ?? product.priceCents;
                   return (
                     <div className="cart-line checkout-cart-line" key={product.id}>
-                      <div className="checkout-cart-image"><img src={productImages[product.id] ?? heroImage} alt="" loading="lazy" /><span aria-label={`${quantity} unidades`}>{quantity}</span></div>
+                      <div className="checkout-cart-image">{productImages[product.imageKey] && <img src={productImages[product.imageKey]} alt="" loading="lazy" />}<span aria-label={`${quantity} unidades`}>{quantity}</span></div>
                       <div className="checkout-cart-detail">
                         <div className="cart-line-name">{product.name}</div>
-                        <div className="cart-line-meta">{product.priceCents === 0 ? 'Cortesia' : `${money.format(product.priceCents / 100)} cada`}</div>
+                        <div className="cart-line-meta">{currentPrice === 0 ? 'Cortesia' : `${money.format(currentPrice / 100)} cada`}</div>
                         <div className="checkout-cart-controls">
                           <QuantityButton label={`Diminuir ${product.name}`} onClick={() => updateQuantity(product.id, (current) => current - 1)}>−</QuantityButton>
                           <span aria-label={`${quantity} unidades`}>{quantity}</span>
                           <QuantityButton label={`Aumentar ${product.name}`} disabled={quantity >= 20} onClick={() => updateQuantity(product.id, (current) => current + 1)}>+</QuantityButton>
                         </div>
                       </div>
-                      <strong className="checkout-cart-line-total">{product.priceCents === 0 ? 'Cortesia' : money.format((product.priceCents * quantity) / 100)}</strong>
+                      <strong className="checkout-cart-line-total">{currentPrice === 0 ? 'Cortesia' : money.format((currentPrice * quantity) / 100)}</strong>
                     </div>
                   );
                 })}
@@ -605,7 +532,7 @@ function App() {
             <section className="receipt-section" aria-labelledby="receipt-details-title">
               <h3 id="receipt-details-title">Detalhes do pedido</h3>
               <dl className="receipt-details">
-                <div><dt>Unidade</dt><dd>{selectedUnit?.name ?? 'Unidade selecionada'}</dd></div>
+                <div><dt>Unidade</dt><dd>{confirmedOrder.unitName ?? selectedUnit?.name ?? 'Unidade selecionada'}</dd></div>
                 <div><dt>Modalidade</dt><dd>{confirmedOrder.fulfillment === 'PICKUP' ? 'Retirada no balcão' : 'Consumo na unidade'}</dd></div>
                 <div><dt>Forma de pagamento</dt><dd>{confirmedOrder.payment.method === 'PIX' ? 'PIX' : 'Cartão (simulado)'}</dd></div>
                 <div><dt>Status</dt><dd className="receipt-payment-status">Aprovado · simulado</dd></div>

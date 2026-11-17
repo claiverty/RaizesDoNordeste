@@ -278,6 +278,65 @@
 
 .admin-shell :focus-visible { outline: 3px solid #557968; outline-offset: 2px; }
 
+.admin-section-nav { display: flex; gap: .4rem; margin: -.5rem 0 1rem; padding-bottom: .65rem; border-bottom: 1px solid var(--line); }
+.admin-section-nav a { display: inline-flex; min-height: 44px; align-items: center; padding: .6rem 1rem; border-radius: .5rem; color: var(--muted); font-size: .9rem; text-decoration: none; }
+.admin-section-nav a[aria-current="page"] { color: var(--forest); background: #e9eee7; font-weight: 600; }
+.admin-demo-note { margin: 0 0 1.6rem; color: var(--muted); font-size: .78rem; line-height: 1.55; }
+.admin-management-toolbar { display: flex; flex-wrap: wrap; gap: 1rem; margin: 0 0 1.25rem; }
+.admin-management-toolbar label { flex: 1 1 230px; }
+.admin-management-toolbar label, .admin-management-form label { display: grid; min-width: 0; gap: .45rem; color: var(--ink); font-size: .85rem; font-weight: 500; }
+.admin-management-toolbar input, .admin-management-toolbar select, .admin-management-form input:not([type="checkbox"]), .admin-management-form select, .admin-management-form textarea { width: 100%; min-width: 0; min-height: 44px; padding: .7rem .8rem; border: 1px solid var(--line); border-radius: .5rem; color: var(--ink); background: white; font: inherit; font-size: .9rem; }
+.admin-management-form textarea { resize: vertical; }
+.admin-management-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.admin-management-grid .admin-empty-state { grid-column: 1 / -1; }
+.admin-management-grid h2, .admin-editor h2, .admin-delete-dialog h2 { margin: 0 0 .5rem; font-size: 1.15rem; font-weight: 550; line-height: 1.35; overflow-wrap: anywhere; }
+.admin-product-card { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 1rem; padding: 1.2rem; }
+.admin-product-thumb { display: grid; width: 96px; height: 96px; place-items: center; overflow: hidden; border-radius: .5rem; color: var(--muted); background: #f0eee7; font-size: .75rem; }
+.admin-product-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.admin-product-details > p:not(.admin-eyebrow), .admin-unit-card > p { margin: 0 0 .8rem; color: var(--muted); font-size: .85rem; line-height: 1.55; overflow-wrap: anywhere; }
+.admin-product-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; font-size: .9rem; }
+.admin-product-meta > strong { font-weight: 550; white-space: nowrap; }
+.admin-availability { color: #6c5644; font-size: .78rem; }
+.admin-availability.is-available { color: #2d6247; }
+.admin-row-actions { display: flex; flex-wrap: wrap; gap: .35rem .65rem; grid-column: 1 / -1; padding-top: .75rem; border-top: 1px solid var(--line); }
+.admin-row-actions button { min-height: 44px; padding: .5rem .65rem; border: 1px solid var(--line); border-radius: .45rem; color: var(--forest); background: white; cursor: pointer; font: inherit; font-size: .78rem; }
+.admin-row-actions button:hover:not(:disabled) { background: #f2f5ef; }
+.admin-row-actions .admin-delete-button { margin-left: auto; border-color: transparent; color: #9b3030; }
+.admin-row-actions button:disabled { cursor: not-allowed; opacity: .55; }
+.admin-unit-card { display: flex; flex-direction: column; align-items: flex-start; padding: 1.35rem; }
+.admin-unit-status { display: flex; flex-wrap: wrap; gap: .5rem 1.2rem; justify-content: space-between; width: 100%; margin-bottom: 1.25rem; color: var(--muted); font-size: .78rem; }
+.admin-unit-card .admin-row-actions { width: 100%; margin-top: auto; }
+.admin-manage-menu-link { display: inline-flex; min-height: 44px; align-items: center; margin-bottom: .7rem; color: var(--forest); font-size: .85rem; text-underline-offset: .2em; }
+.admin-editor { margin-bottom: 1.5rem; padding: 1.5rem; }
+.admin-editor h2 { margin-bottom: 1.2rem; }
+.admin-editor h2 small { display: block; margin-top: .3rem; color: var(--muted); font-size: .85rem; font-weight: 400; }
+.admin-management-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.admin-field-wide { grid-column: 1 / -1; }
+.admin-management-form .admin-checkbox { display: flex; flex-direction: row; align-items: center; gap: .6rem; min-height: 44px; }
+.admin-checkbox input { width: 20px; height: 20px; accent-color: var(--forest); }
+.admin-field-help, .admin-management-form label small { margin: 0; color: var(--muted); font-size: .78rem; font-weight: 400; line-height: 1.55; }
+.admin-photo-preview { width: 96px; height: 96px; object-fit: cover; border-radius: .5rem; }
+.admin-form-actions { display: flex; flex-wrap: wrap; gap: .65rem; }
+.admin-notice { margin: 0 0 1rem; padding: .85rem 1rem; border: 1px solid #c6d9ca; border-radius: .5rem; color: #24513b; background: #edf5ec; font-size: .85rem; }
+.admin-delete-dialog { width: min(480px, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); overflow-y: auto; padding: 1.5rem; border: 1px solid var(--line); border-radius: .85rem; color: var(--ink); background: white; }
+.admin-delete-dialog::backdrop { background: rgb(20 35 28 / 48%); }
+.admin-delete-dialog > p:not(.admin-eyebrow) { color: var(--muted); font-size: .9rem; line-height: 1.6; }
+.admin-delete-dialog .admin-form-actions { margin-top: 1.5rem; }
+.admin-confirm-delete { background: #9b3030; }
+.admin-confirm-delete:hover:not(:disabled) { background: #762222; }
+
+@media (max-width: 900px) { .admin-management-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 600px) {
+  .admin-section-nav { gap: .15rem; }
+  .admin-section-nav a { flex: 1; justify-content: center; padding-inline: .5rem; font-size: .85rem; }
+  .admin-management-form { grid-template-columns: minmax(0, 1fr); }
+  .admin-editor { padding: 1rem; }
+  .admin-product-card { grid-template-columns: 76px minmax(0, 1fr); gap: .8rem; padding: 1rem; }
+  .admin-product-thumb { width: 76px; height: 90px; }
+  .admin-product-details h2 { font-size: 1rem; }
+  .admin-unit-card { padding: 1rem; }
+}
+
 @media (max-width: 600px) {
   .admin-main { width: min(100% - 1.5rem, 1320px); padding: 1.5rem 0 2rem; }
   .admin-intro h1 { font-size: 2.25rem; }

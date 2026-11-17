@@ -36,6 +36,107 @@ function validBody(overrides = {}) {
   };
 }
 
+const managementKey = 'admin-catalog-test-key-000000000000000000';
+function manage(app, path, method = 'GET', body, key = managementKey) {
+  return fetch(`${app.baseUrl}/api/v1/admin${path}`, {
+    method,
+    headers: { ...(key ? { Authorization: `Bearer ${key}` } : {}), ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+  });
+}
+
+const sampleProduct = { name: 'Bolo de mandioca', description: 'Fatia da casa.', priceCents: 850, category: 'Doces', available: true, imageKey: 'bolo-milho' };
+
+test('cadastros exigem chave, gerenciam unidades e produtos e preservam pedidos antigos', async (t) => {
+  const app = await startServer({ adminApiKey: managementKey });
+  t.after(() => app.close());
+  for (const [path, method, body] of [
+    ['/catalog', 'GET'], ['/units', 'POST', { name: 'Loja proibida', city: 'Recife' }],
+    ['/units/recife-centro', 'PATCH', { active: false }], ['/units/recife-centro', 'DELETE'],
+    ['/units/recife-centro/products', 'POST', sampleProduct],
+    ['/units/recife-centro/products/bolo-milho', 'DELETE'],
+  ]) assert.equal((await manage(app, path, method, body, '')).status, 401);
+
+  const created = await manage(app, '/units', 'POST', { name: 'Olinda Centro', city: 'Olinda', active: false });
+  assert.equal(created.status, 201);
+  const snapshot = await created.json();
+  const unit = snapshot.units.find((entry) => entry.name === 'Olinda Centro');
+  assert.equal(snapshot.persistence, 'memory');
+  assert.equal(snapshot.productsByUnit[unit.id].length, 0);
+  assert.equal((await manage(app, `/units/${unit.id}`, 'PATCH', { active: true })).status, 409);
+  const productResponse = await manage(app, `/units/${unit.id}/products`, 'POST', sampleProduct);
+  assert.equal(productResponse.status, 201);
+  const product = (await productResponse.json()).productsByUnit[unit.id][0];
+  assert.equal((await manage(app, `/units/${unit.id}`, 'PATCH', { active: true })).status, 200);
+  const publicMenu = await (await fetch(`${app.baseUrl}/api/v1/units/${unit.id}/menu`)).json();
+  assert.equal(publicMenu.items[0].category, 'Doces');
+  assert.equal(publicMenu.items[0].priceCents, 850);
+
+  const order = await postOrder(app, validBody({ unitId: unit.id, items: [{ productId: product.id, quantity: 1 }], expectedTotalCents: 850 }), 'catalog-order-original');
+  assert.equal(order.status, 201);
+  assert.equal((await order.json()).unitName, 'Olinda Centro');
+  await manage(app, `/units/${unit.id}/products/${product.id}`, 'PATCH', { name: 'Nome novo', priceCents: 900, available: false });
+  const unavailable = await postOrder(app, validBody({ unitId: unit.id, items: [{ productId: product.id, quantity: 1 }] }), 'catalog-unavailable-item');
+  assert.equal((await unavailable.json()).error.code, 'PRODUCT_UNAVAILABLE');
+  await manage(app, `/units/${unit.id}`, 'PATCH', { active: false, name: 'Nome novo da loja' });
+  assert.equal((await fetch(`${app.baseUrl}/api/v1/units/${unit.id}/menu`)).status, 409);
+  assert.equal((await manage(app, `/units/${unit.id}/products/${product.id}`, 'DELETE')).status, 200);
+  assert.equal((await manage(app, `/units/${unit.id}`, 'DELETE')).status, 200);
+  assert.equal((await manage(app, `/units/${unit.id}`, 'DELETE')).status, 404);
+  const current = await (await manage(app, '/catalog')).json();
+  assert.equal(current.units.some((entry) => entry.id === unit.id), false);
+  assert.equal(Object.hasOwn(current.productsByUnit, unit.id), false);
+  const { orders } = await (await manage(app, '/orders')).json();
+  assert.equal(orders[0].unitName, 'Olinda Centro');
+  assert.equal(orders[0].items[0].name, 'Bolo de mandioca');
+  assert.equal(orders[0].totalCents, 850);
+  const secondApp = await startServer({ adminApiKey: managementKey });
+  t.after(() => secondApp.close());
+  assert.equal((await (await manage(secondApp, '/catalog')).json()).units.length, 2);
+  assert.ok(app.logs.every((entry) => !JSON.stringify(entry).includes(managementKey)));
+});
+
+test('cadastros rejeitam valores inválidos e métodos sem alterar o catálogo', async (t) => {
+  const app = await startServer({ adminApiKey: managementKey });
+  t.after(() => app.close());
+  const productPath = '/units/recife-centro/products/bolo-milho';
+  for (const value of [{ priceCents: -1 }, { priceCents: 1.5 }, { priceCents: 1_000_001 }, { category: 'Inválida' }, { available: 'true' }, { imageKey: 'https://example.com/image.jpg' }, { name: '<script>' }, { id: 'novo-id' }, {}]) {
+    assert.equal((await manage(app, productPath, 'PATCH', value)).status, 400);
+  }
+  for (const value of [{ name: '' }, { active: null }, { city: 'x'.repeat(81) }, { channels: [] }, { channels: ['WEB', 'WEB'] }, { channels: ['EMAIL'] }]) {
+    assert.equal((await manage(app, '/units/recife-centro', 'PATCH', value)).status, 400);
+  }
+  assert.equal((await manage(app, '/units', 'POST', { name: 'Aberta sem menu', city: 'Recife', active: true })).status, 409);
+  assert.equal((await manage(app, '/units', 'POST', { name: 'Raízes do Nordeste — Recife Centro', city: 'Recife' })).status, 409);
+  assert.equal((await manage(app, productPath, 'PUT', sampleProduct)).status, 405);
+  assert.equal((await manage(app, '/units/inexistente/products', 'POST', sampleProduct)).status, 404);
+  const menu = (await (await manage(app, '/catalog')).json()).productsByUnit['recife-centro'];
+  assert.equal(menu.length, 24);
+  assert.equal(menu.find((product) => product.id === 'bolo-milho').priceCents, 1250);
+  const closed = await startServer({ adminApiKey: '' });
+  t.after(() => closed.close());
+  assert.equal((await manage(closed, '/catalog')).status, 503);
+});
+
+test('preço alterado exige nova revisão e unidade desativada bloqueia pedido antes do pagamento', async (t) => {
+  const paymentService = createPaymentMock();
+  const app = await startServer({ adminApiKey: managementKey, paymentService });
+  t.after(() => app.close());
+  await manage(app, '/units/recife-centro/products/bolo-milho', 'PATCH', { priceCents: 1400 });
+  const stale = await postOrder(app, validBody({ expectedTotalCents: 2500 }), 'catalog-stale-price');
+  assert.equal(stale.status, 409);
+  assert.equal((await stale.json()).error.code, 'QUOTE_CHANGED');
+  assert.equal(paymentService.calls, 0);
+  const fresh = await postOrder(app, validBody({ expectedTotalCents: 2800 }), 'catalog-fresh-price');
+  assert.equal(fresh.status, 201);
+  assert.equal((await fresh.json()).totalCents, 2800);
+  await manage(app, '/units/recife-centro', 'PATCH', { active: false });
+  const blocked = await postOrder(app, validBody(), 'catalog-disabled-unit');
+  assert.equal((await blocked.json()).error.code, 'UNIT_UNAVAILABLE');
+  assert.equal(paymentService.calls, 1);
+  for (const total of [-1, 0.5, '2800']) assert.equal((await postOrder(app, validBody({ expectedTotalCents: total }), 'catalog-total-invalid')).status, 400);
+});
+
 async function postOrder(app, body = validBody(), key = 'api-key-0001') {
   return fetch(`${app.baseUrl}/api/v1/orders`, {
     method: 'POST',

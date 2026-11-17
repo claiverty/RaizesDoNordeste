@@ -1,4 +1,4 @@
-import type { AdminOrder, ApiError, CreatedOrder, OrderBody, Product, Quote, Unit } from './types';
+import type { AdminCatalog, AdminOrder, ApiError, CreatedOrder, OrderBody, Product, Quote, Unit } from './types';
 
 async function responseBody<T>(response: Response): Promise<T> {
   return response.json() as Promise<T>;
@@ -56,4 +56,19 @@ export async function getAdminOrders(accessKey: string): Promise<AdminOrder[]> {
     throw error;
   }
   return data.orders;
+}
+
+export async function adminCatalogRequest(accessKey: string, path = '/catalog', method = 'GET', body?: unknown): Promise<AdminCatalog> {
+  const response = await fetch(`/api/v1/admin${path}`, {
+    method,
+    headers: { Authorization: `Bearer ${accessKey}`, ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+  });
+  const data = await responseBody<AdminCatalog & ApiError>(response);
+  if (!response.ok) {
+    const error = new Error(data.error?.message ?? 'Não foi possível atualizar o cadastro.') as Error & { status?: number };
+    error.status = response.status;
+    throw error;
+  }
+  return data;
 }

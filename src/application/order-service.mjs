@@ -23,6 +23,9 @@ export function createOrderService({ catalog, store, loyaltyService, paymentServ
 
     try {
       const quoteResult = await quote(command);
+      if (command.expectedTotalCents !== undefined && command.expectedTotalCents !== quoteResult.totalCents) {
+        throw new AppError(409, 'QUOTE_CHANGED', 'O cardápio foi atualizado. Confira o novo total antes de confirmar novamente.');
+      }
       const payment = await paymentService.authorize({
         amountCents: quoteResult.totalCents,
         method: command.payment.method,
@@ -33,6 +36,7 @@ export function createOrderService({ catalog, store, loyaltyService, paymentServ
       const order = store.createOrder({
         id: randomUUID(),
         unitId: command.unitId,
+        unitName: quoteResult.unit.name,
         channel: command.channel,
         fulfillment: command.fulfillment,
         customerName: command.customerName ?? 'Cliente',
@@ -76,6 +80,7 @@ function publicOrder(order) {
     id: order.id,
     orderNumber: order.orderNumber,
     unitId: order.unitId,
+    unitName: order.unitName,
     channel: order.channel,
     fulfillment: order.fulfillment,
     customerName: order.customerName,

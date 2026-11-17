@@ -2,6 +2,7 @@ export type Channel = 'APP' | 'WEB' | 'TOTEM' | 'BALCAO' | 'PICKUP';
 export type Fulfillment = 'PICKUP' | 'DINE_IN';
 export type PaymentMethod = 'PIX' | 'CARD';
 export type PaymentOutcome = 'APPROVED' | 'DECLINED' | 'TIMEOUT';
+export type ProductCategory = 'Pratos' | 'Tapiocas' | 'Acompanhamentos' | 'Bebidas' | 'Doces';
 
 export interface Unit {
   id: string;
@@ -17,7 +18,20 @@ export interface Product {
   description: string;
   priceCents: number;
   available: boolean;
+  category: ProductCategory;
+  imageKey: string;
 }
+
+export interface AdminCatalog {
+  units: Unit[];
+  productsByUnit: Record<string, Product[]>;
+  categories: ProductCategory[];
+  imageKeys: string[];
+  persistence: 'memory';
+}
+
+export type ProductInput = Omit<Product, 'id'>;
+export type UnitInput = Omit<Unit, 'id'>;
 
 export interface Discount {
   type: 'COUPON' | 'LOYALTY';
@@ -50,12 +64,14 @@ export interface OrderBody {
   couponCode?: string;
   useLoyalty: boolean;
   customerName?: string;
+  expectedTotalCents?: number;
   payment: { method: PaymentMethod; outcome: PaymentOutcome };
 }
 
 export interface CreatedOrder {
   orderNumber: string;
   unitId: string;
+  unitName?: string;
   items: Array<{
     productId: string;
     name: string;
@@ -74,6 +90,7 @@ export interface CreatedOrder {
 export interface AdminOrder {
   orderNumber: string;
   unitId: string;
+  unitName?: string;
   channel: Channel;
   fulfillment: Fulfillment;
   items: Array<{

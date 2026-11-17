@@ -6,14 +6,14 @@ import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { AppError, badRequest } from '../domain/errors.mjs';
 import { validateIdempotencyKey, validateOrderCommand } from '../domain/order-rules.mjs';
 import { createOrderService } from '../application/order-service.mjs';
-import { catalog as defaultCatalog } from '../infrastructure/catalog.mjs';
+import { createCatalog } from '../infrastructure/catalog.mjs';
 import { MemoryStore } from '../infrastructure/memory-store.mjs';
 import { createLoyaltyMock, createPaymentMock } from '../infrastructure/mock-services.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WEB_DIR = resolve(HERE, '..', '..', 'dist', 'client');
 const MAX_BODY_BYTES = 32 * 1024;
-const APP_ROUTES = new Set(['/', '/cardapio', '/checkout', '/comprovante', '/admin']);
+const APP_ROUTES = new Set(['/', '/cardapio', '/checkout', '/comprovante', '/admin', '/admin/cardapio', '/admin/unidades']);
 
 export function createRateLimiter({ limit = 60, windowMs = 60_000, maxClients = 10_000, now = Date.now } = {}) {
   const entries = new Map();
@@ -48,7 +48,7 @@ export function createRateLimiter({ limit = 60, windowMs = 60_000, maxClients = 
 }
 
 export function createApiServer({
-  catalog = defaultCatalog,
+  catalog = createCatalog(),
   store = new MemoryStore(),
   loyaltyService = createLoyaltyMock(),
   paymentService = createPaymentMock(),
@@ -98,13 +98,8 @@ export function createApiServer({
         } else if (method === 'GET' && pathname === '/api/v1/units') {
           status = 200;
           writeJson(response, status, { units: catalog.listUnits() });
-        } else if (pathname === '/api/v1/admin/orders') {
-          if (method !== 'GET') {
-            status = 405;
-            errorCode = 'METHOD_NOT_ALLOWED';
-            response.setHeader('Allow', 'GET');
-            writeJson(response, status, { error: { code: errorCode, message: 'Método não permitido.', requestId } });
-          } else if (!isAdminKeyConfigured(adminApiKey)) {
+        } else if (pathname.startsWith('/api/v1/admin/')) {
+          if (!isAdminKeyConfigured(adminApiKey)) {
             status = 503;
             errorCode = 'ADMIN_NOT_CONFIGURED';
             writeJson(response, status, { error: { code: errorCode, message: 'O acesso administrativo ainda não foi configurado.', requestId } });
@@ -112,9 +107,37 @@ export function createApiServer({
             status = 401;
             errorCode = 'ADMIN_UNAUTHORIZED';
             writeJson(response, status, { error: { code: errorCode, message: 'Acesso administrativo não autorizado.', requestId } });
-          } else {
+          } else if (pathname === '/api/v1/admin/orders' && method === 'GET') {
             status = 200;
             writeJson(response, status, { orders: store.listOrders().map(toAdminOrder) });
+          } else if (pathname === '/api/v1/admin/catalog' && method === 'GET') {
+            status = 200;
+            writeJson(response, status, catalog.snapshot());
+          } else {
+            const match = /^\/api\/v1\/admin\/units(?:\/([^/]+))?(?:\/products(?:\/([^/]+))?)?$/.exec(pathname);
+            const isProducts = /\/products(?:\/[^/]+)?$/.test(pathname);
+            const unitId = match?.[1] ? decodeSegment(match[1]) : null;
+            const productId = match?.[2] ? decodeSegment(match[2]) : null;
+            const allowed = pathname === '/api/v1/admin/orders' || pathname === '/api/v1/admin/catalog' ? ['GET']
+              : match ? ((isProducts ? productId : unitId) ? ['PATCH', 'DELETE'] : ['POST']) : [];
+            if (!allowed.length) throw new AppError(404, 'NOT_FOUND', 'Recurso não encontrado.');
+            if (!allowed.includes(method)) {
+              response.setHeader('Allow', allowed.join(', '));
+              throw new AppError(405, 'METHOD_NOT_ALLOWED', 'Método não permitido.');
+            }
+            if (method === 'DELETE') {
+              if (isProducts) catalog.deleteProduct(unitId, productId);
+              else catalog.deleteUnit(unitId);
+            } else {
+              const input = await readJson(request);
+              if (isProducts) {
+                if (method === 'POST') catalog.createProduct(unitId, input);
+                else catalog.updateProduct(unitId, productId, input);
+              } else if (method === 'POST') catalog.createUnit(input);
+              else catalog.updateUnit(unitId, input);
+            }
+            status = method === 'POST' ? 201 : 200;
+            writeJson(response, status, catalog.snapshot());
           }
         } else if (method === 'GET' && /^\/api\/v1\/units\/[^/]+\/menu$/.test(pathname)) {
           const unitId = decodeSegment(pathname.split('/')[4]);
@@ -280,6 +303,7 @@ function toAdminOrder(order) {
   return {
     orderNumber: order.orderNumber,
     unitId: order.unitId,
+    unitName: order.unitName ?? order.unitId,
     channel: order.channel,
     fulfillment: order.fulfillment,
     items: order.items.map(({ productId, name, quantity, unitPriceCents, lineTotalCents }) => ({
@@ -300,6 +324,9 @@ function toAdminOrder(order) {
 
 function normalizeRoute(pathname) {
   return pathname
+    .replace(/^(\/api\/v1\/admin\/units)\/[^/]+\/products\/[^/]+$/, '$1/:unitId/products/:productId')
+    .replace(/^(\/api\/v1\/admin\/units)\/[^/]+\/products$/, '$1/:unitId/products')
+    .replace(/^(\/api\/v1\/admin\/units)\/[^/]+$/, '$1/:unitId')
     .replace(/^\/api\/v1\/units\/[^/]+\/menu$/, '/api/v1/units/:unitId/menu')
     .replace(/^\/api\/v1\/orders\/[^/]+$/, '/api/v1/orders/:orderId');
 }

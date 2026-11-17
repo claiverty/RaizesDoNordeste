@@ -9,7 +9,7 @@ export function validateOrderCommand(input, { requirePayment = false } = {}) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) {
     throw badRequest('INVALID_REQUEST', 'O corpo da requisição deve ser um objeto JSON.');
   }
-  const allowed = new Set(['unitId', 'channel', 'fulfillment', 'items', 'couponCode', 'useLoyalty', 'customerName', 'payment']);
+  const allowed = new Set(['unitId', 'channel', 'fulfillment', 'items', 'couponCode', 'useLoyalty', 'customerName', 'payment', 'expectedTotalCents']);
   if (Object.keys(input).some((key) => !allowed.has(key))) {
     throw badRequest('INVALID_FIELD', 'A requisição contém um campo não permitido.');
   }
@@ -50,6 +50,9 @@ export function validateOrderCommand(input, { requirePayment = false } = {}) {
   }
 
   let payment;
+  if (input.expectedTotalCents !== undefined && (!requirePayment || !Number.isInteger(input.expectedTotalCents) || input.expectedTotalCents < 0 || input.expectedTotalCents > 400_000_000)) {
+    throw badRequest('EXPECTED_TOTAL_INVALID', 'O total revisado deve ser informado em centavos inteiros ao confirmar o pedido.');
+  }
   if (requirePayment) {
     if (!input.payment || typeof input.payment !== 'object' || Array.isArray(input.payment)) throw badRequest('PAYMENT_INVALID', 'Selecione uma opção de pagamento simulado.');
     if (Object.keys(input.payment).some((key) => key !== 'method' && key !== 'outcome')) throw badRequest('PAYMENT_FIELD_INVALID', 'A opção de pagamento contém um campo não permitido.');
@@ -71,6 +74,7 @@ export function validateOrderCommand(input, { requirePayment = false } = {}) {
     useLoyalty: input.useLoyalty === true,
     ...(customerName ? { customerName } : {}),
     ...(payment ? { payment } : {}),
+    ...(input.expectedTotalCents !== undefined ? { expectedTotalCents: input.expectedTotalCents } : {}),
   };
 }
 
@@ -85,6 +89,7 @@ export async function calculateQuote(command, { catalog, loyaltyService }) {
   const unit = catalog.getUnit(command.unitId);
   if (!unit) throw new AppError(404, 'UNIT_NOT_FOUND', 'Unidade não encontrada.');
   if (!unit.active) throw new AppError(409, 'UNIT_UNAVAILABLE', 'Esta unidade está temporariamente indisponível para novos pedidos.');
+  if (!unit.channels.includes(command.channel)) throw new AppError(409, 'CHANNEL_UNAVAILABLE', 'Esta unidade não recebe pedidos por este canal.');
   const menu = catalog.getMenu(command.unitId) ?? [];
   const products = new Map(menu.map((product) => [product.id, product]));
   const lines = command.items.map(({ productId, quantity }) => {

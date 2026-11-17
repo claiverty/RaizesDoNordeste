@@ -1,3 +1,6 @@
+import { randomUUID } from 'node:crypto';
+import { AppError, badRequest } from '../domain/errors.mjs';
+
 const units = [
   {
     id: 'recife-centro',
@@ -48,16 +51,153 @@ const productsByUnit = {
   ],
 };
 
-export const catalog = Object.freeze({
-  listUnits() {
-    return units.map((unit) => ({ ...unit }));
-  },
-  getUnit(unitId) {
-    const unit = units.find((candidate) => candidate.id === unitId);
-    return unit ? { ...unit } : null;
-  },
-  getMenu(unitId) {
-    if (!productsByUnit[unitId]) return null;
-    return productsByUnit[unitId].map((product) => ({ ...product }));
-  },
-});
+const categories = ['Pratos', 'Tapiocas', 'Acompanhamentos', 'Bebidas', 'Doces'];
+const channels = ['APP', 'WEB', 'TOTEM', 'BALCAO', 'PICKUP'];
+const categoryById = Object.fromEntries([
+  ['Pratos', ['carne-sol', 'baiao-dois', 'carne-sol-macaxeira', 'cuscuz-sertao']],
+  ['Tapiocas', ['tapioca-queijo', 'tapioca-carne-sol', 'tapioca-frango', 'tapioca-coco']],
+  ['Acompanhamentos', ['queijo-coalho', 'macaxeira-frita', 'farofa-banana', 'vinagrete']],
+  ['Bebidas', ['suco-caja', 'suco-caju', 'suco-graviola', 'suco-acerola', 'agua-coco', 'cola-tradicional', 'cola-zero', 'guarana', 'agua-mineral']],
+  ['Doces', ['bolo-milho', 'bolo-rolo', 'cartola']],
+].flatMap(([category, ids]) => ids.map((id) => [id, category])));
+
+export function createCatalog() {
+  const currentUnits = structuredClone(units);
+  const menus = structuredClone(productsByUnit);
+  for (const menu of Object.values(menus)) {
+    for (const product of menu) Object.assign(product, { category: categoryById[product.id], imageKey: product.id });
+  }
+
+  function requireUnit(unitId) {
+    const unit = currentUnits.find((candidate) => candidate.id === unitId);
+    if (!unit) throw new AppError(404, 'UNIT_NOT_FOUND', 'Unidade não encontrada.');
+    return unit;
+  }
+
+  function requireProduct(unitId, productId) {
+    requireUnit(unitId);
+    const product = menus[unitId].find((candidate) => candidate.id === productId);
+    if (!product) throw new AppError(404, 'PRODUCT_NOT_FOUND', 'Produto não encontrado nesta unidade.');
+    return product;
+  }
+
+  function ensureUnitCanOpen(unit, menu) {
+    if (unit.active && !menu.some((product) => product.available)) {
+      throw new AppError(409, 'UNIT_MENU_EMPTY', 'Adicione ao menos um prato disponível antes de liberar a unidade.');
+    }
+  }
+
+  return Object.freeze({
+    listUnits: () => structuredClone(currentUnits),
+    getUnit: (unitId) => structuredClone(currentUnits.find((unit) => unit.id === unitId) ?? null),
+    getMenu: (unitId) => structuredClone(menus[unitId] ?? null),
+    snapshot: () => structuredClone({ units: currentUnits, productsByUnit: menus, categories, imageKeys: Object.keys(categoryById), persistence: 'memory' }),
+    createUnit(input) {
+      const values = unitValues(input, false);
+      if (currentUnits.length >= 100) throw new AppError(409, 'UNIT_LIMIT', 'A demonstração permite até 100 unidades.');
+      if (values.active) throw new AppError(409, 'UNIT_MENU_EMPTY', 'Cadastre a unidade desativada e prepare o cardápio antes de liberá-la.');
+      if (currentUnits.some((unit) => unit.name.toLocaleLowerCase('pt-BR') === values.name.toLocaleLowerCase('pt-BR') && unit.city.toLocaleLowerCase('pt-BR') === values.city.toLocaleLowerCase('pt-BR'))) {
+        throw new AppError(409, 'UNIT_DUPLICATED', 'Já existe uma unidade com esse nome nesta cidade.');
+      }
+      const unit = { id: newId(values.name), ...values };
+      currentUnits.push(unit);
+      menus[unit.id] = [];
+      return structuredClone(unit);
+    },
+    updateUnit(unitId, input) {
+      const unit = requireUnit(unitId);
+      const next = { ...unit, ...unitValues(input, true) };
+      ensureUnitCanOpen(next, menus[unitId]);
+      if (currentUnits.some((other) => other.id !== unitId && other.name.toLocaleLowerCase('pt-BR') === next.name.toLocaleLowerCase('pt-BR') && other.city.toLocaleLowerCase('pt-BR') === next.city.toLocaleLowerCase('pt-BR'))) {
+        throw new AppError(409, 'UNIT_DUPLICATED', 'Já existe uma unidade com esse nome nesta cidade.');
+      }
+      Object.assign(unit, next);
+      return structuredClone(unit);
+    },
+    deleteUnit(unitId) {
+      const unit = requireUnit(unitId);
+      currentUnits.splice(currentUnits.indexOf(unit), 1);
+      delete menus[unitId];
+    },
+    createProduct(unitId, input) {
+      requireUnit(unitId);
+      const values = productValues(input, false);
+      if (menus[unitId].length >= 200) throw new AppError(409, 'PRODUCT_LIMIT', 'A demonstração permite até 200 produtos por unidade.');
+      const product = { id: newId(values.name), ...values };
+      menus[unitId].push(product);
+      return structuredClone(product);
+    },
+    updateProduct(unitId, productId, input) {
+      const product = requireProduct(unitId, productId);
+      const next = { ...product, ...productValues(input, true) };
+      Object.assign(product, next);
+      return structuredClone(product);
+    },
+    deleteProduct(unitId, productId) {
+      const product = requireProduct(unitId, productId);
+      menus[unitId].splice(menus[unitId].indexOf(product), 1);
+    },
+  });
+}
+
+function fields(input, allowed) {
+  if (!input || typeof input !== 'object' || Array.isArray(input) || Object.keys(input).length === 0 || Object.keys(input).some((key) => !allowed.includes(key))) {
+    throw badRequest('CATALOG_FIELDS_INVALID', 'Informe apenas os campos permitidos do cadastro.');
+  }
+}
+
+function text(value, field, max) {
+  if (typeof value !== 'string' || !value.trim() || value.trim().length > max || /[<>\u0000-\u001f]/.test(value)) {
+    throw badRequest('CATALOG_FIELD_INVALID', `Confira o campo ${field} (até ${max} caracteres).`);
+  }
+  return value.trim();
+}
+
+function boolean(value, field) {
+  if (typeof value !== 'boolean') throw badRequest('CATALOG_FIELD_INVALID', `O campo ${field} deve ser verdadeiro ou falso.`);
+  return value;
+}
+
+function unitValues(input, partial) {
+  fields(input, ['name', 'city', 'active', 'channels']);
+  const result = {};
+  if (!partial || input.name !== undefined) result.name = text(input.name, 'nome', 100);
+  if (!partial || input.city !== undefined) result.city = text(input.city, 'cidade', 80);
+  if (!partial || input.active !== undefined) result.active = boolean(input.active === undefined ? false : input.active, 'liberada');
+  if (!partial || input.channels !== undefined) {
+    const selected = input.channels ?? channels;
+    if (!Array.isArray(selected) || !selected.length || selected.length > channels.length || selected.some((channel) => !channels.includes(channel)) || new Set(selected).size !== selected.length) {
+      throw badRequest('CATALOG_CHANNELS_INVALID', 'Escolha canais válidos e sem repetição.');
+    }
+    result.channels = [...selected];
+  }
+  return result;
+}
+
+function productValues(input, partial) {
+  fields(input, ['name', 'description', 'priceCents', 'category', 'imageKey', 'available']);
+  const result = {};
+  if (!partial || input.name !== undefined) result.name = text(input.name, 'nome', 100);
+  if (!partial || input.description !== undefined) result.description = text(input.description, 'descrição', 300);
+  if (!partial || input.priceCents !== undefined) {
+    if (!Number.isInteger(input.priceCents) || input.priceCents < 0 || input.priceCents > 1_000_000) throw badRequest('PRICE_INVALID', 'Informe um preço entre R$ 0,00 e R$ 10.000,00, em centavos inteiros.');
+    result.priceCents = input.priceCents;
+  }
+  if (!partial || input.category !== undefined) {
+    if (!categories.includes(input.category)) throw badRequest('CATEGORY_INVALID', 'Escolha uma categoria do cardápio.');
+    result.category = input.category;
+  }
+  if (!partial || input.imageKey !== undefined) {
+    if (input.imageKey !== '' && !Object.hasOwn(categoryById, input.imageKey)) throw badRequest('IMAGE_INVALID', 'Escolha uma foto da galeria ou a opção sem foto.');
+    result.imageKey = input.imageKey;
+  }
+  if (!partial || input.available !== undefined) result.available = boolean(input.available, 'disponível');
+  return result;
+}
+
+function newId(name) {
+  const slug = name.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 45) || 'cadastro';
+  return `${slug}-${randomUUID().slice(0, 8)}`;
+}
+
+export const catalog = createCatalog();
