@@ -26,6 +26,8 @@ A aplicação demonstra a jornada de pedido, da escolha da unidade ao comprovant
 | `/cardapio` | Produtos, categorias e carrinho |
 | `/checkout` | Resumo, modalidade e pagamento simulado |
 | `/comprovante` | Confirmação, itens, total e retirada |
+| `/totem` | Modo de autoatendimento com fluxo próprio para tela touchscreen |
+| `/totem/cardapio`, `/totem/checkout`, `/totem/comprovante` | Etapas do pedido pelo totem |
 | `/admin` | Painel protegido para analisar pedidos confirmados |
 | `/admin/cardapio` | Criar, editar, disponibilizar e excluir produtos por unidade |
 | `/admin/unidades` | Cadastrar, editar, liberar, desativar e excluir unidades |
@@ -39,7 +41,7 @@ A aplicação demonstra a jornada de pedido, da escolha da unidade ao comprovant
 | Testes | `node:test`, Playwright e axe-core |
 | Dados externos | Adaptadores simulados; pedidos guardados em memória |
 
-O checkout web envia o canal `WEB` automaticamente. A API também valida outros canais para os cenários de teste.
+O fluxo web envia o canal `WEB`; o modo `/totem` envia `TOTEM` ao cotar e confirmar o pedido. A API também valida os canais `APP`, `BALCAO` e `PICKUP` nos cenários multicanal.
 
 ### Gestão no painel
 

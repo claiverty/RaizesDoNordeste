@@ -13,7 +13,7 @@ import { createLoyaltyMock, createPaymentMock } from '../infrastructure/mock-ser
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WEB_DIR = resolve(HERE, '..', '..', 'dist', 'client');
 const MAX_BODY_BYTES = 32 * 1024;
-const APP_ROUTES = new Set(['/', '/cardapio', '/checkout', '/comprovante', '/admin', '/admin/cardapio', '/admin/unidades']);
+const APP_ROUTES = new Set(['/', '/cardapio', '/checkout', '/comprovante', '/totem', '/totem/cardapio', '/totem/checkout', '/totem/comprovante', '/admin', '/admin/cardapio', '/admin/unidades']);
 
 export function createRateLimiter({ limit = 60, windowMs = 60_000, maxClients = 10_000, now = Date.now } = {}) {
   const entries = new Map();

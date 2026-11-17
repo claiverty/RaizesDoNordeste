@@ -16,15 +16,21 @@ import type {
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 type OrderStep = 1 | 2 | 3 | 4;
 type MenuCategory = 'Todos' | 'Pratos' | 'Tapiocas' | 'Acompanhamentos' | 'Bebidas' | 'Doces';
-const stepPaths: Record<OrderStep, string> = { 1: '/', 2: '/cardapio', 3: '/checkout', 4: '/comprovante' };
+const webStepPaths: Record<OrderStep, string> = { 1: '/', 2: '/cardapio', 3: '/checkout', 4: '/comprovante' };
+const totemStepPaths: Record<OrderStep, string> = { 1: '/totem', 2: '/totem/cardapio', 3: '/totem/checkout', 4: '/totem/comprovante' };
 const menuCategories: MenuCategory[] = ['Todos', 'Pratos', 'Tapiocas', 'Acompanhamentos', 'Doces', 'Bebidas'];
 
 function stepFromPath(pathname: string): OrderStep | null {
-  const entry = Object.entries(stepPaths).find(([, path]) => path === pathname);
+  if (pathname === '/totem' || pathname === '/totem/') return 1;
+  const isTotem = pathname.startsWith('/totem/');
+  const paths = isTotem ? totemStepPaths : webStepPaths;
+  const entry = Object.entries(paths).find(([, path]) => path === pathname);
   return entry ? Number(entry[0]) as OrderStep : null;
 }
 
 function App() {
+  const isTotem = window.location.pathname === '/totem' || window.location.pathname.startsWith('/totem/');
+  const orderPaths = isTotem ? totemStepPaths : webStepPaths;
   const [units, setUnits] = useState<Unit[]>([]);
   const [unitId, setUnitId] = useState('');
   const [menu, setMenu] = useState<Product[]>([]);
@@ -35,7 +41,7 @@ function App() {
   const [couponCode, setCouponCode] = useState('');
   const [useLoyalty, setUseLoyalty] = useState(false);
   const [fulfillment, setFulfillment] = useState<Fulfillment>('PICKUP');
-  const channel: Channel = 'WEB';
+  const channel: Channel = isTotem ? 'TOTEM' : 'WEB';
   const [customerName, setCustomerName] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('PIX');
   const [paymentOutcome, setPaymentOutcome] = useState<PaymentOutcome>('APPROVED');
@@ -60,7 +66,7 @@ function App() {
   const hasCartItems = cartItems.length > 0;
 
   function navigateToStep(nextStep: OrderStep, replace = false) {
-    const nextPath = stepPaths[nextStep];
+    const nextPath = orderPaths[nextStep];
     if (window.location.pathname !== nextPath) {
       if (replace) window.history.replaceState({ orderStep: nextStep }, '', nextPath);
       else window.history.pushState({ orderStep: nextStep }, '', nextPath);
@@ -72,7 +78,7 @@ function App() {
     const syncStepFromUrl = () => {
       const nextStep = stepFromPath(window.location.pathname);
       if (nextStep === null) {
-        window.history.replaceState({}, '', stepPaths[1]);
+        window.history.replaceState({}, '', orderPaths[1]);
         setCurrentStep(1);
         return;
       }
@@ -81,7 +87,7 @@ function App() {
     window.addEventListener('popstate', syncStepFromUrl);
     if (stepFromPath(window.location.pathname) === null) syncStepFromUrl();
     return () => window.removeEventListener('popstate', syncStepFromUrl);
-  }, []);
+  }, [orderPaths]);
 
   useEffect(() => {
     let fallbackStep: OrderStep | null = null;
@@ -89,20 +95,20 @@ function App() {
     if (currentStep === 3 && (!unitId || !hasCartItems)) fallbackStep = unitId ? 2 : 1;
     if (currentStep === 4 && !confirmedOrder) fallbackStep = hasCartItems ? 3 : unitId ? 2 : 1;
     if (fallbackStep !== null) {
-      window.history.replaceState({ orderStep: fallbackStep }, '', stepPaths[fallbackStep]);
+      window.history.replaceState({ orderStep: fallbackStep }, '', orderPaths[fallbackStep]);
       setCurrentStep(fallbackStep);
     }
   }, [currentStep, unitId, hasCartItems, confirmedOrder]);
 
   useEffect(() => {
     const pageTitles: Record<OrderStep, string> = {
-      1: 'Escolha sua unidade | Raízes do Nordeste',
-      2: 'Cardápio | Raízes do Nordeste',
-      3: 'Checkout | Raízes do Nordeste',
-      4: 'Comprovante | Raízes do Nordeste',
+      1: `${isTotem ? 'Autoatendimento' : 'Escolha sua unidade'} | Raízes do Nordeste`,
+      2: `${isTotem ? 'Cardápio do totem' : 'Cardápio'} | Raízes do Nordeste`,
+      3: `${isTotem ? 'Revise seu pedido' : 'Checkout'} | Raízes do Nordeste`,
+      4: `${isTotem ? 'Pedido concluído' : 'Comprovante'} | Raízes do Nordeste`,
     };
     document.title = pageTitles[currentStep];
-  }, [currentStep]);
+  }, [currentStep, isTotem]);
 
   useEffect(() => {
     let active = true;
@@ -286,17 +292,17 @@ function App() {
   const itemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <>
+    <div className={isTotem ? 'totem-mode' : undefined}>
       <a className="skip-link" href="#pedido">Ir para o conteúdo</a>
       <header className="site-header">
         <nav className="site-nav" aria-label="Navegação principal">
-          {currentStep === 1 ? <><a href="#unit-selection">Unidades</a><a href="#nossa-cozinha">Nossa cozinha</a></> : <a href="/" onClick={(event) => { event.preventDefault(); navigateToStep(1); }}>Início</a>}
+          {isTotem ? <a href="/" className="totem-exit" aria-label="Sair do modo totem e voltar ao site"><Icon name="arrowLeft" />Voltar ao site</a> : currentStep === 1 ? <><a href="#unit-selection">Unidades</a><a href="#nossa-cozinha">Nossa cozinha</a></> : <a href="/" onClick={(event) => { event.preventDefault(); navigateToStep(1); }}>Início</a>}
         </nav>
-        <a className="wordmark" href="/" aria-label="Raízes do Nordeste — início" onClick={(event) => { event.preventDefault(); navigateToStep(1); }}>
+        <a className="wordmark" href={isTotem ? '/totem' : '/'} aria-label={isTotem ? 'Raízes do Nordeste — início do autoatendimento' : 'Raízes do Nordeste — início'} onClick={(event) => { event.preventDefault(); navigateToStep(1); }}>
           <strong>RAÍZES</strong><span>DO NORDESTE</span>
         </a>
         <div className="header-actions">
-          <span className="demo-badge">Pedido simulado</span>
+          <span className="demo-badge">{isTotem ? 'Autoatendimento · pedido simulado' : 'Pedido simulado'}</span>
           {currentStep === 1 && <a className="header-order" href="#unit-selection">Fazer pedido <Icon name="arrowUpRight" /></a>}
           {currentStep === 2 && <button className="header-order" type="button" disabled={!canReview} onClick={() => navigateToStep(3)}><Icon name="cart" />Carrinho · {itemCount}</button>}
           {currentStep === 3 && <a className="header-order" href="#summary-title"><Icon name="receipt" />Ver resumo</a>}
@@ -304,9 +310,13 @@ function App() {
         </div>
       </header>
 
-      <main id="pedido" tabIndex={-1} className={`layout${currentStep === 1 ? ' landing-layout' : ''}`}>
+      <main id="pedido" tabIndex={-1} className={`layout${currentStep === 1 ? ' landing-layout' : ''}${isTotem ? ' totem-layout' : ''}`}>
         {currentStep === 1 ? <>
-          <section className="home-hero" aria-labelledby="page-title">
+          {isTotem ? <section className="totem-welcome" aria-labelledby="page-title">
+            <p className="eyebrow">Autoatendimento Raízes do Nordeste</p>
+            <h1 id="page-title" tabIndex={-1} ref={stepHeadingRef}>Faça seu pedido.</h1>
+            <p>Escolha a unidade para ver o cardápio e montar seu pedido na tela.</p>
+          </section> : <section className="home-hero" aria-labelledby="page-title">
             <img className="home-hero-image" src={heroImage} alt="Mesa posta com pratos nordestinos, cuscuz, tapioca, carne de sol e queijo coalho" fetchPriority="high" />
             <div className="home-hero-shade" />
             <div className="home-hero-copy">
@@ -316,13 +326,13 @@ function App() {
               <a className="button button-lime" href="#unit-selection">Escolha sua unidade <Icon name="arrowRight" /></a>
             </div>
             <span className="hero-caption">Sabores que trazem a gente pra perto.</span>
-          </section>
+          </section>}
 
           <section id="unit-selection" className="unit-section" aria-labelledby="unit-title">
             <div className="unit-section-copy">
-              <p className="eyebrow">Por onde começamos?</p>
-              <h2 id="unit-title">Escolha sua unidade</h2>
-              <p>Consulte o cardápio e a disponibilidade do local escolhido.</p>
+              <p className="eyebrow">{isTotem ? 'Etapa 1 · Unidade' : 'Por onde começamos?'}</p>
+              <h2 id="unit-title">{isTotem ? 'Onde você vai pedir?' : 'Escolha sua unidade'}</h2>
+              <p>{isTotem ? 'Selecione uma loja para abrir o cardápio.' : 'Consulte o cardápio e a disponibilidade do local escolhido.'}</p>
             </div>
             <div className="unit-section-options">
               <fieldset className="unit-options">
@@ -340,26 +350,27 @@ function App() {
               <button className="button button-primary landing-cta" type="button" disabled={!unitId || menuLoading || menu.length === 0} onClick={() => { setMessage(null); navigateToStep(2); }}>
                 {menuLoading ? 'Carregando cardápio…' : 'Ver cardápio'} <Icon name="arrowRight" />
               </button>
+              {!isTotem && <p className="totem-entry">Vai pedir em um terminal? <a href="/totem">Experimente o modo totem <Icon name="arrowRight" /></a></p>}
             </div>
           </section>
 
-          <section id="nossa-cozinha" className="home-note" aria-labelledby="kitchen-title">
+          {!isTotem && <section id="nossa-cozinha" className="home-note" aria-labelledby="kitchen-title">
             <p className="eyebrow">Raízes do Nordeste</p>
             <h2 id="kitchen-title">Um pedaço da nossa cultura em cada receita.</h2>
             <p>Do cuscuz à tapioca, reunimos sabores que fazem parte da mesa nordestina.</p>
-          </section>
+          </section>}
         </> : <>
           <section className="intro" aria-labelledby="page-title">
-            <p className="eyebrow">Pedido digital · {currentStep === 4 ? 'Concluído' : `Etapa ${currentStep - 1} de 3`}</p>
+            <p className="eyebrow">{isTotem ? 'Autoatendimento' : 'Pedido digital'} · {currentStep === 4 ? 'Concluído' : `Etapa ${currentStep - 1} de 3`}</p>
             <h1 id="page-title" tabIndex={-1} ref={stepHeadingRef}>
-              {currentStep === 2 && 'Cardápio da unidade'}
-              {currentStep === 3 && 'Revise e confirme'}
-              {currentStep === 4 && 'Comprovante do pedido'}
+              {currentStep === 2 && (isTotem ? 'Escolha seus itens' : 'Cardápio da unidade')}
+              {currentStep === 3 && (isTotem ? 'Revise seu pedido' : 'Revise e confirme')}
+              {currentStep === 4 && (isTotem ? 'Pedido concluído' : 'Comprovante do pedido')}
             </h1>
             <p>
-              {currentStep === 2 && 'Escolha seus favoritos. O carrinho permanece salvo enquanto você avança e volta.'}
-              {currentStep === 3 && 'Confira os itens, escolha como receber e veja o total final.'}
-              {currentStep === 4 && 'Seu pedido demonstrativo foi registrado com sucesso.'}
+              {currentStep === 2 && (isTotem ? 'Toque em adicionar para montar seu pedido. Você pode alterar as quantidades no resumo ao lado.' : 'Escolha seus favoritos. O carrinho permanece salvo enquanto você avança e volta.')}
+              {currentStep === 3 && (isTotem ? 'Confira os itens e o valor. Depois escolha retirada ou consumo na unidade.' : 'Confira os itens, escolha como receber e veja o total final.')}
+              {currentStep === 4 && (isTotem ? 'Seu pedido demonstrativo está confirmado. Confira o comprovante antes de encerrar.' : 'Seu pedido demonstrativo foi registrado com sucesso.')}
             </p>
           </section>
 
@@ -377,7 +388,7 @@ function App() {
 
         {message && <div ref={messageRef} tabIndex={-1} className={`message${message.kind === 'error' ? ' error' : ''}`} role="status" aria-live="polite">{message.text}</div>}
 
-        {currentStep > 1 && <div className={`order-grid${currentStep === 3 ? '' : ' single-column'}`}>
+        {currentStep > 1 && <div className={`order-grid${currentStep === 3 || (isTotem && currentStep === 2) ? '' : ' single-column'}${isTotem && currentStep === 2 ? ' totem-menu-grid' : ''}`}>
           <div className="main-column">
             {currentStep === 2 && <section className="card menu-card" aria-labelledby="menu-title">
               <div className="section-heading"><div><h2 id="menu-title">Cardápio</h2><p>{selectedUnit ? `${selectedUnit.name} · adicione os itens que deseja.` : 'Adicione os itens que deseja.'}</p></div></div>
@@ -447,6 +458,30 @@ function App() {
             </section>}
 
           </div>
+
+          {isTotem && currentStep === 2 && <aside className="card totem-cart-panel" aria-labelledby="totem-cart-title">
+            <div className="section-heading"><div><h2 id="totem-cart-title">Seu pedido</h2><p aria-live="polite">{itemCount === 1 ? '1 item escolhido' : `${itemCount} itens escolhidos`}</p></div></div>
+            {hasCartItems ? <ul className="totem-cart-items">
+              {cartItems.map(({ productId, quantity }) => {
+                const product = menu.find((item) => item.id === productId);
+                if (!product) return null;
+                const price = quote?.lines.find((line) => line.productId === productId)?.unitPriceCents ?? product.priceCents;
+                return <li className="totem-cart-item" key={product.id}>
+                  <div className="totem-cart-item-copy"><strong>{product.name}</strong><span>{price === 0 ? 'Cortesia' : `${quantity} × ${money.format(price / 100)}`}</span></div>
+                  <div className="totem-cart-item-controls">
+                    <QuantityButton kind="minus" label={quantity === 1 ? `Remover ${product.name}` : `Diminuir ${product.name}`} onClick={() => updateQuantity(product.id, (current) => current - 1)} />
+                    <span aria-label={`${quantity} unidades`}>{quantity}</span>
+                    <QuantityButton kind="plus" label={`Aumentar ${product.name}`} disabled={quantity >= 20} onClick={() => updateQuantity(product.id, (current) => current + 1)} />
+                  </div>
+                </li>;
+              })}
+            </ul> : <p className="totem-cart-empty">Seu pedido aparecerá aqui quando você adicionar itens.</p>}
+            <div className="totem-cart-total"><span>Total</span><strong>{quote ? money.format(quote.totalCents / 100) : quoteLoading ? 'Calculando…' : money.format(0)}</strong></div>
+            <button className="button button-primary totem-continue" type="button" disabled={!canReview} onClick={() => { setMessage(null); navigateToStep(3); }}>
+              Revisar pedido <Icon name="arrowRight" />
+            </button>
+            <p className="totem-demo-note">Pagamento demonstrativo · nenhuma cobrança real</p>
+          </aside>}
 
           {currentStep === 3 && <div className="checkout-side-column">
             {currentStep === 3 && <section className="card" aria-labelledby="options-title">
@@ -543,9 +578,9 @@ function App() {
           </div>
           <button className="button button-primary action-button" type="button" onClick={startNewOrder}><Icon name="plus" />Fazer outro pedido</button>
         </section>}
-        <footer><p>Projeto de Qualidade de Software · Raízes do Nordeste</p><p><a href="/admin">Acesso da operação</a> · Protótipo · catálogo e integrações simulados</p></footer>
+        <footer><p>Projeto de Qualidade de Software · Raízes do Nordeste</p><p>{isTotem ? 'Autoatendimento demonstrativo · pagamento simulado' : <><a href="/admin">Acesso da operação</a> · Protótipo · catálogo e integrações simulados</>}</p></footer>
       </main>
-    </>
+    </div>
   );
 }
 

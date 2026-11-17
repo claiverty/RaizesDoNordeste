@@ -12,7 +12,7 @@ O objetivo desta entrega é demonstrar uma jornada de pedido verificável e uma 
 
 | Ator | Necessidade | Canais considerados |
 |---|---|---|
-| Cliente | Consultar a unidade, montar pedido, conferir preço e receber confirmação | APP e WEB demonstrados; TOTEM, BALCÃO e PICKUP representados no campo de canal |
+| Cliente | Consultar a unidade, montar pedido, conferir preço e receber confirmação | WEB responsivo e TOTEM demonstrados; APP nativo, BALCÃO e PICKUP representados no contrato/API |
 | Operação da unidade | Receber pedido confirmado sem divergência de preço ou duplicidade | API interna do protótipo; operação real fora do escopo |
 | Administração | Analisar volume e vendas confirmadas sem acessar dados pessoais do cliente | Painel protegido `/admin` |
 | QA/engenharia | Reproduzir falhas, inspecionar contratos, testes, métricas e evidências | CLI, testes automatizados e navegador |
@@ -23,7 +23,7 @@ O objetivo desta entrega é demonstrar uma jornada de pedido verificável e uma 
 1. Cliente chega à landing page (`/`), escolhe uma unidade disponível e avança para `/cardapio`, onde consulta o catálogo e preços retornados pelo servidor.
 2. Adiciona itens e quantidades ao carrinho; o cliente não define preço.
 3. Pode informar cupom e solicitar resgate de benefício simulado.
-4. Em `/checkout`, escolhe retirada no balcão ou consumo na unidade; no fluxo web, o sistema registra o canal WEB automaticamente.
+4. Em `/checkout` ou `/totem/checkout`, escolhe retirada no balcão ou consumo na unidade; o sistema registra WEB ou TOTEM conforme o fluxo utilizado.
 5. Confere total, informa opcionalmente um nome curto para chamada e escolhe um resultado de pagamento simulado.
 6. A API revalida unidade, itens, disponibilidade e preços; calcula descontos; processa a chave de idempotência.
 7. O pedido só é persistido e confirmado se o mock de pagamento aprovar.
