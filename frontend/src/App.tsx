@@ -17,7 +17,7 @@ const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL
 type OrderStep = 1 | 2 | 3 | 4;
 type MenuCategory = 'Todos' | 'Pratos' | 'Tapiocas' | 'Acompanhamentos' | 'Bebidas' | 'Doces';
 const stepPaths: Record<OrderStep, string> = { 1: '/', 2: '/cardapio', 3: '/checkout', 4: '/comprovante' };
-const menuCategories: MenuCategory[] = ['Todos', 'Pratos', 'Tapiocas', 'Acompanhamentos', 'Bebidas', 'Doces'];
+const menuCategories: MenuCategory[] = ['Todos', 'Pratos', 'Tapiocas', 'Acompanhamentos', 'Doces', 'Bebidas'];
 
 function stepFromPath(pathname: string): OrderStep | null {
   const entry = Object.entries(stepPaths).find(([, path]) => path === pathname);

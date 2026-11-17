@@ -52,7 +52,7 @@ const productsByUnit = {
   ],
 };
 
-const categories = ['Pratos', 'Tapiocas', 'Acompanhamentos', 'Bebidas', 'Doces'];
+const categories = ['Pratos', 'Tapiocas', 'Acompanhamentos', 'Doces', 'Bebidas'];
 const channels = ['APP', 'WEB', 'TOTEM', 'BALCAO', 'PICKUP'];
 const categoryById = Object.fromEntries([
   ['Pratos', ['carne-sol', 'baiao-dois', 'carne-sol-macaxeira', 'cuscuz-sertao']],
