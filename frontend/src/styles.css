@@ -202,7 +202,15 @@ legend { margin-bottom: .4rem; }
 .price-row.discount { color: var(--success); }
 .price-row.total { margin-top: .6rem; font-size: 1.12rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .summary > label[for="payment-outcome"] { margin: .5rem 0 .35rem; }
-.privacy-note { margin: .75rem 0 0; color: var(--muted); font-size: .74rem; }
+.privacy-copy { margin: .15rem 0 .65rem; color: var(--muted); font-size: .8rem; line-height: 1.5; }
+.privacy-details { margin: .45rem 0 .6rem; color: var(--ink); font-size: .78rem; }
+.privacy-details summary { color: var(--forest); cursor: pointer; font-weight: 650; }
+.privacy-details ul { display: grid; gap: .3rem; margin: .5rem 0 0; padding-left: 1.15rem; line-height: 1.45; }
+.privacy-consent { display: flex; align-items: flex-start; margin: .55rem 0 0; padding: .7rem; border: 1px solid var(--line); border-radius: .55rem; background: #f6f5ed; font-size: .78rem; font-weight: 500; }
+.privacy-consent input { flex: 0 0 1.15rem; width: 1.15rem; height: 1.15rem; margin: .12rem 0 0; accent-color: var(--forest); }
+.privacy-consent span { display: grid; gap: .2rem; line-height: 1.4; }
+.privacy-consent small { color: var(--muted); font-size: .72rem; font-weight: 400; }
+.privacy-hint { margin: .4rem 0 0; color: var(--forest); font-size: .74rem; line-height: 1.4; }
 .payment-note { display: flex; gap: .75rem; align-items: flex-start; background: #f0f2e7; }
 .payment-note p { margin: .15rem 0 0; color: var(--muted); font-size: .84rem; }
 .lock-mark { display: grid; flex: 0 0 2rem; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; color: white; background: var(--success); font-weight: 800; }
@@ -389,7 +397,7 @@ footer p { margin: 0; }
 .totem-mode .checkout-cart-image { width: 72px; }
 .totem-mode .checkout-cart-controls .button-qty { width: 52px; min-height: 52px; flex-basis: 52px; }
 .totem-mode .summary { position: sticky; top: 1rem; }
-.totem-mode .summary .privacy-note { font-size: .78rem; }
+.totem-mode .privacy-consent { font-size: .84rem; }
 .totem-mode .confirmation-screen { max-width: 1040px; }
 .totem-mode .receipt-pickup-code { padding: 1.4rem; }
 .totem-mode .receipt-pickup-code > strong { font-size: 2.25rem; }

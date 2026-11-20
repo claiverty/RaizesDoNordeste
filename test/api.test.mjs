@@ -31,6 +31,8 @@ function validBody(overrides = {}) {
   return {
     unitId: 'recife-centro', channel: 'WEB', fulfillment: 'PICKUP',
     items: [{ productId: 'bolo-milho', quantity: 2 }],
+    privacyConsent: true,
+    customerNameConsent: false,
     payment: { method: 'PIX', outcome: 'APPROVED' },
     ...overrides,
   };
@@ -159,11 +161,28 @@ test('health, catálogo e cabeçalhos básicos são servidos', async (t) => {
   assert.equal((await fetch(`${app.baseUrl}/api/v1/units/natal-norte/menu`)).status, 409);
 });
 
+test('API exige consentimento explícito para confirmar e para enviar nome opcional', async (t) => {
+  const app = await startServer();
+  t.after(() => app.close());
+
+  const missingConsent = await postOrder(app, validBody({ privacyConsent: false }), 'privacy-required-0001');
+  assert.equal(missingConsent.status, 400);
+  assert.equal((await missingConsent.json()).error.code, 'PRIVACY_CONSENT_REQUIRED');
+
+  const nameWithoutConsent = await postOrder(app, validBody({ customerName: 'Ana' }), 'privacy-name-0001');
+  assert.equal(nameWithoutConsent.status, 400);
+  assert.equal((await nameWithoutConsent.json()).error.code, 'CUSTOMER_NAME_CONSENT_REQUIRED');
+
+  const acceptedName = await postOrder(app, validBody({ customerName: 'Ana', customerNameConsent: true }), 'privacy-name-0002');
+  assert.equal(acceptedName.status, 201);
+  assert.equal((await acceptedName.json()).customerName, 'Ana');
+});
+
 test('painel lista pedidos confirmados somente com PIN e omite dados do cliente', async (t) => {
   const adminPin = '4826';
   const app = await startServer({ adminPin });
   t.after(() => app.close());
-  const created = await postOrder(app, validBody({ customerName: 'Nome sintético' }));
+  const created = await postOrder(app, validBody({ customerName: 'Nome sintético', customerNameConsent: true }));
   assert.equal(created.status, 201);
   const customerOrder = await created.json();
   assert.equal((await fetch(`${app.baseUrl}/api/v1/orders/${customerOrder.id}`, { headers: { Authorization: `Bearer ${adminPin}` } })).status, 401);
@@ -367,7 +386,7 @@ test('rate limit padrão retorna 429 após 60 requests e logs não guardam o cor
   const logs = [];
   const logApp = await startServer({ logger: (entry) => logs.push(entry) });
   t.after(() => logApp.close());
-  await postOrder(logApp, validBody({ customerName: 'Pessoa Teste' }), 'log-key-person-0001');
+  await postOrder(logApp, validBody({ customerName: 'Pessoa Teste', customerNameConsent: true }), 'log-key-person-0001');
   assert.ok(logs.every((entry) => !('body' in entry) && !('authorization' in entry)));
   assert.ok(logs.every((entry) => entry.requestId && typeof entry.durationMs === 'number'));
   assert.ok(logs.every((entry) => !JSON.stringify(entry).includes('Pessoa Teste')));

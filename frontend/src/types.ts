@@ -63,6 +63,8 @@ export interface OrderBody {
   items: Array<{ productId: string; quantity: number }>;
   couponCode?: string;
   useLoyalty: boolean;
+  privacyConsent: boolean;
+  customerNameConsent?: boolean;
   customerName?: string;
   expectedTotalCents?: number;
   payment: { method: PaymentMethod; outcome: PaymentOutcome };

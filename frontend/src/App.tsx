@@ -43,6 +43,8 @@ function App() {
   const [fulfillment, setFulfillment] = useState<Fulfillment>('PICKUP');
   const channel: Channel = isTotem ? 'TOTEM' : 'WEB';
   const [customerName, setCustomerName] = useState('');
+  const [privacyConsent, setPrivacyConsent] = useState(false);
+  const [customerNameConsent, setCustomerNameConsent] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('PIX');
   const [paymentOutcome, setPaymentOutcome] = useState<PaymentOutcome>('APPROVED');
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -249,13 +251,15 @@ function App() {
       items: cartItems,
       ...(couponCode ? { couponCode } : {}),
       useLoyalty,
-      ...(customerName.trim() ? { customerName: customerName.trim() } : {}),
+      privacyConsent,
+      customerNameConsent: customerNameConsent && Boolean(customerName.trim()),
+      ...(customerName.trim() && customerNameConsent ? { customerName: customerName.trim() } : {}),
       payment: { method: paymentMethod, outcome: paymentOutcome },
     };
   }
 
   async function submitOrder() {
-    if (!quote || !hasCartItems || isSubmitting) return;
+    if (!quote || !hasCartItems || !privacyConsent || isSubmitting) return;
     setMessage(null);
     setConfirmedOrder(null);
     setIsSubmitting(true);
@@ -290,12 +294,14 @@ function App() {
     setUseLoyalty(false);
     setFulfillment('PICKUP');
     setCustomerName('');
+    setPrivacyConsent(false);
+    setCustomerNameConsent(false);
     setPaymentMethod('PIX');
     setPaymentOutcome('APPROVED');
     setQuote(null);
   }
 
-  const canSubmit = Boolean(quote) && hasCartItems && !quoteLoading && !isSubmitting && !confirmedOrder;
+  const canSubmit = Boolean(quote) && hasCartItems && privacyConsent && !quoteLoading && !isSubmitting && !confirmedOrder;
   const canReview = Boolean(quote) && hasCartItems && !quoteLoading;
   const selectedUnit = units.find((unit) => unit.id === unitId);
   const visibleMenu = selectedCategory === 'Todos'
@@ -507,10 +513,32 @@ function App() {
               <div className="field-grid checkout-fields customer-field">
                 <div>
                   <label htmlFor="customer-name">Nome curto para chamada <span className="optional">opcional</span></label>
-                  <input id="customer-name" name="customerName" type="text" autoComplete="given-name" maxLength={40} placeholder="Ex.: Ana" value={customerName} onChange={(event) => { setCustomerName(event.target.value); resetAttempt(); }} />
-                  <small>Não informe sobrenome, CPF, telefone ou endereço.</small>
+                  <input id="customer-name" name="customerName" type="text" autoComplete="given-name" maxLength={40} placeholder="Ex.: Ana" value={customerName} aria-describedby="customer-name-help" onChange={(event) => { setCustomerName(event.target.value); setCustomerNameConsent(false); resetAttempt(); }} />
+                  <small id="customer-name-help">Não informe sobrenome, CPF, telefone ou endereço. O nome só será enviado se você autorizar abaixo.</small>
+                  {customerName.trim() && <label className="choice privacy-consent name-consent" htmlFor="customer-name-consent">
+                    <input id="customer-name-consent" type="checkbox" checked={customerNameConsent} onChange={(event) => { setCustomerNameConsent(event.target.checked); resetAttempt(); }} />
+                    <span>Autorizo usar este nome curto somente para identificar meu pedido na retirada.<small>Opcional. Se deixar desmarcado, o nome não será enviado.</small></span>
+                  </label>}
                 </div>
               </div>
+            </section>}
+
+            {currentStep === 3 && <section className="card privacy-card" aria-labelledby="privacy-title">
+              <div className="section-heading"><div><h2 id="privacy-title">Privacidade do seu pedido</h2><p>Você sabe o que usamos e por quê.</p></div></div>
+              <p className="privacy-copy">Usamos os itens, a unidade, a modalidade e o canal para preparar e confirmar este pedido. Não pedimos CPF, telefone, endereço, e-mail ou dados de cartão. O pagamento é simulado e não há uso para marketing.</p>
+              <details className="privacy-details">
+                <summary>Armazenamento temporário: até 24 horas</summary>
+                <ul>
+                  <li>O pedido e seu código de consulta ficam temporariamente na memória do protótipo, por até 24 horas; reiniciar o servidor remove os dados antes.</li>
+                  <li>O IP é usado temporariamente para limitar abuso e não é salvo nos logs da aplicação.</li>
+                  <li>O nome é enviado somente se você preencher o campo e marcar a autorização opcional.</li>
+                </ul>
+              </details>
+              <label className="choice privacy-consent" htmlFor="privacy-consent">
+                <input id="privacy-consent" type="checkbox" required aria-required="true" aria-describedby="privacy-consent-help" checked={privacyConsent} onChange={(event) => { setPrivacyConsent(event.target.checked); resetAttempt(); }} />
+                <span>Concordo com o uso dos dados deste pedido exclusivamente para prepará-lo e confirmá-lo nesta demonstração.<small>Obrigatório para confirmar o pedido demonstrativo.</small></span>
+              </label>
+              <p id="privacy-consent-help" className="privacy-hint" role="status">{privacyConsent ? 'Sua escolha será registrada junto ao pedido e removida com ele.' : 'Leia o aviso e marque a opção para habilitar a confirmação.'}</p>
             </section>}
 
             {currentStep === 3 && <section className="card checkout-payment-card" aria-labelledby="payment-title">
@@ -537,7 +565,6 @@ function App() {
               {quoteError ? <p className="message error">{quoteError}</p> : quote ? <QuoteBreakdown quote={quote} /> : <p className="muted">{quoteLoading ? 'Calculando total…' : 'Adicione um produto para calcular o total.'}</p>}
             </div>
             <button id="submit-order" className="button button-primary" type="button" disabled={!canSubmit} onClick={submitOrder}>{isSubmitting ? 'Processando…' : 'Confirmar pedido'}<Icon name="check" /></button>
-            <p className="privacy-note">O nome curto é opcional e expira após 24 horas; a limpeza automática ocorre em até 1 minuto. Ao reiniciar o servidor, os pedidos de demonstração são removidos.</p>
             {confirmedOrder && <div id="confirmation" className="confirmation" role="status" aria-live="polite" tabIndex={-1} ref={confirmationRef}>
               <h3>Pedido {confirmedOrder.orderNumber} confirmado</h3>
               <p>Total: {money.format(confirmedOrder.totalCents / 100)} · {confirmedOrder.fulfillment === 'PICKUP' ? 'retirada no balcão' : 'consumo na unidade'}</p>

@@ -18,7 +18,7 @@ export async function getMenu(unitId: string): Promise<Product[]> {
   return data.items;
 }
 
-export async function getQuote(order: Omit<OrderBody, 'payment' | 'customerName'>): Promise<Quote> {
+export async function getQuote(order: Omit<OrderBody, 'payment' | 'customerName' | 'privacyConsent' | 'customerNameConsent'>): Promise<Quote> {
   const response = await fetch('/api/v1/orders/quote', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

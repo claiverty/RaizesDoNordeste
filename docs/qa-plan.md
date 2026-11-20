@@ -11,7 +11,7 @@ Validar que a jornada de realização do pedido recalcula preço no servidor, ap
 
 1. **Gate de código:** sintaxe válida; testes unitários e de integração passam; cobertura de domínio ≥80% como meta.
 2. **Gate de fluxo crítico:** CT001/CT007 e CT010 não falham; recusa/timeout nunca criam pedido confirmado; nenhum preço é aceito do cliente.
-3. **Gate de segurança/privacidade:** consulta sem token e painel sem PIN válido são negados; corpo excedente e entrada inválida são bloqueados; logs de teste sem dados pessoais/tokens; listagem administrativa omite nome, ID interno e token do cliente.
+3. **Gate de segurança/privacidade:** consulta sem token e painel sem PIN válido são negados; criação sem consentimento explícito é rejeitada; nome opcional não é enviado sem opt-in próprio; consentimento e versão do aviso são registrados; logs de teste sem dados pessoais/tokens; listagem administrativa omite nome, ID interno e token do cliente.
 4. **Gate de interface:** fluxo básico navegável por teclado e em viewport 360×800 sem overflow horizontal; labels presentes, painel administrativo protegido e controles principais com alvo de toque de 44 px; axe sem violações A/AA nas telas exercitadas.
 5. **Gate de performance:** executar carga e comparar com RQF01/RQF02; discrepância vira bloqueio de release ou restrição explicitamente aprovada. Não inferir capacidade de produção a partir de localhost.
 6. **Gate de conformidade:** requisitos críticos rastreados a testes e evidências; limitações, falhas e estados não executados listados no relatório.

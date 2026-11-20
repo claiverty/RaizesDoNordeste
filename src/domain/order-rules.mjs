@@ -9,7 +9,7 @@ export function validateOrderCommand(input, { requirePayment = false } = {}) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) {
     throw badRequest('INVALID_REQUEST', 'O corpo da requisição deve ser um objeto JSON.');
   }
-  const allowed = new Set(['unitId', 'channel', 'fulfillment', 'items', 'couponCode', 'useLoyalty', 'customerName', 'payment', 'expectedTotalCents']);
+  const allowed = new Set(['unitId', 'channel', 'fulfillment', 'items', 'couponCode', 'useLoyalty', 'customerName', 'customerNameConsent', 'privacyConsent', 'payment', 'expectedTotalCents']);
   if (Object.keys(input).some((key) => !allowed.has(key))) {
     throw badRequest('INVALID_FIELD', 'A requisição contém um campo não permitido.');
   }
@@ -48,6 +48,16 @@ export function validateOrderCommand(input, { requirePayment = false } = {}) {
     customerName = stringField(input.customerName, 'customerName', 1, 40).trim();
     if (!/^[\p{L}\p{M} .'’-]+$/u.test(customerName)) throw badRequest('CUSTOMER_NAME_INVALID', 'Use apenas um nome curto, sem números ou dados de identificação.');
   }
+  if (input.customerNameConsent !== undefined && typeof input.customerNameConsent !== 'boolean') {
+    throw badRequest('CUSTOMER_NAME_CONSENT_INVALID', 'A autorização para uso do nome deve ser verdadeira ou falsa.');
+  }
+  if (requirePayment) {
+    if (input.privacyConsent !== true) throw badRequest('PRIVACY_CONSENT_REQUIRED', 'Leia o aviso de privacidade e confirme o uso dos dados para concluir este pedido demonstrativo.');
+    if (customerName && input.customerNameConsent !== true) throw badRequest('CUSTOMER_NAME_CONSENT_REQUIRED', 'Autorize o uso do nome curto ou remova-o antes de confirmar o pedido.');
+    if (!customerName && input.customerNameConsent === true) throw badRequest('CUSTOMER_NAME_CONSENT_INVALID', 'A autorização do nome exige que um nome curto tenha sido informado.');
+  } else if (input.privacyConsent !== undefined || input.customerNameConsent !== undefined) {
+    throw badRequest('PRIVACY_CONSENT_NOT_ALLOWED', 'As confirmações de privacidade são enviadas somente ao confirmar o pedido.');
+  }
 
   let payment;
   if (input.expectedTotalCents !== undefined && (!requirePayment || !Number.isInteger(input.expectedTotalCents) || input.expectedTotalCents < 0 || input.expectedTotalCents > 400_000_000)) {
@@ -73,6 +83,7 @@ export function validateOrderCommand(input, { requirePayment = false } = {}) {
     ...(couponCode ? { couponCode } : {}),
     useLoyalty: input.useLoyalty === true,
     ...(customerName ? { customerName } : {}),
+    ...(requirePayment ? { privacyConsent: true, customerNameConsent: input.customerNameConsent === true } : {}),
     ...(payment ? { payment } : {}),
     ...(input.expectedTotalCents !== undefined ? { expectedTotalCents: input.expectedTotalCents } : {}),
   };

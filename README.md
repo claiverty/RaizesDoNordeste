@@ -43,6 +43,10 @@ A aplicação demonstra a jornada de pedido, da escolha da unidade ao comprovant
 
 O fluxo web envia o canal `WEB`; o modo `/totem` envia `TOTEM` ao cotar e confirmar o pedido. A API também valida os canais `APP`, `BALCAO` e `PICKUP` nos cenários multicanal.
 
+### Privacidade no checkout
+
+Antes de confirmar, o cliente vê quais dados do pedido são usados, para qual finalidade e por quanto tempo. O aceite demonstrativo começa desmarcado e é validado também pela API. Informar um nome curto é opcional e exige uma autorização separada; sem ela, o nome não é enviado. Os dados são sintéticos, ficam em memória por até 24 horas e desaparecem quando o processo reinicia. O pagamento é simulado. Esse fluxo demonstra os requisitos do projeto e não representa uma avaliação jurídica para operação comercial; consulte [os controles e limites de privacidade](docs/lgpd.md).
+
 ### Gestão no painel
 
 Com o mesmo PIN administrativo, abra Cardápio para escolher a unidade e cadastrar nome, descrição, categoria, preço, disponibilidade e uma foto da galeria. Preço zero indica cortesia. Em Unidades, cadastre nome e cidade; a nova loja começa desativada e pode ser liberada depois de receber ao menos um produto disponível. Excluir uma unidade também remove seu cardápio, após confirmação. Pedidos já confirmados preservam os nomes e valores originais.
@@ -80,7 +84,7 @@ npm run test:e2e
 npm audit --audit-level=high
 ```
 
-Última validação local, em 17/11/2026: 27/27 testes unitários e de integração e 10/10 testes E2E; cobertura de 89,71% das linhas e 84,69% dos branches. Inclui gestão administrativa, autorização das alterações, exclusão com confirmação e revisão de preço no checkout. Veja o [relatório final](docs/relatorio-final-conformidade.md) e o [workflow de qualidade](https://github.com/claiverty/RaizesDoNordeste/actions/workflows/quality.yml).
+Última validação local, em 20/11/2026: `lint`, checagem TypeScript/sintaxe, 28/28 testes unitários/API, 11/11 testes E2E e cobertura de 88,17% das linhas e 85,22% dos branches. Inclui aviso e consentimento de privacidade no checkout. Esta atualização ainda é local e não está incluída no CI remoto; consulte o [relatório final](docs/relatorio-final-conformidade.md), a [matriz de rastreabilidade](docs/matriz-rastreabilidade.md) e o [workflow de qualidade](https://github.com/claiverty/RaizesDoNordeste/actions/workflows/quality.yml).
 
 A revisão técnica por teclado foi executada. Para concluir a validação com pessoas, siga o [roteiro de UAT e leitor de tela](docs/test-plan.md#roteiro-de-uat-e-acessibilidade-manual) e registre as tarefas dos 3–5 voluntários na [ficha de resultados](evidencias/uat/resultados.csv). Esses resultados ainda aguardam coleta.
 

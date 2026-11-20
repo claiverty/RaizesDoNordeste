@@ -14,8 +14,8 @@ Os comandos usam Node.js 24. A execução atual e os resultados estão resumidos
 | Responsividade/mobile | Viewport 360×800, overflow, foco e alvos de toque | Playwright + inspeção manual/teclado | Chromium viewport mobile | Sem scroll horizontal; controles ≥44×44 CSS px; foco visível e fluxo por teclado | Screenshot, teste E2E e folha manual abaixo |
 | Desempenho/carga | Latência p50/p95/p99, taxa de erro, duração e throughput; mix menu/pedido | `scripts/run-load-test.mjs` + `scripts/load-test.mjs`; localhost | Rampa até 500 VUs, aquecimento, sustentação e redução gradual; dados sintéticos | Metas RQF01/RQF02; reportar se não atingir | JSON + resumo em `evidencias/performance/` |
 | Estresse | Observar degradação acima da carga de referência | Script local com VUs configuráveis | Ambiente isolado; nunca contra produção | Em 1.000 VUs, erro zero e p95 abaixo dos limites locais; não representa capacidade de produção | `evidencias/performance/stress-local-1000-2026-11-09.json` |
-| Segurança | Entrada, autorização por token e PIN administrativo, minimização de dados, preço, rate limit, headers, logs e erros | Testes de contrato locais | Payloads sintéticos malformados | Sem acesso não autorizado, preço adulterado aceito ou segredo em log; listagem sem nome/token do cliente | `lgpd.md` e `evidencias/security/` |
-| LGPD | Necessidade, finalidade, minimização, acesso, retenção, logs e exclusão | Revisão documental + testes | Apenas dados sintéticos | Nenhum campo desnecessário é exigido; pedido consultado só com token; retenção demonstrativa documentada | `lgpd.md` |
+| Segurança | Entrada, autorização por token e PIN administrativo, minimização de dados, preço, rate limit, headers, logs e erros | Testes de contrato locais | Payloads sintéticos malformados | Sem acesso não autorizado, preço adulterado aceito ou segredo em log; pedido sem consentimento e nome sem opt-in são rejeitados | `lgpd.md` e `evidencias/security/` |
+| LGPD | Aviso no checkout, finalidade, manifestação explícita, minimização, acesso, retenção e logs | Revisão documental + testes | Apenas dados sintéticos | Confirmação exige consentimento; nome opcional exige escolha separada; versão e horário ficam no pedido até expiração | `lgpd.md`; CT029 |
 
 ## Comandos previstos
 
@@ -72,7 +72,7 @@ Ambiente da escuta: data, sistema, navegador/versão e leitor/versão **a preenc
 
 ## Casos de teste
 
-Os estados abaixo refletem a execução automatizada em 17/11/2026 e a carga de CT015 em 09/11/2026. A revisão técnica manual datada de 10/11/2026 mantém seu escopo histórico. Os dados são sintéticos e as evidências estão em `evidencias/` e `docs/relatorio-final-conformidade.md`.
+Os estados abaixo refletem a execução automatizada em 20/11/2026 e a carga de CT015 em 09/11/2026. A revisão técnica manual datada de 10/11/2026 mantém seu escopo histórico. Os dados são sintéticos e as evidências estão em `evidencias/` e `docs/relatorio-final-conformidade.md`.
 
 ### CT001 — Pedido básico aprovado
 
@@ -216,8 +216,8 @@ Os estados abaixo refletem a execução automatizada em 17/11/2026 e a carga de 
 - **Pré-condições:** logs capturados; fixtures sintéticas.
 - **Dados:** nome curto sintético permitido; CPF/telefone/endereço/campo extra e tentativa de payload com token.
 - **Passos:** submeter entrada com campo indevido; criar pedido válido; inspecionar resposta, logs, TTL e consulta.
-- **Esperado:** dados desnecessários rejeitados/ignorados conforme contrato; nada sensível é registrado em log; pedido exige token; retenção demonstrativa é documentada.
-- **Pós-condição:** fixtures removíveis; sem PII real. **Evidência:** [testes de integração](../evidencias/integration/integration-run.txt) e [controles de privacidade e segurança](lgpd.md). **Status:** PASS para checks técnicos automatizados; avaliação jurídica formal permanece fora do teste.
+- **Esperado:** dados desnecessários rejeitados/ignorados conforme contrato; nada sensível é registrado em log; pedido exige token e consentimento explícito; nome só é transmitido após opt-in específico; retenção demonstrativa é informada.
+- **Pós-condição:** fixtures removíveis; sem PII real. **Evidência:** [testes de integração](../evidencias/integration/integration-run.txt), [privacidade e segurança](lgpd.md) e CT029. **Status:** PASS para checks técnicos automatizados; avaliação jurídica formal permanece fora do teste.
 
 ### CT017 — Adulteração de preço e unidade
 
@@ -326,3 +326,12 @@ Os estados abaixo refletem a execução automatizada em 17/11/2026 e a carga de 
 - **Passos:** abrir checkout no preço inicial; alterar preço pela API protegida; confirmar; observar mensagem e novos valores; confirmar novamente com nova chave de tentativa.
 - **Esperado:** primeira tentativa retorna `QUOTE_CHANGED` antes do pagamento; foco fica na mensagem; carrinho mantém itens com preço e total atualizados; segundo clique confirma R$ 12,00. API rejeita total de referência inválido e não aceita esse valor como fonte de preço.
 - **Pós-condição:** um pedido no novo valor; unidade sintética removida. **Evidência:** [cobertura/API](../evidencias/unit/coverage-run.txt), [E2E](../evidencias/e2e/e2e-run.txt). **Status:** PASS em 17/11/2026.
+
+### CT029 — Aviso e consentimento de privacidade no checkout
+
+- **Requisito:** RF22, RQF14. **Prioridade:** P0. **Tipo:** privacidade/API/E2E/mobile.
+- **Pré-condições:** unidade ativa, produto disponível e checkout acessado em viewport mobile.
+- **Dados:** aviso `checkout-privacy-v1`; nome sintético `Ana`; tentativas com consentimento ausente, nome sem opt-in e consentimento válido.
+- **Passos:** verificar que o botão começa desabilitado; abrir os detalhes do aviso e localizar finalidade e retenção; tentar confirmar sem marcar a ciência; marcar consentimento e confirmar sem opt-in do nome; repetir com nome preenchido e autorização específica; enviar requisições diretas sem os campos esperados.
+- **Esperado:** API rejeita consentimento ausente; a interface não envia o nome sem opt-in; API rejeita nome sem autorização; pedido aprovado registra versão/horário e, somente quando autorizado, o horário do nome; o aviso não pede dados desnecessários nem sugere pagamento real.
+- **Pós-condição:** pedido sintético removível ao expirar ou reiniciar. **Evidência:** `test/domain.test.mjs`, `test/api.test.mjs`, [E2E](../evidencias/e2e/e2e-run.txt), [checkout mobile](../evidencias/e2e/ct029-checkout-privacidade-mobile.png). **Status:** PASS em 20/11/2026 — API, fluxo mobile e opt-in do nome validados; avaliação jurídica formal permanece fora do teste.

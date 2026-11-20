@@ -2,35 +2,39 @@
 > raizes-do-nordeste-qa@1.0.0 test
 > node --test test/api.test.mjs test/domain.test.mjs
 
-✔ health, catálogo e cabeçalhos básicos são servidos (37.2341ms)
-✔ painel lista pedidos confirmados somente com chave e omite dados do cliente (18.0073ms)
-✔ painel não atende sem chave de administração configurada (3.7748ms)
-✔ prévia e pedido aprovado usam preço calculado no servidor (7.3855ms)
-✔ rejeita carrinho vazio, unidade indisponível e cupom inválido sem pagamento (7.141ms)
-✔ recusa, timeout e falha de fidelidade não confirmam pedido (5.2221ms)
-✔ indisponibilidade de pagamento e exceção interna não vazam detalhes nem criam pedido (5.0473ms)
-✔ repetição com mesma chave reusa resposta; payload alterado dá conflito (4.5465ms)
-✔ preços permanecem consistentes nos canais suportados (6.9378ms)
-✔ reiniciar a aplicação perde pedidos, conforme limite do store em memória (4.9231ms)
-✔ consulta exige token e não devolve o token na resposta de leitura (4ms)
-✔ valida JSON, tipo de conteúdo, chave e tamanho máximo do corpo (4.8493ms)
-✔ rate limit padrão retorna 429 após 60 requests e logs não guardam o corpo (27.2054ms)
-✔ calcula subtotal em centavos com preço do catálogo (1.2854ms)
-✔ aplica cupom de 10% e fidelidade sem ultrapassar subtotal (0.2377ms)
-✔ rejeita unidade indisponível (0.4171ms)
-✔ rejeita produto indisponível e produto de outro cardápio (0.7243ms)
-✔ distingue cupom expirado e inválido (0.297ms)
-✔ falha de fidelidade não retorna desconto (0.165ms)
-✔ valida carrinho, quantidade, duplicidade e campos proibidos (0.7072ms)
-✔ valida dados de pagamento e não aceita cartão real (0.2243ms)
-✔ idempotência não cria duplicidade e rejeita chave reutilizada com payload diferente (35.7411ms)
-✔ recusa e timeout são idempotentes e não criam pedido (0.5736ms)
-✔ store remove registros expirados e devolve cópia defensiva (0.2445ms)
-ℹ tests 24
+✔ cadastros exigem PIN, gerenciam unidades e produtos e preservam pedidos antigos (91.6694ms)
+✔ cadastros rejeitam valores inválidos e métodos sem alterar o catálogo (33.0811ms)
+✔ preço alterado exige nova revisão e unidade desativada bloqueia pedido antes do pagamento (15.4446ms)
+✔ health, catálogo e cabeçalhos básicos são servidos (8.9064ms)
+✔ API exige consentimento explícito para confirmar e para enviar nome opcional (11.1386ms)
+✔ painel lista pedidos confirmados somente com PIN e omite dados do cliente (12.9648ms)
+✔ painel não atende sem PIN administrativo válido configurado (11.5725ms)
+✔ prévia e pedido aprovado usam preço calculado no servidor (10.2357ms)
+✔ rejeita carrinho vazio, unidade indisponível e cupom inválido sem pagamento (11.4639ms)
+✔ recusa, timeout e falha de fidelidade não confirmam pedido (11.6018ms)
+✔ indisponibilidade de pagamento e exceção interna não vazam detalhes nem criam pedido (11.1254ms)
+✔ repetição com mesma chave reusa resposta; payload alterado dá conflito (8.1912ms)
+✔ preços permanecem consistentes nos canais suportados (17.0321ms)
+✔ reiniciar a aplicação perde pedidos, conforme limite do store em memória (9.8209ms)
+✔ consulta exige token e não devolve o token na resposta de leitura (9.0099ms)
+✔ valida JSON, tipo de conteúdo, chave e tamanho máximo do corpo (8.4973ms)
+✔ rate limit padrão retorna 429 após 60 requests e logs não guardam o corpo (39.5869ms)
+✔ calcula subtotal em centavos com preço do catálogo (2.8293ms)
+✔ aplica cupom de 10% e fidelidade sem ultrapassar subtotal (0.3749ms)
+✔ rejeita unidade indisponível (0.5096ms)
+✔ rejeita produto indisponível e produto de outro cardápio (0.3623ms)
+✔ distingue cupom expirado e inválido (0.5389ms)
+✔ falha de fidelidade não retorna desconto (0.3708ms)
+✔ valida carrinho, quantidade, duplicidade e campos proibidos (1.1919ms)
+✔ valida dados de pagamento e não aceita cartão real (0.6788ms)
+✔ idempotência não cria duplicidade e rejeita chave reutilizada com payload diferente (34.6098ms)
+✔ recusa e timeout são idempotentes e não criam pedido (0.7818ms)
+✔ store remove registros expirados e devolve cópia defensiva (0.4189ms)
+ℹ tests 28
 ℹ suites 0
-ℹ pass 24
+ℹ pass 28
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 228.2386
+ℹ duration_ms 436.1565

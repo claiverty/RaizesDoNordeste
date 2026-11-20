@@ -87,6 +87,7 @@ Prioridade: **P0** crítica para a jornada; **P1** importante; **P2** complement
 | RF19 | Gerenciar produtos por unidade. | Administração | P1 | A operação precisa atualizar o cardápio sem editar o código. | Criar, editar, marcar disponibilidade e excluir; validar nome, descrição, categoria, foto da galeria e preço inteiro entre 0 e 1.000.000 centavos; pedir confirmação na exclusão; refletir as alterações nas novas consultas/pedidos. | R03, R04, R13 | WEB |
 | RF20 | Gerenciar unidades. | Administração | P1 | A rede precisa demonstrar abertura e interrupção de lojas. | Cadastrar nome/cidade, editar, liberar, desativar e excluir; nova unidade começa desativada e vazia; liberação exige produto disponível; desativação bloqueia novos pedidos; exclusão remove o cardápio sem apagar pedidos confirmados. | R04, R12, R13 | WEB |
 | RF21 | Reconfirmar total após alteração de preço. | Sistema/Cliente | P0 | Evita confirmar um valor diferente do revisado pelo cliente. | Checkout envia `expectedTotalCents`; o servidor recalcula e retorna `QUOTE_CHANGED` antes do pagamento em caso de diferença; interface atualiza itens/total e exige novo clique de confirmação; registros antigos preservam os valores. | R01, R03 | WEB |
+| RF22 | Informar e registrar consentimento demonstrativo para uso de dados do pedido. | Cliente/Sistema | P0 | Transparência e manifestação explícita são avaliadas no fluxo de checkout. | Interface informa dados, finalidade e retenção antes da confirmação; API rejeita pedido sem consentimento; registra versão e horário no pedido; nome curto só é enviado e armazenado com autorização opcional específica. | R05, R14 | WEB, TOTEM |
 
 ### Regras de negócio
 
@@ -119,6 +120,7 @@ As metas abaixo são **planejadas** para o protótipo e devem ser medidas pelos 
 | RQF11 | Observabilidade | 100% das respostas HTTP têm `X-Request-Id`; log estruturado tem requestId, método, rota, status e duração, sem corpo da requisição. | Respostas e logs instrumentados | Teste HTTP e inspeção de logs. | R01, R08, R10 |
 | RQF12 | Manutenibilidade/testabilidade | Cobertura de linhas ≥80% no domínio de pedido e desconto. | Cobertura nativa de linhas | `node --experimental-test-coverage --test`; relatório real arquivado. | R01, R02, R03, R06 |
 | RQF13 | Autorização e minimização administrativa | 100% dos acessos ao painel sem PIN válido são negados; 0 campos de nome, ID interno, token ou retenção na listagem. | Acessos indevidos aceitos e campos sensíveis retornados | Teste de integração e E2E com pedido sintético (CT024–CT025). | R05, R13 |
+| RQF14 | Consentimento e minimização no checkout | 100% das criações sem consentimento explícito são rejeitadas; 0 nomes curtos são recebidos sem opt-in; pedidos aceitos registram versão e instante do consentimento. | Tentativas sem consentimento aceitas; nomes sem autorização; metadados de consentimento ausentes | Testes unitários/API e E2E do CT029. | R05, R14 |
 
 ### Justificativas e limites
 
@@ -138,7 +140,7 @@ Escalas: probabilidade (P) e impacto (I) de 1 a 5; severidade = P×I. Prioridade
 | R02 | Reenvio cria pedido duplicado após perda de conexão. | Cobrança/produção duplicada | 3 | 5 | 15 / Alta | RF12 | Idempotência por chave e fingerprint; teste concorrente; persistência transacional durável em produção. | CT010 |
 | R03 | Preço adulterado ou divergente entre canais. | Prejuízo e quebra de confiança | 3 | 5 | 15 / Alta | RF02, RF04 | Calcular no servidor a partir do catálogo da unidade; ignorar preço do cliente. | CT017, CT019 |
 | R04 | Unidade ou produto indisponível recebe pedido. | Pedido não atendido | 3 | 4 | 12 / Alta | RF01–RF04 | Revalidar imediatamente antes do pagamento e responder erro estável. | CT002, CT012 |
-| R05 | Exposição de dados pessoais ou pedido alheio. | Dano ao titular e risco regulatório | 2 | 5 | 10 / Média | RF13, RF15 | Minimização, token aleatório por pedido, logs sem corpo, TTL documentado, teste de autorização. | CT013, CT016 |
+| R05 | Exposição de dados pessoais ou pedido alheio, ou processamento sem informação/manifestação registrada. | Dano ao titular e risco regulatório | 2 | 5 | 10 / Média | RF13, RF15, RF22 | Minimização, token aleatório por pedido, aviso de finalidade/retenção, consentimento validado pela API e logs sem corpo. | CT013, CT016, CT029 |
 | R06 | Cupom vencido/inválido aplicado ou desconto calculado errado. | Perda financeira/insatisfação | 3 | 4 | 12 / Alta | RF05–RF06 | Regras no domínio, centavos inteiros, limites de desconto, casos de borda. | CT004–CT006, CT017 |
 | R07 | Falha do serviço de fidelidade após seleção do benefício. | Benefício indevido ou abandono | 3 | 3 | 9 / Média | RF07 | Falha segura: não cobra nem confirma; mensagem para tentar sem benefício. | CT011 |
 | R08 | Timeout de pagamento com resultado desconhecido e tentativa repetida. | Duplicidade ou pedido perdido | 3 | 5 | 15 / Alta | RF10, RF12 | Resposta de timeout idempotente; mesmo retry não chama mock novamente; reconciliação necessária em integração real. | CT009–CT010 |
@@ -147,6 +149,7 @@ Escalas: probabilidade (P) e impacto (I) de 1 a 5; severidade = P×I. Prioridade
 | R11 | Interface ilegível ou difícil de operar no celular/totem. | Abandono e erro de pedido | 3 | 3 | 9 / Média | RNF mobile, RF03 | Layout mobile-first, resumo de preço persistente, labels, foco visível e alvos de toque. | CT014 |
 | R12 | Perda de pedidos ao reiniciar ou subir outra instância. | Histórico e idempotência perdidos | 4 | 3 | 12 / Alta | RNF confiabilidade | Limitação explicitada; não usar em produção; trocar por armazenamento transacional compartilhado antes de liberar comercialmente. | CT020 |
 | R13 | PIN administrativo exposto ou painel retorna dados de cliente sem autorização. | Acesso indevido a informações operacionais e de pedido | 2 | 5 | 10 / Média | RF18, RQF13 | PIN configurado no servidor, comparação em tempo constante, resposta minimizada, rate limit e logout que limpa a sessão. | CT024, CT025 |
+| R14 | Pedido confirmado sem consentimento demonstrativo válido ou nome curto enviado sem autorização específica. | Uso de dados fora da expectativa informada | 2 | 4 | 8 / Média | RF22, RQF14 | Checkbox explícito sem seleção prévia; validação server-side; autorização independente para o nome; versão e horário registrados por até 24h. | CT029 |
 
 ### Leitura da matriz P×I
 
@@ -155,7 +158,7 @@ Escalas: probabilidade (P) e impacto (I) de 1 a 5; severidade = P×I. Prioridade
 | 5 | 5 B | 10 M | 15 A | 20 C | 25 C |
 | 4 | 4 B | 8 M | **12 A (R12)** | 16 A | 20 C |
 | 3 | 3 B | 6 M | **9 M (R07/R11)** | **12 A (R04/R06/R09/R10)** | **15 A (R02/R03/R08)** |
-| 2 | 2 B | 4 B | 6 M | 8 M | **10 M (R01/R05/R13)** |
+| 2 | 2 B | 4 B | 6 M | **8 M (R14)** | **10 M (R01/R05/R13)** |
 | 1 | 1 B | 2 B | 3 B | 4 B | 5 B |
 
 ### Revisão de risco

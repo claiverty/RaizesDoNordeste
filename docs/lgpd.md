@@ -8,8 +8,8 @@ Esta análise descreve os dados usados pelo protótipo, as finalidades e os cont
 
 | Dado pessoal / dado relacionado | Finalidade | Base/justificativa proposta | Armazenamento | Proteção | Retenção | Exclusão |
 |---|---|---|---|---|---|---|
-| Nome curto opcional | Chamar o cliente na retirada | Atender o pedido solicitado pelo cliente; necessidade e base devem ser confirmadas pela empresa antes de uso real. | Memória do processo; não em log | Validação de caracteres/tamanho, consulta protegida por token, loopback local | Expira logicamente em 24h; remoção física em até 1 min após o prazo; reinício elimina tudo | Expiração automática; em produção atender direitos do titular e obrigações de guarda aplicáveis |
-| Conteúdo do pedido e canal | Preparar e confirmar os itens e medir operação por canal | Preparar e confirmar o pedido; conteúdo pode ser associado ao cliente quando combinado com nome ou token. | Memória do processo | Catálogo do servidor; sem conteúdo no log; acesso do pedido via token | Expira logicamente em 24h e limpeza física em até 1 min; prazo real deve considerar obrigações fiscais/consumeristas e necessidade documentada | Remover/anonimizar quando cessar finalidade e não houver obrigação de retenção |
+| Nome curto opcional | Identificar o pedido na retirada | Autorização específica demonstrativa, solicitada somente quando o nome é preenchido; a base aplicável deve ser definida pelo controlador antes de uso real. | Memória do processo; não em log; omitido se não autorizado | Opt-in separado, desmarcado por padrão; validação server-side; consulta protegida por token | Expira com o pedido (24h no protótipo); reiniciar elimina tudo | Expiração automática; em produção atender direitos do titular e obrigações de guarda aplicáveis |
+| Conteúdo do pedido e canal | Preparar e confirmar os itens, unidade e modalidade | Necessidade operacional do pedido; o consentimento obrigatório no protótipo demonstra o requisito acadêmico e não define a base legal de produção. | Memória do processo | Catálogo do servidor; consentimento registrado; sem conteúdo nos logs; acesso do pedido via token | Expira logicamente em 24h e limpeza física em até 1 min; prazo real deve considerar obrigações fiscais/consumeristas e necessidade documentada | Remover/anonimizar quando cessar finalidade e não houver obrigação de retenção |
 | ID do pedido e token de acesso | Localizar pedido e permitir consulta pelo titular | Necessidade de acesso à confirmação solicitada | ID e token aleatórios em memória; token retornado uma vez na criação | 122 bits+ de aleatoriedade (UUID v4), comparação de token em tempo constante; token não vai ao log | Mesmo TTL do pedido; memória volátil | Expiração automática e descarte ao reiniciar |
 | IP de origem | Rate limit de curto prazo e prevenção de abuso | Limitar abuso durante a sessão; necessidade, transparência e prazo devem ser definidos antes de uso real. | Chave temporária do rate limiter em memória; não é gravada em log | Janela fixa, sem persistência nem encaminhamento de proxy confiado | Janela configurada (padrão 60 s); limpeza de entradas antigas | Remoção automática após a janela |
 | Request ID e métricas agregadas | Diagnóstico técnico sem conteúdo do pedido | Diagnosticar falhas sem identificar clientes; os logs atuais não incluem identificador de cliente. | Saída estruturada do processo | Sem corpo, nome, token, Authorization ou IP; rota de pedido normalizada | Retenção do stdout é do ambiente executor; deve ser definida antes de produção | Política do ambiente; protótipo não mantém arquivo de log próprio |
@@ -17,13 +17,17 @@ Esta análise descreve os dados usados pelo protótipo, as finalidades e os cont
 
 ## Aplicação prática
 
+- No checkout há um aviso direto com categorias de dados, finalidade e prazo do protótipo. O pedido não pode ser confirmado sem consentimento explícito, desmarcado por padrão, enviado também à API e validado no servidor.
+- Se o cliente informar nome curto, uma segunda autorização independente é exigida; sem ela, a interface omite o nome do payload e a API recusa um nome enviado sem autorização. A autorização principal e, quando aplicável, a do nome são registradas com versão do aviso e horário no pedido em memória.
+- O aviso informa que a aplicação não solicita CPF, telefone, endereço, e-mail ou cartão, que o pagamento é simulado, que o IP é temporário para limitação de abuso e que os dados do pedido expiram após 24h ou ao reiniciar o processo.
+- O consentimento obrigatório é uma demonstração do roteiro acadêmico. A base legal apropriada, o controlador, os canais para exercício de direitos e a redação final devem ser definidos antes de qualquer operação real; consentimento não é presumido como base para todo tratamento.
 - A tela informa que nome é opcional e pede para não inserir sobrenome, CPF, telefone ou endereço; nenhum campo de cartão existe.
 - API rejeita campos fora do contrato, reduzindo coleta por mass assignment. Os testes usam valores sintéticos.
 - O total e as regras do pedido não dependem de cadastro. Fidelidade é mock e não recebe identificador de pessoa.
 - Consulta do pedido exige token de acesso aleatório. Logs omitem body, Authorization, token e IP.
 - A listagem `/admin` exige o PIN de quatro dígitos configurado no servidor, usa `Cache-Control: no-store` e entrega somente campos de operação; não retorna nome, ID interno, token de consulta ou prazo de expiração. O navegador mantém o PIN informado somente na sessão da aba e o remove ao sair. `.env.example` contém apenas o nome da variável, sem seu valor.
 - Cabeçalhos limitam framing, conteúdo e capabilities desnecessárias; localmente o serviço escuta em loopback. Em produção deve usar TLS, controle de acesso operacional, gestão de segredos, backups protegidos e política de incidentes.
-- A interface não apresenta consentimento genérico para o processamento estritamente necessário ao pedido. Marketing futuro deve ter finalidade e base próprias, separadas e revogáveis quando o consentimento for a base adequada.
+- Marketing não é coletado. Qualquer finalidade opcional futura deve ter informação e escolha independentes, sem condicionar o pedido.
 
 ## Direitos, retenção e transparência
 
@@ -38,6 +42,7 @@ No protótipo, não há portal de direitos; reiniciar o processo remove os dados
 | Acesso administrativo | PIN ausente/incorreto é negado; listagem minimizada omite nome, ID interno, token e retenção | CT024, CT025 |
 | Log | Nenhum nome, token, corpo ou Authorization em log sintético | CT016 |
 | Retenção demonstrativa | Expiração de 24h e limpeza no processo | CT020 |
+| Consentimento | Pedido sem consentimento rejeitado; nome enviado apenas após opt-in; versão/horário registrados | CT029 |
 | Transparência | Microcopy explica dado opcional e simulação antes da ação | CT014, CT016 |
 
 ## Controles técnicos verificados

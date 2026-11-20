@@ -48,6 +48,11 @@ export function createOrderService({ catalog, store, loyaltyService, paymentServ
         loyaltyPointsRedeemed: quoteResult.pointsRedeemed,
         status: 'CONFIRMED',
         payment: { status: payment.status, method: payment.method, transactionId: payment.transactionId },
+        privacyConsent: {
+          noticeVersion: 'checkout-privacy-v1',
+          acceptedAt: createdAt,
+          ...(command.customerNameConsent ? { customerNameAcceptedAt: createdAt } : {}),
+        },
         accessToken: token,
         createdAt,
       });

@@ -73,9 +73,15 @@ test('valida dados de pagamento e não aceita cartão real', () => {
   const valid = {
     unitId: 'recife-centro', channel: 'WEB', fulfillment: 'PICKUP',
     items: [{ productId: 'bolo-milho', quantity: 1 }],
+    privacyConsent: true,
+    customerNameConsent: false,
     payment: { method: 'PIX', outcome: 'APPROVED' },
   };
   assert.equal(validateOrderCommand(valid, { requirePayment: true }).payment.outcome, 'APPROVED');
+  assert.throws(() => validateOrderCommand({ ...valid, privacyConsent: false }, { requirePayment: true }), (error) => error.code === 'PRIVACY_CONSENT_REQUIRED');
+  assert.throws(() => validateOrderCommand({ ...valid, customerName: 'Ana' }, { requirePayment: true }), (error) => error.code === 'CUSTOMER_NAME_CONSENT_REQUIRED');
+  assert.throws(() => validateOrderCommand({ ...valid, customerNameConsent: true }, { requirePayment: true }), (error) => error.code === 'CUSTOMER_NAME_CONSENT_INVALID');
+  assert.equal(validateOrderCommand({ ...valid, customerName: 'Ana', customerNameConsent: true }, { requirePayment: true }).customerName, 'Ana');
   assert.throws(() => validateOrderCommand({ ...valid, payment: { method: 'PIX', outcome: 'APPROVED', cardNumber: '4111111111111111' } }, { requirePayment: true }), (error) => error.code === 'PAYMENT_FIELD_INVALID');
   assert.throws(() => validateOrderCommand({ ...valid, payment: { method: 'PIX', outcome: 'UNKNOWN' } }, { requirePayment: true }), (error) => error.code === 'PAYMENT_OUTCOME_INVALID');
 });
@@ -86,7 +92,7 @@ test('idempotência não cria duplicidade e rejeita chave reutilizada com payloa
   const service = createOrderService({ catalog, store, loyaltyService: createLoyaltyMock(), paymentService });
   const command = validateOrderCommand({
     unitId: 'recife-centro', channel: 'APP', fulfillment: 'PICKUP',
-    items: [{ productId: 'bolo-milho', quantity: 1 }], payment: { method: 'PIX', outcome: 'APPROVED' },
+    items: [{ productId: 'bolo-milho', quantity: 1 }], privacyConsent: true, customerName: 'Ana', customerNameConsent: true, payment: { method: 'PIX', outcome: 'APPROVED' },
   }, { requirePayment: true });
   const firstPromise = service.createOrder(command, 'key-concorrente-001');
   const concurrent = await Promise.all(Array.from({ length: 99 }, () => service.createOrder(command, 'key-concorrente-001')));
@@ -99,6 +105,13 @@ test('idempotência não cria duplicidade e rejeita chave reutilizada com payloa
   assert.ok(replayResults.every((result) => result.replayed && result.data.id === first.data.id));
   assert.equal(replay.data.id, first.data.id);
   assert.equal(store.countOrders(), 1);
+  const storedOrder = store.getOrder(first.data.id);
+  assert.equal(storedOrder.customerName, 'Ana');
+  assert.deepEqual(storedOrder.privacyConsent, {
+    noticeVersion: 'checkout-privacy-v1',
+    acceptedAt: storedOrder.createdAt,
+    customerNameAcceptedAt: storedOrder.createdAt,
+  });
   assert.equal(paymentService.calls, 1);
   const changed = { ...command, items: [{ productId: 'bolo-milho', quantity: 2 }] };
   assert.equal((await service.createOrder(changed, 'key-concorrente-001')).error.code, 'IDEMPOTENCY_CONFLICT');
@@ -112,7 +125,7 @@ test('recusa e timeout são idempotentes e não criam pedido', async () => {
   for (const outcome of ['DECLINED', 'TIMEOUT']) {
     const command = validateOrderCommand({
       unitId: 'recife-centro', channel: 'WEB', fulfillment: 'PICKUP',
-      items: [{ productId: 'bolo-milho', quantity: 1 }], payment: { method: 'PIX', outcome },
+      items: [{ productId: 'bolo-milho', quantity: 1 }], privacyConsent: true, customerNameConsent: false, payment: { method: 'PIX', outcome },
     }, { requirePayment: true });
     const key = `key-falha-${outcome.toLowerCase()}`;
     const result = await service.createOrder(command, key);

@@ -23,12 +23,13 @@ No protótipo, não há pesquisa nem amostra de usuários; portanto CSAT e SUS e
 
 | Métrica | Resultado observado | Interpretação |
 |---|---|---|
-| Defeitos confirmados em aberto na automação | 0 em aberto após 27 testes de domínio/API e 10 testes E2E executados em 17/11/2026 | Não equivale a taxa de defeitos de produção; cobertura limitada ao escopo automatizado. |
-| Cobertura do domínio incluído | 89,71% linhas / 84,69% branches agregadas; `order-rules.mjs` 90,97% linhas / 84,21% branches | Acima dos gates de 80% linhas e 75% branches. |
+| Defeitos confirmados em aberto na automação | 0 em aberto após 28 testes de domínio/API e 11 testes E2E executados localmente em 20/11/2026 | Não equivale a taxa de defeitos de produção; cobertura limitada ao escopo automatizado e a nova versão ainda não passou no CI remoto. |
+| Cobertura do domínio incluído | 88,17% linhas / 85,22% branches agregadas; `order-rules.mjs` 89,16% linhas / 84,82% branches | Acima dos gates de 80% linhas e 75% branches. |
+| Privacidade no checkout | CT029 passou localmente; consentimento do pedido obrigatório na demonstração, nome curto opcional com opt-in separado | Demonstração técnica; não define base legal ou retenção para uso comercial. |
 | Latência sob carga local (500 VUs, 09/11/2026) | Sustentação: menu p50/p95/p99 = 82,07/104,15/116,96 ms; pedido = 82,05/103,98/116,88 ms | Os dois p95 passaram os alvos locais de 250 ms e 750 ms. |
 | Erros/throughput da carga (09/11/2026) | 0/202.779 = 0%; 5.795,32 req/s no intervalo medido, incluindo redução de carga | Carga sintética local; não extrapolar para produção. |
 | Estresse local (1.000 VUs, 09/11/2026) | 0/197.279 erros; sustentação p95 de 189,42 ms no menu e 189,44 ms no pedido; sem falha de threshold | Passou os limites locais; não representa capacidade de produção nem disponibilidade mensal. |
-| Auditoria de dependências (09/11/2026) | Zero vulnerabilidades após override de `minimatch` e instalação limpa com `npm ci` | Dependências de desenvolvimento; revalidar a cada atualização. |
+| Auditoria de dependências (17/11/2026) | Zero vulnerabilidades após override de `minimatch` e instalação limpa com `npm ci` | Dependências de desenvolvimento; revalidar a cada atualização. |
 | Disponibilidade mensal | NOT_EXECUTED | Não houve coleta contínua por um mês. |
 | CSAT/SUS | NOT_EXECUTED | Sem usuários participantes; E2E não mede satisfação. |
 | MTTR | NOT_EXECUTED | Nenhum incidente de operação real foi acompanhado. |

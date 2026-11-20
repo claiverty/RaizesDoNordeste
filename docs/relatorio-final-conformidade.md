@@ -1,13 +1,22 @@
 # Relatório final de qualidade
 
-- **Data da validação local de código, interface e auditoria de dependências:** 17/11/2026
-- **CI remoto:** código `83d82bd` aprovado em 17/11/2026 no [workflow Quality checks, execução 13](https://github.com/claiverty/RaizesDoNordeste/actions/runs/44128433320), com os jobs de unitários/integração e E2E aprovados. Metadados preservados em [pin-quality-2026-11-17.json](../evidencias/ci/pin-quality-2026-11-17.json).
+- **Data da validação local mais recente do checkout:** 20/11/2026
+- **CI remoto anterior à demonstração de privacidade:** commit `1bc80b0`, [workflow Quality checks](https://github.com/claiverty/RaizesDoNordeste/actions/runs/44758411689), jobs de unitários/API e E2E mobile aprovados. O código de privacidade descrito abaixo ainda está apenas no workspace e não foi validado por esse CI.
+- **CI anterior do acesso por PIN:** código `83d82bd` aprovado em 17/11/2026 no [workflow Quality checks, execução 13](https://github.com/claiverty/RaizesDoNordeste/actions/runs/44128433320). Metadados preservados em [pin-quality-2026-11-17.json](../evidencias/ci/pin-quality-2026-11-17.json).
 - **Carga local de 500 VUs:** 09/11/2026
 - **Produto:** Raízes do Nordeste — protótipo da feature Realização de Pedido
 - **Ambiente:** Windows; Node.js 24.13.0; dados sintéticos; HTTP local; store em memória
 - **Escopo da decisão:** apresentação acadêmica/profissional do protótipo. Esta decisão não aprova operação comercial.
 
-Lint, TypeScript/sintaxe, build, cobertura e E2E foram repetidos em 17/11/2026, incluindo cadastros administrativos, atualização de preço e acesso por PIN. A carga/estresse de 09/11/2026 pertence à versão anterior e não foi repetida após essa extensão. A carga e o smoke de `npm start` mantêm as evidências históricas de 09/11/2026. A validação inclui a extensão `/admin` para análise de pedidos, com autenticação e resposta minimizada. A revisão técnica por teclado foi executada em 10/11/2026; UAT e escuta com leitor de tela aguardam coleta humana.
+Lint, TypeScript/sintaxe, testes de domínio/API, cobertura e E2E foram executados localmente em 20/11/2026 para a demonstração de privacidade no checkout. A alteração ainda não tem CI remoto. Build, auditoria de dependências, carga/estresse e smoke de `npm start` mantêm as evidências históricas descritas abaixo e não foram repetidos nesta atualização. A carga/estresse de 09/11/2026 pertence à versão anterior. A revisão técnica por teclado foi executada em 10/11/2026; UAT e escuta com leitor de tela aguardam coleta humana.
+
+### Aviso e consentimento de privacidade no checkout — 20/11/2026
+
+O checkout apresenta os dados usados no pedido, finalidade, retenção demonstrativa e informação de que não há pagamento real. O consentimento para o pedido começa desmarcado e o botão de confirmação permanece desabilitado até a escolha. A API também rejeita pedidos sem esse aceite. Nome curto continua opcional: se informado, requer uma autorização separada; a interface não o envia sem opt-in e a API rejeita nome recebido sem autorização. O pedido sintético registra versão do aviso e instante do aceite; o instante do nome só é registrado quando autorizado. Os registros ficam em memória e expiram em 24 horas ou ao reiniciar o processo.
+
+Em 20/11/2026, `npm run lint`, `npm run check`, `npm test`, `npm run test:coverage` e `npm run test:e2e` passaram; foram 28/28 testes unitários/API e 11/11 testes E2E. A cobertura agregada foi 88,17% de linhas e 85,22% de branches; `order-rules.mjs` atingiu 89,16% e 84,82%, respectivamente. O CT029 inclui a tela mobile antes da aceitação, a validação server-side e a autorização separada do nome. Veja [evidência E2E](../evidencias/e2e/e2e-run.txt), [integração](../evidencias/integration/integration-run.txt), [cobertura](../evidencias/unit/coverage-run.txt) e [captura do aviso](../evidencias/e2e/ct029-checkout-privacidade-mobile.png).
+
+Essa é uma demonstração técnica e acadêmica, não uma determinação de base legal nem uma declaração de conformidade. A base aplicável, o controlador, os prazos comerciais, os direitos e o texto final precisam de avaliação formal antes de qualquer operação real.
 
 ## O que foi avaliado
 
@@ -25,8 +34,8 @@ Seleção de unidade e cardápio; carrinho e quantidades; preview de preço; cup
 - `npm run check`: PASS, verificação estrita TypeScript e sintaxe Node.
 - `npm run build`: PASS, SPA React compilada pelo Vite.
 - `npm start`: PASS em 09/11/2026; build servido respondeu `200` em `/` e `/admin`; `/api/v1/health` retornou `status: ok` e a lista administrativa sem chave retornou `401`.
-- `npm run test:coverage`: PASS, 27/27; gate de domínio ≥80% linhas e ≥75% branches alcançado (agregado incluído: 89,71%/84,69%).
-- `npm run test:e2e`: PASS, 10/10; inclui autenticação, filtros, minimização de dados, saída do painel, quantidades por teclado, foco após recusa e alvos de toque dos controles de quantidade em viewport móvel.
+- `npm run test:coverage`: PASS em 20/11/2026, 28/28; gate de domínio ≥80% linhas e ≥75% branches alcançado (agregado incluído: 88,17%/85,22%; `order-rules.mjs`: 89,16%/84,82%).
+- `npm run test:e2e`: PASS em 20/11/2026, 11/11; inclui autenticação, filtros, minimização, controles móveis e CT029 de consentimento/opt-in.
 - Carga isolada com 500 VUs; rampa 5 s, sustentação 30 s e redução 5 s: PASS, 202.779 respostas bem-sucedidas, 0 erros, menu p95 104,15 ms e pedido p95 103,98 ms na sustentação.
 - Estresse local com 1.000 VUs: PASS, 197.279 respostas bem-sucedidas, 0 erros, menu p95 189,42 ms e pedido p95 189,44 ms na sustentação.
 - `npm ci`: PASS em 09/11/2026. `npm audit`: repetido em 17/11/2026, zero vulnerabilidades; resultado em `evidencias/security/npm-audit-2026-11-17.json`. O override de `minimatch` corrige a árvore transitiva sem rebaixar o ESLint.
@@ -48,17 +57,18 @@ Os logs, screenshots e JSON estão em `evidencias/`. A rodada de 10/11/2026 corr
 | Experiência móvel/acessibilidade | PASS nos cenários em 360×800; overflow verificado no comprovante/painel; alvos de quantidade no cardápio/checkout e botões do comprovante ≥44×44 px; axe sem violações nas tags WCAG 2.0/2.1 A/AA consultadas na LP, cardápio e painel; revisão técnica por teclado registrada | A inspeção da árvore acessível não comprova os anúncios de um leitor de tela. A escuta humana permanece pendente. |
 | UAT | Roteiro de cinco tarefas e [ficha para 3–5 voluntários](../evidencias/uat/resultados.csv) preparados | Ainda não executado com participantes; não há resultados de satisfação para reportar. |
 | RNFs medidos | RQF01/02, parte de RQF04–12 aprovados no ambiente local | RQF03 disponibilidade mensal não foi medida; SUS/CSAT e MTTR não foram observados. |
-| CI remoto | Código `83d82bd` aprovado na execução 13 do Quality checks em 17/11/2026, usando actions v7 e Ubuntu 24.04 | Resultado restrito ao código e aos cenários dessa execução; o link da evidência está no início deste relatório. |
+| CI remoto | Commit `1bc80b0` aprovado no workflow Quality checks anterior à demonstração de privacidade | Unitários/API e E2E mobile passaram; o resultado não cobre o código local de privacidade descrito neste relatório. |
 | LGPD | Controles de minimização, retenção demonstrativa, token e log foram exercitados em dados sintéticos | Não equivale a conformidade legal. Bases, retenção comercial, direitos e papéis precisam de avaliação formal. |
+| Privacidade no checkout | RF22/RQF14 e CT029 aprovados localmente em 20/11/2026; sem aceite explícito a API rejeita pedido e nome curto só é enviado com opt-in próprio | Ainda não passou no CI remoto; consentimento obrigatório atende ao critério demonstrativo e não define a base legal de uma operação comercial. |
 
 ## Métricas
 
-- Cobertura de `order-rules.mjs`: 90,97% linhas e 84,21% branches; `errors.mjs`: 80% linhas.
+- Cobertura local de 20/11/2026: agregado 88,17% linhas e 85,22% branches; `order-rules.mjs` 89,16%/84,82%; `errors.mjs` 80% linhas.
 - Carga de referência (500 VUs): menu p50/p95/p99 82,07/104,15/116,96 ms; pedido 82,05/103,98/116,88 ms.
 - 202.779 requisições medidas, nenhuma falha, throughput 5.795,32 req/s no intervalo medido com redução incluída.
 - Estresse (1.000 VUs): 197.279 requisições medidas, nenhuma falha; p95 em sustentação de 189,42 ms no menu e 189,44 ms no pedido.
 - Auditoria de dependências: zero vulnerabilidades após `npm ci` com override de `minimatch`.
-- Nenhum defeito confirmado permanece aberto nos 27 testes unitários/de integração e 10 testes E2E executados após as correções. Este resultado não estima defeitos fora do escopo.
+- Nenhum defeito confirmado permanece aberto nos 28 testes unitários/API e 11 testes E2E executados localmente em 20/11/2026. Este resultado não estima defeitos fora do escopo nem substitui execução de CI após commit.
 - Disponibilidade mensal, CSAT, SUS, abandono e MTTR: NOT_EXECUTED.
 
 ## Defeitos e riscos remanescentes

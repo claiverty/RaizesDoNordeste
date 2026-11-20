@@ -3,6 +3,10 @@ import AxeBuilder from '@axe-core/playwright';
 
 const adminHeaders = { Authorization: 'Bearer 4826' };
 
+async function acceptPrivacyConsent(page) {
+  await page.getByRole('checkbox', { name: /Concordo com o uso dos dados deste pedido/ }).check();
+}
+
 test('pedido aprovado percorre a jornada em viewport mobile', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('radio', { name: /Recife Centro/ }).check();
@@ -25,6 +29,13 @@ test('pedido aprovado percorre a jornada em viewport mobile', async ({ page }) =
   await page.getByRole('button', { name: 'Ir para checkout' }).click();
   await expect(page).toHaveURL(/\/checkout$/);
   await expect(page.locator('#quote-breakdown .price-row.total strong')).toHaveText(/12,50/);
+  const confirmOrder = page.getByRole('button', { name: 'Confirmar pedido' });
+  await expect(confirmOrder).toBeDisabled();
+  await page.locator('.privacy-details summary').click();
+  await expect(page.locator('.privacy-details')).toContainText('24 horas');
+  await page.screenshot({ path: 'evidencias/e2e/ct029-checkout-privacidade-mobile.png', fullPage: true });
+  await acceptPrivacyConsent(page);
+  await expect(confirmOrder).toBeEnabled();
   await page.getByRole('button', { name: 'Confirmar pedido' }).click();
   await expect(page).toHaveURL(/\/comprovante$/);
   await expect(page.getByRole('heading', { name: /Pedido RN-/ })).toBeVisible();
@@ -58,6 +69,7 @@ test('falha de pagamento mantém o carrinho e não mostra confirmação', async 
   await page.getByRole('button', { name: 'Adicionar Tapioca com queijo coalho' }).click();
   await page.getByRole('button', { name: 'Ir para checkout' }).click();
   await page.getByLabel('Resultado simulado').selectOption('DECLINED');
+  await acceptPrivacyConsent(page);
   await page.getByRole('button', { name: 'Confirmar pedido' }).click();
   const paymentError = page.getByRole('status').filter({ hasText: 'Pagamento simulado recusado' });
   await expect(paymentError).toBeVisible();
@@ -70,6 +82,30 @@ test('falha de pagamento mantém o carrinho e não mostra confirmação', async 
   }));
   expect(checkoutTargets).toHaveLength(2);
   expect(checkoutTargets.every(({ width, height }) => width >= 44 && height >= 44)).toBe(true);
+});
+
+test('nome opcional não é enviado sem autorização específica', async ({ page }) => {
+  let submittedOrder;
+  page.on('request', (request) => {
+    if (new URL(request.url()).pathname === '/api/v1/orders' && request.method() === 'POST') {
+      submittedOrder = JSON.parse(request.postData() ?? '{}');
+    }
+  });
+
+  await page.goto('/');
+  await page.getByRole('radio', { name: /Recife Centro/ }).check();
+  await page.getByRole('button', { name: 'Ver cardápio' }).click();
+  await page.getByRole('button', { name: 'Adicionar Bolo de milho' }).click();
+  await page.getByRole('button', { name: 'Ir para checkout' }).click();
+  await page.getByLabel('Nome curto para chamada').fill('Ana');
+  const nameConsent = page.getByRole('checkbox', { name: /Autorizo usar este nome curto/ });
+  await expect(nameConsent).not.toBeChecked();
+  await acceptPrivacyConsent(page);
+  await page.getByRole('button', { name: 'Confirmar pedido' }).click();
+  await expect(page).toHaveURL(/\/comprovante$/);
+  expect(submittedOrder.privacyConsent).toBe(true);
+  expect(submittedOrder.customerNameConsent).toBe(false);
+  expect('customerName' in submittedOrder).toBe(false);
 });
 
 test('voltar do checkout preserva os itens do carrinho', async ({ page }) => {
@@ -132,6 +168,8 @@ test('painel administrativo exige PIN e lista pedidos sem dados pessoais', async
       unitId: 'recife-centro',
       channel: 'WEB',
       fulfillment: 'PICKUP',
+      privacyConsent: true,
+      customerNameConsent: true,
       customerName: 'Nome sintético de teste',
       items: [{ productId: 'bolo-milho', quantity: 1 }],
       payment: { method: 'PIX', outcome: 'APPROVED' },
@@ -276,6 +314,7 @@ test('admin cadastra, edita, libera e exclui produtos e unidades com confirmaç�
   await customer.getByRole('button', { name: 'Pratos', exact: true }).click();
   await customer.getByRole('button', { name: 'Adicionar Peixe grelhado QA' }).click();
   await customer.getByRole('button', { name: 'Ir para checkout' }).click();
+  await acceptPrivacyConsent(customer);
   await customer.getByRole('button', { name: 'Confirmar pedido' }).click();
   await expect(customer.getByRole('heading', { name: /Pedido RN-/ })).toBeVisible();
   await expect(customer.getByText('Unidade QA Litoral', { exact: true })).toBeVisible();
@@ -315,12 +354,14 @@ test('checkout atualiza o total e pede nova confirmação quando o admin muda o 
   await page.getByRole('button', { name: 'Adicionar Prato de teste' }).click();
   await page.getByRole('button', { name: 'Ir para checkout' }).click();
   await expect(page.locator('#quote-breakdown .price-row.total strong')).toHaveText(/10,00/);
+  await acceptPrivacyConsent(page);
   await page.request.patch(`/api/v1/admin/units/${unit.id}/products/${product.id}`, { headers: adminHeaders, data: { priceCents: 1200 } });
   await page.getByRole('button', { name: 'Confirmar pedido' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'O cardápio foi atualizado' })).toBeFocused();
   await expect(page).toHaveURL(/\/checkout$/);
   await expect(page.locator('#quote-breakdown .price-row.total strong')).toHaveText(/12,00/);
   await expect(page.locator('.cart-line-meta')).toHaveText(/12,00 cada/);
+  await acceptPrivacyConsent(page);
   await page.getByRole('button', { name: 'Confirmar pedido' }).click();
   await expect(page).toHaveURL(/\/comprovante$/);
   await expect(page.locator('.receipt-totals')).toContainText('12,00');
