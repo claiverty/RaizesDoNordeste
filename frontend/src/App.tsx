@@ -163,7 +163,6 @@ function App() {
       ...(couponCode ? { couponCode } : {}),
       useLoyalty,
     };
-    setQuote(null);
     setQuoteError('');
     setQuoteLoading(true);
     getQuote(order)
@@ -171,7 +170,10 @@ function App() {
         if (active) setQuote(nextQuote);
       })
       .catch((error: Error) => {
-        if (active) setQuoteError(error.message || 'Sem conexão para validar o total. Tente novamente antes de confirmar.');
+        if (active) {
+          setQuote(null);
+          setQuoteError(error.message || 'Sem conexão para validar o total. Tente novamente antes de confirmar.');
+        }
       })
       .finally(() => {
         if (active) setQuoteLoading(false);
@@ -213,7 +215,7 @@ function App() {
     const product = menu.find((item) => item.id === productId);
     if (!product?.available) return;
     resetAttempt();
-    setQuote(null);
+    setQuoteLoading(true);
     setCart((current) => {
       const next = { ...current };
       const nextQuantity = typeof quantity === 'function' ? quantity(current[productId] ?? 0) : quantity;
@@ -225,11 +227,18 @@ function App() {
 
   function applyCoupon() {
     resetAttempt();
-    setCouponCode(couponDraft.trim().toUpperCase());
+    const nextCouponCode = couponDraft.trim().toUpperCase();
+    if (hasCartItems && nextCouponCode !== couponCode) setQuoteLoading(true);
+    setCouponCode(nextCouponCode);
   }
 
   function onOrderOptionChange() {
     resetAttempt();
+  }
+
+  function onQuoteOptionChange() {
+    resetAttempt();
+    if (hasCartItems) setQuoteLoading(true);
   }
 
   function currentOrderBody() {
@@ -260,7 +269,10 @@ function App() {
     } catch (caught) {
       const error = caught as Error & { code?: string };
       setMessage({ text: error.message, kind: 'error' });
-      if (error.code === 'QUOTE_CHANGED') setQuoteRevision((revision) => revision + 1);
+      if (error.code === 'QUOTE_CHANGED') {
+        setQuoteLoading(true);
+        setQuoteRevision((revision) => revision + 1);
+      }
       if (error.code !== 'PAYMENT_TIMEOUT' && error.code !== 'REQUEST_IN_PROGRESS') setOrderKey(null);
     } finally {
       setIsSubmitting(false);
@@ -404,7 +416,6 @@ function App() {
                   return <article className="product" key={item.id}>
                     <div className="product-image-wrap">
                       {productImages[item.imageKey] ? <img className="product-image" src={productImages[item.imageKey]} alt={`Imagem ilustrativa de ${item.name}`} loading="lazy" /> : <span className="product-image-placeholder">Foto em breve</span>}
-                      {!item.available && <span className="product-unavailable">Indisponível hoje</span>}
                     </div>
                     <div className="product-copy"><p className="product-category">{item.category}</p><h3>{item.name}</h3><p>{item.description}</p>
                       <div className="product-footer"><strong>{item.priceCents === 0 ? 'Cortesia' : money.format(item.priceCents / 100)}</strong>
@@ -417,7 +428,7 @@ function App() {
             </section>}
 
             {currentStep === 2 && <>
-              <section className="card menu-cart-summary" aria-label="Resumo rápido do carrinho">
+              <section className="card menu-cart-summary" aria-label="Resumo rápido do carrinho" aria-busy={quoteLoading}>
                 <div><strong>{itemCount === 1 ? '1 item no carrinho' : `${itemCount} itens no carrinho`}</strong><span>{quote ? money.format(quote.totalCents / 100) : quoteLoading && hasCartItems ? 'Calculando total…' : 'Adicione ao menos um item'}</span></div>
                 <button className="button button-primary action-button" type="button" disabled={!canReview} onClick={() => { setMessage(null); navigateToStep(3); }}>Ir para checkout<Icon name="arrowRight" /></button>
               </section>
@@ -453,7 +464,7 @@ function App() {
                 <label htmlFor="coupon-code">Cupom</label>
                 <div className="inline-control"><input id="coupon-code" type="text" maxLength={32} autoComplete="off" placeholder="Digite o código" value={couponDraft} onChange={(event) => setCouponDraft(event.target.value)} /><button id="apply-coupon" className="button button-secondary" type="button" onClick={applyCoupon}>Aplicar</button></div>
               </div>
-              <label className="choice loyalty-choice"><input id="use-loyalty" type="checkbox" checked={useLoyalty} onChange={(event) => { setUseLoyalty(event.target.checked); onOrderOptionChange(); }} /><span>Usar benefício simulado de fidelidade <small>500 pontos · até R$ 3,00</small></span></label>
+              <label className="choice loyalty-choice"><input id="use-loyalty" type="checkbox" checked={useLoyalty} onChange={(event) => { setUseLoyalty(event.target.checked); onQuoteOptionChange(); }} /><span>Usar benefício simulado de fidelidade <small>500 pontos · até R$ 3,00</small></span></label>
               <div className="step-actions checkout-back-action"><button className="button button-secondary action-button" type="button" onClick={() => window.history.back()}><Icon name="arrowLeft" />Voltar ao cardápio</button></div>
             </section>}
 
@@ -476,7 +487,7 @@ function App() {
                 </li>;
               })}
             </ul> : <p className="totem-cart-empty">Seu pedido aparecerá aqui quando você adicionar itens.</p>}
-            <div className="totem-cart-total"><span>Total</span><strong>{quote ? money.format(quote.totalCents / 100) : quoteLoading ? 'Calculando…' : money.format(0)}</strong></div>
+            <div className="totem-cart-total" aria-busy={quoteLoading}><span>Total</span><strong>{quote ? money.format(quote.totalCents / 100) : quoteLoading ? 'Calculando…' : money.format(0)}</strong></div>
             <button className="button button-primary totem-continue" type="button" disabled={!canReview} onClick={() => { setMessage(null); navigateToStep(3); }}>
               Revisar pedido <Icon name="arrowRight" />
             </button>
@@ -489,8 +500,8 @@ function App() {
               <div className="field-grid fulfillment-grid">
                 <fieldset>
                   <legend>Modalidade</legend>
-                  <label className="choice"><input type="radio" name="fulfillment" value="PICKUP" checked={fulfillment === 'PICKUP'} onChange={() => { setFulfillment('PICKUP'); onOrderOptionChange(); }} /><span>Retirar no balcão</span></label>
-                  <label className="choice"><input type="radio" name="fulfillment" value="DINE_IN" checked={fulfillment === 'DINE_IN'} onChange={() => { setFulfillment('DINE_IN'); onOrderOptionChange(); }} /><span>Consumir na unidade</span></label>
+                  <label className="choice"><input type="radio" name="fulfillment" value="PICKUP" checked={fulfillment === 'PICKUP'} onChange={() => { setFulfillment('PICKUP'); onQuoteOptionChange(); }} /><span>Retirar no balcão</span></label>
+                  <label className="choice"><input type="radio" name="fulfillment" value="DINE_IN" checked={fulfillment === 'DINE_IN'} onChange={() => { setFulfillment('DINE_IN'); onQuoteOptionChange(); }} /><span>Consumir na unidade</span></label>
                 </fieldset>
               </div>
               <div className="field-grid checkout-fields customer-field">
@@ -522,7 +533,7 @@ function App() {
 
           {currentStep === 3 && <aside className="summary card" aria-labelledby="summary-title">
             <div className="section-heading"><div><h2 id="summary-title">Total do pedido</h2><p>Confira os valores antes de confirmar.</p></div></div>
-            <div id="quote-breakdown" className="price-breakdown" aria-live="polite">
+            <div id="quote-breakdown" className="price-breakdown" aria-live="polite" aria-busy={quoteLoading}>
               {quoteError ? <p className="message error">{quoteError}</p> : quote ? <QuoteBreakdown quote={quote} /> : <p className="muted">{quoteLoading ? 'Calculando total…' : 'Adicione um produto para calcular o total.'}</p>}
             </div>
             <button id="submit-order" className="button button-primary" type="button" disabled={!canSubmit} onClick={submitOrder}>{isSubmitting ? 'Processando…' : 'Confirmar pedido'}<Icon name="check" /></button>
